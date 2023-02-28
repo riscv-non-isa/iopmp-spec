@@ -1,8 +1,8 @@
 [[header]]
-:description: RISC-V Example Specification Document (Zexmpl)
+:description: RISC-V Example Specification Document
 :company: RISC-V.org
-:revdate: 1/2022
-:revnumber: 1.0
+:revdate: 01/2023
+:revnumber: 1.0.0-draft1
 :revremark: This document is in development. Assume everything can change. See http://riscv.org/spec-state for details.
 :url-riscv: http://riscv.org
 :doctype: book
@@ -36,8 +36,8 @@ endif::[]
 :footnote:
 :xrefstyle: short
 
-= RISC-V Example Specification Document (Zexmpl)
-Author 1; Author 2; RISC-V Task Group
+= RISC-V IOPMP Specification Document
+Paul Ku ; Channing Tang; RISC-V IOPMP Task Group
 
 // Preamble
 [WARNING]
@@ -61,7 +61,17 @@ Copyright 2022 by RISC-V International.
 include::contributors.adoc[]
 
 include::intro.adoc[]
-include::chapter2.adoc[]
+include::terminology.adoc[]
+include::chapter3.adoc[]
+include::chapter4.adoc[]
+include::chapter5.adoc[]
+include::chapter6.adoc[]
+include::chapter7.adoc[]
+
+include::appendix_a1.adoc[]
+include::appendix_a2.adoc[]
+include::appendix_a3.adoc[]
+
 //the index must precede the bibliography
 include::index.adoc[]
 include::bibliography.adoc[]

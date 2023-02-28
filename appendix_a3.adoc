@@ -1,0 +1,12 @@
+[Appendix_A3]
+== A3: Permission on Memory Domains
+
+In the models mentioned so far, an IOPMP entry is a pair of a memory region and its corresponding permission setting. The bits used to store the memory region are much more than its permission setting. If different memory domains want to share these regions but not their permission settings, the IOPMP/PMD described in this appendix can help.
+
+IOPMP/PMD extends every association bit in the SRCMD table to 4 bits of a second permission setting. We denote SPS[_s_, _m_] as the second permission setting for SID=_s_ and MID=_m_. When a transaction arrives at an IOPMP/PMD, it looks up the corresponding memory domains as usual. Then, it also follows the original way to find the IOPMP entry matching the transaction. When checking the permission, IOPMP/PMD has two sets of permission settings: one from IOPMP entry and the other from the second permission setting that is retrieved from SPS. For either read or write operation, only if both permission settings allow, the transaction can do such operation.
+
+Besides, SPS can offer the control of execution permission. If the signal indicating an instruction fetch is carried by a transaction, the second permission setting can control instruction fetches.
+
+As the programmability of every second permission setting, it is the same as the programmability of the bit in the same location in the SRCMD table.
+
+SPS also supports up to 63 memory domains. The LSB of SPS[_s_, 63] is reserved for locking all second permission settings for SID = _s_.

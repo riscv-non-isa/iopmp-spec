@@ -1,0 +1,71 @@
+[[IOPMP_Models]]
+== IOPMP Models
+
+To fit in various needs of the different platforms, we provide several IOPMP configuration models. We will begin with the full model which comes with practically all of the features listed in this document. Next, we'll discuss optional features and moving to the other models. These models assist users in choosing and refining their designs to meet various needs, including those for low area, low power, low latency, high throughput, high portability, and other criteria.
+
+=== The Full Model
+
+When a full model IOPMP receives a transaction with SID _s_, it first lookups the SRCMD table to find out all the memory domains associated to _s_. The size of the table is implementation-dependent. In the table, the register SRC~_s_~MD is defined per SID _s_, occupies a 64-bit space, and has two fields, SRC~_s_~MD.L and SRC~_s_~MD.MD. SRC~_s_~MD.L is a sticky lock to this register. In the model, SRC~_s_~MD.MD is a bitmapped field and has up to 63 bits. Each bit here indicates if a MD is associated with the SID _s_. Not all bits should be implemented, but implemented bits should be right justified. For unimplemented memory domains, the corresponding bits in SRC~_s_~MD.MD should be WARZ. A full model IOPMP supports up to 63 memory domains. For a system requiring more memory domains than 63, one could cascade IOPMPs. Cascading IOPMPs is described in the Appendix.
+
+Once an IOPMP retrieves all associated MDs for a transaction with SID _s_, it looks up the corresponding IOPMP entries belonging to these MDs. The MDCFG table defines the relation between MDs and IOPMP entries. The MDCFG table has an array of registers where the register MD~_m_~CFG is for the memory domain _m_. One field, MD~_m_~CFG.T, indicates the top index of the IOPMP entry belonging to the memory domain _m_. An IOPMP entry with index _j_ belongs to MD _m_ if MD~_m-1_~CFG.T~_j_~ < MD~_m_~CFG.T, where _m_>0. The MD _0_ owns the IOPMP entries with index j<MD~_0_~CFG.T. Each MD~_m_~CFG register occupies a 32-bit space and the field MD~_m_~CFG.T occupies the lowest 16 bits. The number of implemented bits is implement-dependent.
+
+After retrieving all associated IOPMP entries, a full model IOPMP checks the transaction according to these entries.
+
+Appendix provides a reference implementation for a full model IOPMP.
+
+=== Configuration Protection
+
+A hardwire behavior that makes an IOPMP fully or partially nonprogrammable unless resetting the IOPMP is the so-called “lock.” A lock in an IOPMP is similar to that in a PMP. It can ensure critical settings are unchanged even though the security monitor is compromised. To lock the programmability of an IOPMP completely, we may not really need a new mechanism. If you have a platform similar to the above example, you could create a memory domain to stop any future IOPMP control operations. We will go through the idea first. If you want a fine-grained method that reserves partial programmability, the subsequent optional features are designed for it.
+
+==== Protect the SRCMD Table
+in order to enforce that all SIDs associate MD 0, you should lock the whole the SRCMD table due to the granularity. You are not able to lock all SRC~_s_~MD[0]=1 (for all s) but leave the rest of the bits programmable. Thus, you lose all programmability of the mapping from SID to MD.
+
+Here, there are two optional mechanisms to lock the SRCMD table partially. The register MDMSK can lock certain bits for each SRC~_s_~MD.MD. MDMSK has two fields: a 63-bit MDMSK.MD and a 1-bit MDMSK.L. On MDMSK.MD[_m_]=1, all SRC~_s_~MD.MD[_m_] are not programmable for all SID s. MDMSK.L is the lock bit for the MDMSK. In above example, when you want to enforce every SID to associate MD 0, you can first set all SRC~_s_~MD.MD[0]=1, and then let MDMSK.MD[0]=1 and MDMSK.L=1. The rest mappings are still programmable. If MDMSK is not implemented, it should be WARZ.
+
+For unimplemented memory domains, the corresponding bits of MDMSK.MD should be WARZ. The bits for implemented memory domains in MDMSK.MD can be also hardwired. However, in this case, the corresponding bits in SRC~_s_~MD.MD should be well initialized during reset process. If whole MDMSK.MD is hardwired, MDMSK.L should be wired to 1. To figure out which memory domains are implemented, you can do the following steps: (1) set all ones (0x7fffffff_ffffffff) to SRC~_0_~MD.MD, (2) read back the field, and (3) OR it with MDMSK.MD. The corresponding bits for implemented memory domains in the result will be 1’s.
+
+Besides, every SRC~_s_~MD register has an optional bit, L, which is used to lock this register. It is a convenient way to lock the MD mapping of an SID without consuming any IOPMP entry. If a programmable SRC~_s_~MD.L is implemented, SRC~_s_~MD.L should be initialized to zero after reset. If SRC~_s_~MD.L is not implemented, it can be hardwired to 0 or 1. If it is wired to 1, SRC~_s_~MD.MD should be hardwired properly.
+
+==== Protect the MDCFG Table
+Subsequently, the belonging of IOPMP entries, that is MDCFG table, can be locked. The register MDCFGLCK is designed for the purpose, which has two fields: MDCFGLCK.L and MDCFGLCK.F. Please note that if the top index of MD _m_ is locked, that of DM _m-1_ should be locked, too. Otherwise, the IOPMP entries of MD m can be added or removed by modifying MD~_m-1_~CFG.T. By introduction, if MD m is locked, MD n should also be locked, where _n_ < _m_. Thus, we define all MD~_m_~CFG.T are nonprogrammable where _m_ < MDCFGLCK.F. MDCFGLCK.F is initialized to 0 after reset, and can be increased only when written. MDCFGLCK.L is the lock of MDCFGLCK. If MDCFGLCK is hardwired, MDCFGLCK.L should be wired to 1.
+
+IOPMP entry protection is also related to the other IOPMP entries belonging to the same memory domain. For a MD, locked entries should be placed in the higher priority. Otherwise, when the security monitor is compromised, one unlocked entry in higher priority can overwrite all the other locked entries in lower priority. To enforce it, we use MD~_m_~CFG.F, a 15-bit field in MD~_m_~CFG, to define the number of nonprogrammable entries in the memory domain m; that is, the first MD~_m_~CFG.F IOPMP entries belonging to MD m is not programmable. MD~_m_~CFG.F is initialized to 0 and can be increased only when written. Besides, MD~_m_~CFG.L is the lock to MD~_m_~CFG.F and itself. If MDmCFG.F is not implemented, MD~_m_~CFG.L and MD~_m_~CFG.F should be wired to 1 and 0, respectively. Please note that MD~_m_~CFG.L does not control whether or not MD~_m_~CFG.T is programmable. MDCFGLCK.F does.
+
+=== The Rapid-_k_ Model
+
+To shorten the latency, the rapid-_k_ model replaces the lookup of the MDCFG table by simple logics. Every memory domain has exactly _k_ IOPMP entries where _k_ is implementation-dependent and hardwired. Since _k_ is a fixed number, once MDs are retrieved for a transaction, these indexes of selected MDs can quickly transform into the signals to pick up the IOPMP entries. An extreme case is _k_=1 in which every non-zero bit in SRC~_s_~MD.MD directly maps to a selected IOPMP entry for SID=_s_.
+
+To make it semantically compatible with the full model, the realated fields should be read with their original meanings. MDCFGLCK.F should be the same as the number of implemented MDs and MDCFGLCK.L should be 1. MD~_m_~CFG.T should be _(m+1)_*_k_. That is, one can read MD~_0_~CFG.T to retrieve the value _k_.
+
+MD~_m_~CFG.F and MD~_m_~CFG.L can still be programmable or hardwired. The two fields typically do not affect the latency of checking a transaction. They are usually related to writing to IOPMP registers, and writing latency is not a concern in this model.
+
+=== The Dynamic-_k_ Model
+
+The dynamic-_k_ model is similar to the rapid-_k_ model, except the _k_ value is programmable. If you have a fixed number of IOPMP entries, you probably don’t need this model. You can simply divide all IOPMP entries evenly to every memory domain and obtain a fixed k. However, if the IOPMP array is not in dedicated storage and could be shared for other purposes, the dynamic-_k_ model helps partition these IOPMP entries. 
+
+The IOPMP entry reassignment is not suggested during the run time. The boot time is a better choice.
+
+MD~_0_~CFG.T stores the value _k_ and is WARL. That is, an implementation may accept limited _k_. However, zero should not be a legal value. One should make sure if a written value is legal by reading it back. The _k_ is usually considered as a power of 2 for easier hardware implementation. MD~_m_~CFG.T is read-only and equals to _(m+1)_*_k_ when it is read. By updating MD~_0_~CFG.T and then examining MD~_1_~CFG.T’s change, one can know the IOPMP is the dynamic-_k_ model.
+
+MDCFGLCK.F should be zero right after the IOPMP resets. MDCFGLCK.F and MDCFGLCK.L can be programmable or hardwired. If MDCFGLCK.F is programmable, it can only accept two values: 0 and the number of MDs.
+
+=== The Isolation Model
+
+One of the benefits of the full model is to share common memory regions (by memory domains) among different SIDs. The isolation model can be implemented for the case of no or a few shared regions. In this model, each SID is exactly associated with one MD. Thus, no table-lookup is needed to retrieve the associated MD. It benefits the area as well as the latency. The penalty is to duplicate IOPMP entries when two SIDs do share regions. Besides, even though MDMSK and all SRC~_s_~MD should be read-only, to ensure the semantic compatibility to the full model, we have the following rules. For reading SRC~_s_~MD, SRC~_s_~MD.MD should be 1<<s, and SRC~_s_~MD.L should be 1. As to MDMSK.MD, all implemented MDs should be hardwired to 1. MDMSK.L should also be wired to 1.
+There is no constrain on the MDCFG table and the MDCFGLCK register.
+
+=== The Compact-_k_ Model
+
+The compact-_k_ model can achieve even lower latency and smaller area than the isolation model. Besides having each SID exactly associated with one MD, every MD should have exactly k IOPMP entries. Once SID is known, the IOPMP entries can be selected efficiently. In the model, MDMSK, all SRC~_s_~MD, MDCLK, and all MD~_m_~CFG.T are read-only. When read, MDMSK and all SRC~_s_~MD should be the same as the isolation model. MDCFGLCK and all MD~_m_~CFG.T should be the same as the rapid-k model.
+MD~_m_~CFG.L and MD~_m_~CFG.F can still be programable or hardwired.
+
+
+=== Model Detections
+
+To distinguish the above models, one can follow the below approach.
+
+First, we figure out how many MDs are implemented by (1) writing all ones to SRC~_0_~MD.MD and (2) OR-ing the values and MDMSK.MD. Denote the result as _IMD_. The ones in _IMD_ mean the implemented MDs.
+
+Then, we test if the SRCMD table is programmable by reading MDMSK. Suppose MDMSK.L=1 and MDMSK.MD = _IMD_, the SRCMD table is read-only, and the IOPMP is either the isolation or the compact-k models. Subsequently, if MD~_0_~CFG.T can accept zero, that is, writing zero and reading back a zero, the MDCFG table is programmable, and the IOPMP is the isolation model. Otherwise, it is the compact-k model because you can never have the compact-0 model.
+
+If the SRCMD table is programmable, the IOPMP should be the rapid-_k_ model, the dynamic-_k_ model, or the full model. If MDCFGLCK.L is 1 and MDCFGLCK.F is non-zero, it is the rapid-_k_ model. Then, if MD~_0_~CFG.T accepts zero, it is the full model; otherwise, the dynamic-_k_ model.

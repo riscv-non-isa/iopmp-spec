@@ -1,0 +1,34 @@
+[[Concepts]]
+== Concepts
+
+This document uses the term security monitor to refer to the software in charge of security-related tasks. The security monitor also programs the IOPMPs. The security monitor is not confided to run on a core or a hart. It could be distributed on more than one core, virtualized on a virtual platform, or cascaded within a nested sub-platform.
+
+For a register or a field X, X[n] represents the bit-n of X and X[n:m] for the bit-n to bit-m of X.
+
+=== Source-ID and Transaction
+
+Source-ID, SID for short, is a unique ID to identify a bus master or a group of bus masters with the same permission. When a bus master wants to access a piece of memory, it issues a transaction. A transaction should be tagged with an SID indicating which bus master issued it. We will discuss about the exception in the next section. Associating bus masters with SID could be implementation-dependent and is out of the scope of this document, but the IOPMP does have requirement on the uniqueness of SIDs which will be discussed when we talking about the cascading IOPMPs. The number of bits of an SID is implementation-dependent. However, there are some suggestions in this document if SID is programmable. SID could be a vulnerability because a malicious program can gain extra permission by forging SID. Hardwired SID can avoid such a risk. However, in the cases of requiring more flexibility, locking SID before entering REE can be a good choice. If a system provides programmable SIDs during the runtime, the write permission of SIDs should be controlled very carefully.
+
+If a bus master has multiple channels and every channel is granted different access permissions, every channel should have its own SID. If a bus master runs in different privilege modes, such as a processor, every privilege mode should have a different SID if the system is designed to use IOPMPs to regulate its access. The usage of multiple SIDs is also applied to multiple virtual machines with different permissions.
+
+=== Source-Enforcement
+
+If the scope of an IOPMP contains only one bus master or a set of bus masters with the same permission, the Source-ID can be ignored in bus master side as well as the transactions going through the IOPMP. In the case, we denote the IOPMP performs source enforcement, IOPMP-SE for short. In the rest of the cases, we still need SID to distinct the transaction issuers.
+
+=== Master Port and Slave Port
+
+An IOPMP has at least a master port and at least a slave port. A slave port is where a transaction goes into the IOPMP, and a master port is where a transaction leaves it if the transaction passes all the checks.
+
+=== Memory Domain
+
+A memory domain, MD for short, is a concept inside an IOPMP. It is used to group a set of memory regions for a specific purpose and is indexed from zero. For example, a network interface controller, NIC, may have three memory regions: an RX region, a TX region, and a region of control registers. We could group them into one MD. If a processor can fully control the NIC, it can associate with this MD. However, associating the memory domain doesn’t mean having full permissions on all memory regions. The permission of each region is defined in the corresponding IOPMP entry. However, there is an extension to adhere the permission to the MD that will be introduced in the appendix.
+
+One thing should be noted: one SID may associate with more than one MD, and one MD may be associated with more than one SID. However, some models may limit the flexibility due to different requirements.
+
+=== IOPMP Entry and IOPMP Entry Array
+
+IOPMP entry array is the most fundamental structure of an IOPMP and is a list of ordered IOPMP entries. An IOPMP entry is indexed from zero and defines a rule when checking a transaction: including a memory region and the read/write permission. Each IOPMP entry belongs to exactly one memory domain, and a memory domain may have multiple IOPMP entries. An SID associating with an MD also means it associates with all IOPMP entries belonging to the MD.
+
+IOPMP entries are statically prioritized. The lowest-numbered IOPMP entry that (1) matches any byte of the in-coming transaction and (2) is associated with the SID carried by the transaction determines whether the transaction is legal. The matching IOPMP entry must match all bytes of a transaction, or the transaction is illegal, irrespective of its permission.
+
+As to an IOPMP-SE, the only structure of it is the IOPMP entry array. Due to no SID, when selecting the matching IOPMP entry, an IOPMP-SE ignores the SID comparison.

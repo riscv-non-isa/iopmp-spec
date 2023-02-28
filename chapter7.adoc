@@ -1,0 +1,15 @@
+[[Program_IOPMPs]]
+== Program IOPMPs
+<TBD: pls feel free to raise comment or if you have better ideas>
+Programming the IOPMP usually consists of a series operation. There exists a potential race condition while one entity is programming the IOPMP, some transactions are checked or under checking but has not been completed yet. Such race condition may lead to vulnerabilities, for example, another entity starts to use the re-allocated region for confidential information but the entity who had the access is still able to retrieve the data with those transactions which already past security check.  To mitigate such vulnerabilities, the series of IOPMP updates should be atomic in the view of other transactions that go through the IOPMP. 
+
+A straightforward thinking is: all transactions should be checked by either (1) the previous setting before any IOPMP updates or (2) the new setting after all IOPMP updates take effect. However, for some systems, stalling/blocking all transactions on the bus may impose a large impact on the performance; and in certain use cases, it is even not allowed to stall transaction from some specific sources. As an alternative, instead of stalling all transaction, one may implement the IOPMP atomic update in a way that only stalls transactions which are impacted. 
+
+Two register arrays are introduced to enforce an IOPMP atomic update:
+
+* SIDBLKMODE: a register with one field SIDBLKMODE.FAULT to indicate if the blocked transactions should bebackpressred or faulted .
+** 0x0, the blocked transactions should be backpressred
+** 0x1, the blocked transactions should be faulted
+* SIDBLKEN: Register array with one field SIDBLKEN.SID, SIDBLKEN.SID is a bitmapped field with each bit corresponds to one source. The number of registers required per each array is implementation-dependent. If a SIDBLKEN.SID bit is set, transaction from the corresponding source shall be blocked.
+* SIDBLKSTAT: egister array with one field SIDBLKEN.SID, SIDBLKEN.SID is a bitmapped field with each bit corresponds to one source. When a bit is set, it indicates all transactions from that source are blocked.
+
