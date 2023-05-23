@@ -1,3 +1,423 @@
 [[Registers]]
 == Registers
-TBD
+
+[cols="<3,<6,<14",stripes=even,options="header"]
+|===
+|OFFSET |Register {set:cellbgcolor:green} |Description
+
+.16+|0x0000  2+|{set:cellbgcolor:#D3D3D3} INFO
+|{set:cellbgcolor:#FFFFFF} HWCFG |Indicates the configurations of current IOPMP instance
+|{set:cellbgcolor:#FFFFFF} RULE_OFFSET |Indicates the internal address offsets of each table.
+
+2+|{set:cellbgcolor:#D3D3D3} Programming Protection
+|{set:cellbgcolor:#FFFFFF} STALL_MD |
+|STALL_BYPASS|
+
+2+|{set:cellbgcolor:#D3D3D3} Error Reporting
+|{set:cellbgcolor:#FFFFFF} ERR_REQADDR |
+|ERR_REQID   |
+|ERR_REQINFO |
+|ERR_IRQSTAT |
+|ERR_IRQMASK |
+
+
+2+|{set:cellbgcolor:#D3D3D3} Configuration Protection
+|{set:cellbgcolor:#FFFFFF} MDMSK |Lock Register for SRCMD table.
+|{set:cellbgcolor:#FFFFFF} MDCFGLCK |Lock register for MDCFG table
+|{set:cellbgcolor:#FFFFFF} ARRLCK   |Lock register for IOPMP entry array.
+
+.2+|0x0800 2+|{set:cellbgcolor:#D3D3D3} MDCFG Table,  m = 0...md_num -1
+|{set:cellbgcolor:#FFFFFF}MDCFG(m)  |MD config register, which is to specify the indices of IOPMP entries belonging to a MD.
+
+.4+|0x1000    2+|{set:cellbgcolor:#D3D3D3} SRCMD Table, s = 0...sid_num-1
+|{set:cellbgcolor:#FFFFFF}SRCMD_EN (s)    |Bitmapped MD enable register, 's' corresponding to number of sources, it indicate source s associated MDs.
+|SRCMD_R(s)      |(Optional)Bitmapped MD read eanble register, 's' corresponding to number of sources, it indicate source s  read permission on MDs.
+|SRCMD_W (s)     |(Optional)Bitmapped MD write eanble register, 's' corresponding to number of sources, it indicate source s  write permission on MDs.    
+
+.5+|RULE_OFFSET    2+|{set:cellbgcolor:#D3D3D3} Entry Array, i = 0…entry_num-1
+|{set:cellbgcolor:#FFFFFF}ENTRY_ADDR(i)                |
+|ENTRY_ADDRH(i)               |(Optional for 32-bit system)
+|ENTRY_CFG(i)                 |
+|ENTRY_USER_CFG(i)            |(Optional) extension to support user customized attributes
+
+|===
+
+
+
+
+*INFO registers*
+
+The HWCFG are RO registers, it indicates the IOPMP instance configuration info.
+
+[wavedrom,target="HWCFG0"]
+....
+{reg:
+[
+    { bits:  7, name: 'md_num'},
+    { bits:  9, name: 'sid_num'},
+    { bits:  16, name: 'entry_num'},
+], config: {label: {left: 'HWCFG0'}, fontsize: 10}
+}
+....
+
+[cols="<2,<1,<1,<6",stripes=even]
+|===
+4+h|HWCFG0{set:cellbgcolor:#D3D3D3}
+h|Field  |Bits    |R/W    |Description
+|{set:cellbgcolor:#FFFFFF}md_num |6:0     |R     |Indicate the supported number of MD in the instance
+|sid_num |15:7   |R     |Indicate the supported number of SID in the instance
+|entry_num |31:16  |R     |Indicate the supported number of entries in the instance
+|===
+
+
+[wavedrom,target="HWCFG1"]
+....
+{reg:
+[
+    { bits:  1, name: 'tor_en', rotate: -90},
+    { bits:  1, name: 'sps_en', rotate: -90},
+    { bits:  1, name: 'user_cfg_en', rotate: -90},
+    { bits:  1, name: 'rsvd', type: 8, rotate: -90},
+    { bits:  4, name: 'model', attr: ['full', 'rapid-k', 'dynamic-k', 'isolated', 'compact-k']},
+    { bits:  24, name: 'rsvd', type: 8},
+], config: {label: {left: 'HWCFG1'}, fontsize: 10, vspace: 140}
+}
+....
+
+[cols="<2,<1,<1,<6",stripes=even]
+|===
+4+h|{set:cellbgcolor:#D3D3D3} HWCFG1
+h|Field  |Bits    |R/W    |Description
+|{set:cellbgcolor:#FFFFFF}tor_en |0:0     |R     |Indicate if TOR is supported
+|sps_en |1:1     |R     |Indicate the secondary permission settings is supported
+|user_cfg_en |2:2  |R   |Indicate the if user customized attributes is supported
+|model |7:4  |R   |Indicate the iopmp instance model
+|===
+
+[wavedrom,target="RULE_OFFSET"]
+....
+{reg:
+[
+    { bits:  32, name: 'entry_array'},
+], config: {label: {left: 'OFFSET'}, fontsize: 10}
+}
+....
+
+[cols="<2,<1,<1,<6",stripes=even]
+|===
+4+h|{set:cellbgcolor:#D3D3D3} OFFSET
+h|Field  |Bits    |R/W    |Description
+|{set:cellbgcolor:#FFFFFF}entry_array |31:0     |R     |Indicate the offset address of the IOPMP array from the base of an IOPMP instance, a.k.a. the address of HWCFG. Note: the offset is a signed number. That is, the IOPMP array can be placed in front of HWCFG.  
+|===
+
+
+* *SRCMD Table Registers*
+
+[wavedrom,target="SRCMD_EN"]
+....
+{reg:
+[
+    { bits:  32, name: 'md[31:0]'},
+    { bits:  31, name: 'md[62:32]'}, 
+    { bits:  1, name: 'l'},    
+], 
+config: {lanes:2, label: {left: 'SRCMD_EN'}, fontsize: 10}
+}
+....
+
+[cols="<2,<1,<1,<6",stripes=even]
+|===
+4+h|{set:cellbgcolor:#D3D3D3} SRCMD_EN(s), s = 0...sid_num-1
+h|Field  |Bits    |R/W    |Description
+|{set:cellbgcolor:#FFFFFF} md |62:0     |WARL     | A bitmap to indicate if the corresponding md is matched with SID i.
+|l |63:63     |W1     | A sticky lock bit. When set, locks SRCMD_EN(i), SRCMD_R(i) and SRCMD_W(i)
+|===
+
+*SRCMD_R* and *SRCMD_W* are optional registers; When SPS extension is enabled, the IOPMP checks both the R/W and the IOPMP_ENTRY_CFG.R/W permission and follows a fail-first rule.
+
+[wavedrom,target="SRCMD_R(s), s = 0...sid_num-1"]
+....
+{reg:
+[
+    { bits:  32, name: 'md[31:0]'},
+    { bits:  31, name: 'md[62:32]'}, 
+    { bits:  1, name: 'rsvd', type: 8},    
+], 
+config: {lanes:2, label: {left: 'SRCMD_R'}, fontsize: 10}
+}
+....
+
+[cols="<2,<1,<1,<6",stripes=even]
+|===
+4+h|{set:cellbgcolor:#D3D3D3} SRCMD_R(s), s = 0...sid_num-1
+h|Field  |Bits    |R/W    |Description
+|{set:cellbgcolor:#FFFFFF}md |62:0     |WARL     | A bitmap to indicate if SID i has read permission to the corresponding MD. 
+|===
+
+
+[wavedrom,target="SRCMD_W(s), s = 0...sid_num-1"]
+....
+{reg:
+[
+    { bits:  32, name: 'md[31:0]'},
+    { bits:  31, name: 'md[62:32]'}, 
+    { bits:  1, name: 'rsvd', type: 8},    
+], 
+config: {lanes:2, label: {left: 'SRCMD_W'}, fontsize: 10}
+}
+....
+
+[cols="<2,<1,<1,<6",stripes=even]
+|===
+4+h|{set:cellbgcolor:#D3D3D3} SRCMD_W(s), s = 0...sid_num-1
+h|Field  |Bits    |R/W    |Description
+|{set:cellbgcolor:#FFFFFF}md |62:0     |WARL     | A bitmap to indicate if SID i has write permission to the corresponding MD. 
+|===
+ 
+ 
+* *MDCFG Table*
+
+The MDCFG table is a lookup to specify the number of IOPMP entries that is associated with each MD. For different models:
+
+. Full model: the number of MDCFG registers is equal to md_num, all MDCFG registers are readable and writable.
+. Rapid-k model: a single MDCFG register to indicate the k value, read only.
+. Dyanmic-k model:  a single MDCFG register to indicate the k value, readable and writable.
+. isolation model: the number of MDCFG registers is equal to md_num, all MDCFG registers are readable and writable.
+. Compact-k model:  a single MDCFG register to indicate the k value, read only.
+
+[wavedrom,target="MDCFG"]
+....
+{reg:
+[
+    { bits:  16, name: 't'}, 
+    { bits:  16, name: 'rsvd', type: 8}, 
+], config: {label: {left: 'MDCFG'}, fontsize: 10}
+}
+....
+
+[cols="<2,<1,<1,<6",stripes=even]
+|===
+4+h|{set:cellbgcolor:#D3D3D3} MDCFG(m), m = 0...md_num-1, support up to 63 MDs
+h|Field  |Bits    |R/W    |Description
+|{set:cellbgcolor:#FFFFFF}t |16     |WARL     a|- Indicate the top range of memory domain m. An IOPMP entry with index j belongs to MD m                 
+      
+                     - If MDm-1CFG.t ≤ j < MDmCFG.t, where m>0. The MD0 owns the IOPMP entries with index j<MD0CFG.t.
+                     - If MDm-1CFG.t >= MDmCFG.t, then MDm  is empty.
+                     - For rapid-k, dynamic-k and compact-k models, t indicates the number of IOPMP entries belongs to each MD.
+
+|===
+
+
+* *Entry Array Registers*
+
+[wavedrom,target="ENTRY_ADDR"]
+....
+{reg:
+[
+    { bits:  32, name: 'addr[31:0]'},
+    { bits:  32, name: 'addr[63:32]'},    
+], 
+config: {lanes:2, label: {left: 'ENTRY_ADDR'}, fontsize: 10}
+}
+....
+
+[cols="<2,<1,<1,<6",stripes=even]
+|===
+4+h|{set:cellbgcolor:#D3D3D3} ENTRY_ADDR(i), i = 0...entry_num-1
+h|Field  |Bits    |R/W    |Description
+|{set:cellbgcolor:#FFFFFF}addr |31(63):0     |WARL     |The physical address of protected memory region. 
+|===
+
+
+[wavedrom,target="ENTRY_CFG"]
+....
+{reg:
+[
+    { bits:  1, name: 'r'},
+    { bits:  1, name: 'w'},
+    { bits:  1, name: 'w'},
+    { bits:  1, name: 'x'},
+    { bits:  2, name: 'a', attr: ['OFF', 'NAPOT', 'TOR', 'NA4']},
+    { bits:  26, name: 'rsvd', type: 8},
+], config: {label: {left: 'ENTRY_CFG'}, fontsize: 10}
+}
+....
+
+[cols="<2,<1,<1,<6",stripes=even]
+|===
+4+h|{set:cellbgcolor:#D3D3D3} ENTRY_CFG(i), i = 0...entry_num-1
+h|Field  |Bits    |R/W    |Description
+|{set:cellbgcolor:#FFFFFF}r      |0:0     |RW     |The read permission to protected memory region 
+|w      |1:1     |WARL     |The write permission to the protected memory region
+|x      |2:3     |WARL     |The executable permission to the protected memory region. Optional field, if undefined, write any read the same value as r field.
+|a      |4:3     |WARL     |The address mode of the IOPMP entry
+|===
+
+The ENTRY_USER_CFG implementation defined registers that allows the users to define their own additional IOPMP check rules beside the rules defined in ENTRY_CFG.
+
+[wavedrom,target="ENTRY_USER_CFG"]
+....
+{reg:
+[
+    { bits:  32, name: 'im'},
+], config: {label: {left: 'ENTRY_USER_CFG'}, fontsize: 10}
+}
+....
+
+
+
+* *Configuration Protection Registers*
+
+*MDMSK* is a register with a bitmap field to indicate which MDs are locked. 
+
+[wavedrom,target="MDMSK"]
+....
+{reg:
+[
+    { bits:  62, name: 'md'}, 
+    { bits:  1, name: 'l'}, 
+], config: {label: {left: 'MDMSK'}, fontsize: 10}
+}
+....
+
+[cols="<2,<1,<1,<6",stripes=even]
+|===
+4+h|{set:cellbgcolor:#D3D3D3} MDMSK
+h|Field  |Bits    |R/W    |Description
+|{set:cellbgcolor:#FFFFFF}md|62:0   |WARL   | A bitmap to indicate which MDs are locked.
+|{set:cellbgcolor:#FFFFFF}md|63:63  |W1     | Lock bit to MDMSK register.
+|===
+
+*MDCFGLCK* is the lock register to MDCFG table.
+
+[wavedrom,target="MDCFGLCK"]
+....
+{reg:
+[
+    { bits:  7, name: 'f'}, 
+    { bits:  24, name: 'rsvd', type: 8}, 
+    { bits:  1, name: 'l'},
+], config: {label: {left: 'MDCFGLCK'}, fontsize: 10}
+}
+....
+
+
+*ARRLCK* is the lock register to entry array.
+
+[wavedrom,target="ARRLCK"]
+....
+{reg:
+[
+    { bits:  17, name: 'entry_idx'}, 
+    { bits:  15, name: 'rsvd', type: 8}, 
+], config: {label: {left: 'ARRLCK'}, fontsize: 10}
+}
+....
+
+[cols="<2,<1,<1,<6",stripes=even]
+|===
+4+h|{set:cellbgcolor:#D3D3D3} ARRLCK
+h|Field  |Bits    |R/W    |Description
+|{set:cellbgcolor:#FFFFFF}num |16     |WARL     | Indicate the number of locked IOPMP entries – IOPMP_ENTRY[num-1:0] is locked. SW shall write a value that is no smaller than current num. 
+|===
+
+* *Programming Protection Registers*
+
+The STALL_MD and STALL_BYPASS registers are implemented to support atomicity issue while programming the IOPMP, as the IOPMP rule may not be updated in a single transaction.
+
+[wavedrom,target="STALL_MD"]
+....
+{reg:
+[
+    { bits:  32, name: 'md[31:0]'},
+    { bits:  31, name: 'md[62:32]'},
+    { bits:  1, name: 'rsvd', type: 8},  
+], 
+config: {lanes:2, label: {left: 'STALL_MD'}, fontsize: 10}
+}
+....
+
+[cols="<2,<1,<1,<6",stripes=even]
+|===
+4+h|{set:cellbgcolor:#D3D3D3} STALL_MD
+h|Field  |Bits    |R/W    |Description
+|{set:cellbgcolor:#FFFFFF} md |62:0     |WARL     |A bitmapped field support up to 63 MDs, write '1' to stall requests from any SID matches this MD. Write '0' to resume the requests.
+|===
+
+[wavedrom, target="STALL_BYPASS",]
+....
+{reg:
+[
+    { bits:  1, name: 'en' },
+    { bits:  8, name: 'sid'},
+    { bits:  23, name: 'rsvd', type: 8},
+], config: {label: {left: 'STALL_BYPASS'}, fontsize: 10}
+}
+....
+
+[cols="<2,<1,<1,<6",stripes=even]
+|===
+4+h|{set:cellbgcolor:#D3D3D3} STALL_BYPASS
+h|Field  |Bits    |R/W    |Description
+|{set:cellbgcolor:#FFFFFF}en |0:0     |WARL     a|- Write 0x1, bypass stall on source specified by 'sid' field. 
+                       - Write 0x0, clear stall bypass
+                       - Read 0x1, stall bypass enabled
+                       - Read 0x0, stall bypass disabled
+|sid |8:1     |WARL    |indicate the source index
+|===
+
+* *Error Capture Registers*
+
+*ERR_REQADDR* indicate the errored request address.
+
+[wavedrom,target="ERR_REQADDR"]
+....
+{reg:
+[
+    { bits:  32, name: 'addr[31:0]'},
+    { bits:  32, name: 'addr[63:32]'},    
+], 
+config: {lanes:2, label: {left: 'ERR_REQADDR'}, fontsize: 10}
+}
+....
+
+*ERR_REQID* Indicate the errored SID.
+
+[wavedrom,target="ERR_REQID"]
+....
+{reg:
+[
+    { bits:  9, name: 'sid'},
+    { bits:  23, name: 'rsvd', type: 8}    
+], config: {label: {left: 'ERR_REQID'}, fontsize: 10}
+}
+....
+
+*ERR_REQINFO* Captures more detailed error infomation.
+
+[wavedrom,target="ERR_REQINFO"]
+....
+{reg:
+[
+    { bits:  1, name: 'no_hit', rotate: -90}, 
+    { bits:  1, name: 'par_hit', rotate: -90}, 
+    { bits:  6, name: 'rsvd', type: 8}, 
+    { bits:  3, name: 'type', attr: ['R', 'W', 'U']},
+    { bits:  5, name: 'rsvd', type: 8},  
+    { bits:  16, name: 'eid'}, 
+], config: {label: {left: 'ERR_REQINFO'}, fontsize: 10, vspace: 100}
+}
+....
+
+[cols="<2,<1,<1,<6",stripes=even]
+|===
+4+h|{set:cellbgcolor:#D3D3D3} ERR_REQINFO
+h|Field  |Bits    |R/W    |Description
+|{set:cellbgcolor:#FFFFFF} no_hit   |0:0        |R  |Indicate the request hit no entry.
+|{set:cellbgcolor:#FFFFFF} par_hit  |1:1        |R  |Indicate the request failed due to partial hit.
+|{set:cellbgcolor:#FFFFFF} type     |10:8       |R  a|- {set:cellbgcolor:#FFFFFF}Indicated if it’s a read, write or user field violation.
+- 0x0 =  read error
+- 0x1 =  write error
+- 0x3 = user_attr error
+|{set:cellbgcolor:#FFFFFF} eid |31:16     |R     |Indicated the errored entry index.
+|===
