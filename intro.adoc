@@ -1,8 +1,11 @@
 [[intro]]
 == Introduction
 
-This document describes a mechanism to improve the security of a platform. In a platform, the bus masters on it can access the slave devices, just like a RISC-V hart. The introduction of IO peripherals like the DMA (Direct Memory Access Unit) to systems improves performance but exposes the system to vulnerabilities such as DMA attacks. In the RISCV eco-system, there already exists the core-PMP and MPU which provide standard protection scheme for accesses from RISCV core to the physical address space, but there is not a likewise standard for safeguarding non-core masters. Here we propose the Physical Memory Protection Unit of Input/Output Devices, IOPMP for short, to regulate the accesses issued from the bus masters.
+This document describes a mechanism to improve the security of a platform. In a platform, the bus initiators on it can access the target devices, just like a RISC-V hart. The introduction of IO peripherals like the DMA (Direct Memory Access Unit) to systems improves performance but exposes the system to vulnerabilities such as DMA attacks. In the RISCV eco-system, there already exists the core-PMP and MPU which provide standard protection scheme for accesses from RISCV core to the physical address space, but there is not a likewise standard for safeguarding non-core initiators. Here we propose the Physical Memory Protection Unit of Input/Output Devices, IOPMP for short, to regulate the accesses issued from the bus initiators.
 
 IOPMP is considered a hardware component in a bus fabric. But, why is a pure-software solution not enough? For software solution on a RISC-V-based platform, it's generally the security monitor, a program running on the M-mode takes care of security-related requests. However, it's impratical for the security monitor to check the legality of each request as the overhead and latency of trap-check-ret is non-negligible. And the latency becomes even worse when there are multipe inflight transactions in the system, for example, an DMA and a Crypto Accelerator with different privileges are making requests at the same time. A hardware component that can check accesses on the fly becomes a reasonable solution. That is the subject of this document, IOPMP.
+
+.Examplary Integration of IOPMP(s) in System.
+image::iopmp_system_position.png[]
 
 

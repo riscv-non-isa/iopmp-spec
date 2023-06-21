@@ -1,15 +1,62 @@
 [[Program_IOPMPs]]
-== Program IOPMPs
-<TBD: pls feel free to raise comment or if you have better ideas>
-Programming the IOPMP usually consists of a series operation. There exists a potential race condition while one entity is programming the IOPMP, some transactions are checked or under checking but has not been completed yet. Such race condition may lead to vulnerabilities, for example, another entity starts to use the re-allocated region for confidential information but the entity who had the access is still able to retrieve the data with those transactions which already past security check.  To mitigate such vulnerabilities, the series of IOPMP updates should be atomic in the view of other transactions that go through the IOPMP. 
+:numbered:
+== Programming IOPMPs
+At times, it can be difficult or even impossible to configure all IOPMP settings when the system starts, especially before I/O agents are active or connected to the system. As a result, it is necessary to update IOPMP settings during runtime. This may occur when a device is enabled, disabled, added, removed, or when the accessible area of a device changes. When updating, it is important to avoid putting IOPMP in a transient metastable state due to incomplete settings. However, updating IOPMP settings often involves a series of control accesses, and if a transaction check occurs during the update, it can potentially create a vulnerability. 
+It can be difficult for the security software to guarantee that no transactions are in progress from all related initiators. A false alarm could result in significant performance issues. This chapter describes an optional method for updating IOPMP's settings without intervening transaction initiators.
 
-A straightforward thinking is: all transactions should be checked by either (1) the previous setting before any IOPMP updates or (2) the new setting after all IOPMP updates take effect. However, for some systems, stalling/blocking all transactions on the bus may impose a large impact on the performance; and in certain use cases, it is even not allowed to stall transaction from some specific sources. As an alternative, instead of stalling all transaction, one may implement the IOPMP atomic update in a way that only stalls transactions which are impacted. 
+=== Atomicity Requirement
+The term here "stable" refers to meeting the atomicity requirement. This implies that when updating an IOPMP, all transactions from input ports must be checked either before any changes or after completing all changes. Essentially, using partial settings in an IOPMP should be avoided. The succeeding sections will describe the mechanism to satisfy this requirement.
 
-Two register arrays are introduced to enforce an IOPMP atomic update:
+=== Programming Steps
+The general approach to the atomicity requirement has three major steps, conceptually described as follows:
 
-* SIDBLKMODE: a register with one field SIDBLKMODE.FAULT to indicate if the blocked transactions should bebackpressred or faulted .
-** 0x0, the blocked transactions should be backpressred
-** 0x1, the blocked transactions should be faulted
-* SIDBLKEN: Register array with one field SIDBLKEN.SID, SIDBLKEN.SID is a bitmapped field with each bit corresponds to one source. The number of registers required per each array is implementation-dependent. If a SIDBLKEN.SID bit is set, transaction from the corresponding source shall be blocked.
-* SIDBLKSTAT: egister array with one field SIDBLKEN.SID, SIDBLKEN.SID is a bitmapped field with each bit corresponds to one source. When a bit is set, it indicates all transactions from that source are blocked.
+** Step 1: Stall related transactions. Before proceeding with any updates, delay checking the transactions that may be impacted. 
+** Step 2: Update IOPMP's settings.
+** Step 3: Resume stalled transactions. 
 
+For step 1, it's important to verify if the necessary stalling transactions have taken place since they might not be instantaneous in certain implementations. Following this, execute the IOPMP update as step 2, and finally, resume all stalled transactions in step 3.
+
+[NOTE]
+====
+In some cases, Step 1 and Step 3 may be skipped as long as no transaction check can interrupt Step 2. Updating MDs associated with a specific SID to other MDs is an example.
+====
+
+=== Stall Transactions
+For Step 1, it's possible to postpone all transactions until all updates are finished. However, this could cause unrelated transactions to experience unnecessary delays. This might not be tolerable for devices that require low latency, like a display controller that periodically retrieves a frame from its video buffer. This section explains the mechanism that only stalls specific transactions to prevent the aforementioned scenario and ensure the atomicity requirement. All the features mentioned below are optional.
+
+Since the stalls occur when updating is in progress, determining wheater a transaction's check should wait cannot be based on any IOPMP's configuration about to change. Therefore, the only information that can be relied upon for this decision is the SID carried by the transaction. To simplify the following description, we use a conceptual signal called sid_stall[__i__] to indicate whether the transaction with SID=__i__ must wait. Please note that it may not be an actual signal in practice and is not accessible directly for software.
+
+MD_STALL is an optional register used to generate the conceptual signal sid_stall.  MD_STALL has two fields, a bit MD_STALL.EXEMPT and bit array MD_STALL.MD[62:0]. When MD_STALL.EXEMPT is set to zero, any non-zero value in MD_STALL.MD[__j__] will cause transactions with SID=__i__ to be stalled for all the SID __i__ associated with the MD __j__. On the contrary, on MD_STALL.EXEMPT=1, checks of all transactions must wait except those with SID=__i__ associated with any MD __j__  and MD_STALL.MD[__j__] = 1. This relation can be more precisely described as follows:
+
+[.text-center]
+`sid_stall[__i__] <= MD_STALL.EXEMPT ^ ( | (SRC__i__MD & MD_STALL.MD));`
+
+sid_stall should be captured only when MD_STALL is written.
+
+NOTE: Although sid_stall is related to the SRCMD table, but should be captured only when MD_STALL is written. The behavior of writing MD_STALL is used to capture a momentary snapshot of the table because it may not be stable during the updating.
+
+NOTE: When it comes to specifying transactions to wait, we use memory domains instead of SIDs. The reason for this is that there is a limit of 63 memory domains, making it easy to request stalls with a single write in most cases. Furthermore, the mapping from SID to MD changes more frequently than the rules and MD's configuration. If one needs to move an MD from one SID to another, it's crucial to stall any ongoing transactions from the old SID. With MD_STALL, this can easily be accomplished with just one register write.
+
+=== Cherry Pick
+If MD_STALL doesn't stall all the desired transactions, there is an optional method to pick the transaction with specific SIDs. The SID_SCP register comprises two fields: a 2-bit SID_SCP.OP and a field for SID_SCP.SID. By setting SID_SCP.OP=1, the sid_stall[__i__] is activated for __i__=SID_SCP.SID. Conversely, by setting SID_SCP.OP=2, the sid_stall[__i__] is deactivated for __i__=SID_SCP.SID. This register can be considered as the fine-tuning sid_stall after MD_STALL. The value of SID_SCP.OP=0 is to query the sid_stall indirectly, and the value of 3 is reserved.
+
+=== Resume Stall
+In order to resume all stalled transactions, the IOPMP can be prompted by writing 0 to MD_STALL. This corresponds to Step 3 of the "Programming Steps" section.
+
+=== The Order to Stall
+In Step 1 of programming IOPMP, MD_STALL can be written at most once and before any SID_SCP is written. After a resume, writing a non-zero value to MD_STALL multiple times leads to an undefined situation.
+
+SID_SCP can be written multiple times or not at all. To determine whether all requested stalls take effect, one can read back the bit MD_STALL.IS_STALLED, which is in the same location as MD_STALL.EXEMPT on a write. MD_STALL.IS_STALLED=1 indicates all requested stalls taking effect.
+
+To query if all transactions associated with a specific SID are stalled, do the following. First, write 0 to SID_SCP.OP and the SID you want to query to SIC_SCP.SID. Then, read back SID_SCP. The readback of SID_SCP.STAT = 1 means that transactions with the queried SID have stalled, that is, the corresponding bit in sid_stall is 1. If the value is 2, it means they are not stalled. A value of 3 indicates an unimplemented or unselectable SID in SID_SCP.SID. SID_SCP.STAT is in the same location as SID_SCP.OP on a write. SID_SCP.SID should keep the last written legal SID and SID_SCP.STAT reflects the current state of this SID. This method is considered an indirect way to read sid_stall.
+
+=== Implementation-Dependecy
+Both registers described in this chapter are optional. Moreover, these features could be partially implemented. In MD_STALL.MD, not every bit should be implemented. The unimplemented bits mean unselectable and are wired zero. To test which bits are implemented, one can read MD_STALL back and an implemented bit in MD_STALL.MD returns 1.
+
+NOTE: An example of partial implementation of MD_STALL.MD is a system with a display controller, which is a latency-sensitive device. On updating the IOPMP, the transactions initiated from the display controller should not be stalled. Thus, one can always use MD_STALL.EXEMPT=1 and MD_STALL.MD=__j__, where j is the memory domain for the frame buffer of the display controller. Thus, the system only needs to implement MD_STALL.MD[__j__].
+
+If the whole MD_STALL is not implemented, it returns zero, meaning no bit implemented in MD_STALL.MD.
+
+If SID_SCP is not implemented, it always returns zero. One can test if it is implemented by writing a zero and then reading it back. Any IOPMP implementing SID_SCP should not return a zero in SID_SCP.STAT in this case.
+
+It is unnecessary to allow every implemented SID to be selectable by SID_SCP.SID. If an unimplemented or unselectable SID is written into SID_SCP.SID, it will return SID_SCP.STAT = 3 to respond to any defined SID_SCP.OP.

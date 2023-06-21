@@ -10,8 +10,8 @@
 |{set:cellbgcolor:#FFFFFF} RULE_OFFSET |Indicates the internal address offsets of each table.
 
 2+|{set:cellbgcolor:#D3D3D3} Programming Protection
-|{set:cellbgcolor:#FFFFFF} STALL_MD |
-|STALL_BYPASS|
+|{set:cellbgcolor:#FFFFFF} MD_STALL |
+|SID_SCP|
 
 2+|{set:cellbgcolor:#D3D3D3} Error Reporting
 |{set:cellbgcolor:#FFFFFF} ERR_REQADDR |
@@ -235,7 +235,6 @@ h|Field  |Bits    |R/W    |Description
 [
     { bits:  1, name: 'r'},
     { bits:  1, name: 'w'},
-    { bits:  1, name: 'w'},
     { bits:  1, name: 'x'},
     { bits:  2, name: 'a', attr: ['OFF', 'NAPOT', 'TOR', 'NA4']},
     { bits:  26, name: 'rsvd', type: 8},
@@ -249,7 +248,7 @@ h|Field  |Bits    |R/W    |Description
 h|Field  |Bits    |R/W    |Description
 |{set:cellbgcolor:#FFFFFF}r      |0:0     |RW     |The read permission to protected memory region 
 |w      |1:1     |WARL     |The write permission to the protected memory region
-|x      |2:3     |WARL     |The executable permission to the protected memory region. Optional field, if undefined, write any read the same value as r field.
+|x      |2:2     |WARL     |The executable permission to the protected memory region. Optional field, if undefined, write any read the same value as r field.
 |a      |4:3     |WARL     |The address mode of the IOPMP entry
 |===
 
@@ -323,47 +322,49 @@ h|Field  |Bits    |R/W    |Description
 
 * *Programming Protection Registers*
 
-The STALL_MD and STALL_BYPASS registers are implemented to support atomicity issue while programming the IOPMP, as the IOPMP rule may not be updated in a single transaction.
+The MD_STALL and SID_SCP registers are implemented to support atomicity issue while programming the IOPMP, as the IOPMP rule may not be updated in a single transaction.
 
-[wavedrom,target="STALL_MD"]
+[wavedrom,target="MD_STALL"]
 ....
 {reg:
 [
     { bits:  32, name: 'md[31:0]'},
     { bits:  31, name: 'md[62:32]'},
-    { bits:  1, name: 'rsvd', type: 8},  
+    { bits:  1, name: 'e/s', type: 8},  
 ], 
-config: {lanes:2, label: {left: 'STALL_MD'}, fontsize: 10}
+config: {lanes:2, label: {left: 'MD_STALL'}, fontsize: 10}
 }
 ....
 
 [cols="<2,<1,<1,<6",stripes=even]
 |===
-4+h|{set:cellbgcolor:#D3D3D3} STALL_MD
+4+h| MD_STALL
 h|Field  |Bits    |R/W    |Description
-|{set:cellbgcolor:#FFFFFF} md |62:0     |WARL     |A bitmapped field support up to 63 MDs, write '1' to stall requests from any SID matches this MD. Write '0' to resume the requests.
+|EXEMPT |63:63     |W     | Stall transactions with exempt selected MDs, or Stall selected MDs
+|IS_STALLED |63:63     |R     | Indicate if the requested stalls have occured
+|MD |62:0     |W     |a MD[__i__]=1 means selecting MD __i__ 
+|MD |62:0     |R     |a MD[__i__]=1 indicates MD __i__ implemented and selectable in this field
 |===
 
-[wavedrom, target="STALL_BYPASS",]
+
+[wavedrom, target="SID_SCP",]
 ....
 {reg:
 [
-    { bits:  1, name: 'en' },
-    { bits:  8, name: 'sid'},
-    { bits:  23, name: 'rsvd', type: 8},
-], config: {label: {left: 'STALL_BYPASS'}, fontsize: 10}
+    { bits:  16, name: 'en' },
+    { bits:  14, name: 'rsvd', type: 8},
+    { bits:  2, name: 'op/stat', type: 8},
+], config: {label: {left: 'SID_SCP'}, fontsize: 10}
 }
 ....
 
 [cols="<2,<1,<1,<6",stripes=even]
 |===
-4+h|{set:cellbgcolor:#D3D3D3} STALL_BYPASS
+4+h| SID_SCP
 h|Field  |Bits    |R/W    |Description
-|{set:cellbgcolor:#FFFFFF}en |0:0     |WARL     a|- Write 0x1, bypass stall on source specified by 'sid' field. 
-                       - Write 0x0, clear stall bypass
-                       - Read 0x1, stall bypass enabled
-                       - Read 0x0, stall bypass disabled
-|sid |8:1     |WARL    |indicate the source index
+|OP |31:30     |W     | 0: query, 1: stall transactions associated with selected SID, 2: don't stall transactions associated with selected SID, and 3: reserved
+|STAT |31:30     |R     | 0: SID_SCP not implemented, 1: transactions associated with selected SID are stalled, 2: transactions associated with selected SID not are stalled, and 3: unimplemented or unselectable SID
+|SID |15:0     |WARL     |SID to select
 |===
 
 * *Error Capture Registers*
