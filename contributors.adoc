@@ -3,5 +3,4 @@
 This RISC-V specification has been contributed to directly or indirectly by:
 
 [%hardbreaks]
-* Paul Shan-Chyun Ku <scku@andestech.com>
-* Channing Tang <channingt@nvidia.com>
+Many...

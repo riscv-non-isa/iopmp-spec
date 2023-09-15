@@ -1,12 +1,11 @@
 [Appendix_A3]
-== A3: Permission on Memory Domains
+== A3: Sencondary Permission Setting
 
-In the models mentioned so far, an IOPMP entry is a pair of a memory region and its corresponding permission setting. The bits used to store the memory region are much more than its permission setting. If different memory domains want to share these regions but not their permission settings, the IOPMP/PMD described in this appendix can help.
+IOPMP/SPS is an extension to support different sources to share memory domain while allowing each sources to have different R/W/X permission to a signle memory domain.
 
-IOPMP/PMD extends every association bit in the SRCMD table to 4 bits of a second permission setting. We denote SPS[_s_, _m_] as the second permission setting for SID=_s_ and MID=_m_. When a transaction arrives at an IOPMP/PMD, it looks up the corresponding memory domains as usual. Then, it also follows the original way to find the IOPMP entry matching the transaction. When checking the permission, IOPMP/PMD has two sets of permission settings: one from IOPMP entry and the other from the second permission setting that is retrieved from SPS. For either read or write operation, only if both permission settings allow, the transaction can do such operation.
+If the IOPMP/SPS extension is implemented, each SRCMD table entry shall additionally define two registers: SRCMD_R(_s_) and SRCMD_R(_s_). Register SRCMD_R(_s_) and SRCMD_R(_s_) each occupies a 64-bit space, and has a fields, SRCMD_R(_s_).md and SRCMD_W(_s_).md respectively. Setting lock to SRCMD_EN(_s_).l also locks SRCMD_R(_s_) and SRCMD_W(_s_). 
 
-Besides, SPS can offer the control of execution permission. If the signal indicating an instruction fetch is carried by a transaction, the second permission setting can control instruction fetches.
+IOPMP/SPS has two sets of permission settings: one from IOPMP entry and the other from SRCMD_R/SRCMD_W. IOPMP/SPS shall check read and write permission on both the SRCMD table and entries, a transaction fail the IOPMP/SPS check if it violates either of the permission settings.
 
-As the programmability of every second permission setting, it is the same as the programmability of the bit in the same location in the SRCMD table.
+Besides, IOPMP/SPS can offer the control of execution permission. If the signal indicating an instruction fetch is carried by a transaction, the second permission setting can control instruction fetches.
 
-SPS also supports up to 63 memory domains. The LSB of SPS[_s_, 63] is reserved for locking all second permission settings for SID = _s_.

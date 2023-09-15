@@ -7,9 +7,9 @@ The latency consideration here is about checking a transaction instead of access
 
 As to the IOPMP array, it is the body of storing the IOPMP entries, so it cannot be omitted. We can only reduce its size. Memory domains can be shared among different SIDs, so the entries belonging to these shared MDs are shared among SIDs. Sharing entries may help to reduce the size of the IOPMP array.
 
-The SRCMD table can be hardwired fully or partially to save area. For some cases, we can farther save the latency. Every SRC~_s_~MD.MD should have the same programmable bits, so one can just detect SRC~_t_~MD.MD if SRC~_t_~MD.L is not wired to 1. If all SRC~_s_~MD.L are wired to 1, there is no reason to implement MDMSK. If all bits in SRC~_s_~MD.MD are hardwired, SRC~_s_~MD.L should be wired to 1, too.
+The SRCMD table can be hardwired fully or partially to save area. For some cases, we can farther save the latency. Every SRCMD(_s_).MD should have the same programmable bits, so one can just detect SRCMD(_s_).MD if SRCMD(_s_).L is not wired to 1. If all SRCMD(_s_).L are wired to 1, there is no reason to implement MDMSK. If all bits in SRCMD(_s_).MD are hardwired, SRCMD(_s_).L should be wired to 1, too.
 
-The SRCMD table can be replaced by simple circuits in order to save area or latency. A special reduction makes SRC~_s_~MD.MD=(1 << _s_) for all _s_. It replaces a table look by a binary decoder, which shortens the latency to retrieve the corresponding MD. In the case, there is no any shared MD and it supports up to 63 SIDs.
+The SRCMD table can be replaced by simple circuits in order to save area or latency. A special reduction makes SRCMD(_s_).MD=(1 << _s_) for all _s_. It replaces a table look by a binary decoder, which shortens the latency to retrieve the corresponding MD. In the case, there is no any shared MD and it supports up to 63 SIDs.
 
 As to the MDCFG table, the MD~_m_~CFG.T can also be hardwired to save area and/or shorten the latency in some cases. It means that the ownership of every IOPMP entry is fixed all the time. Hardwiring MD~_m_~CFG.F to a non-zero value is not a usual case because it makes some highest priority IOPMP entries nonprogrammable by software at any time. If MD~_m_~CFG.F is hardwired, MD~_m_~CFG.L should be wired to 1.
 

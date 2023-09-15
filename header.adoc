@@ -1,8 +1,8 @@
 [[header]]
-:description: RISC-V Example Specification Document
+:description: RISC-V IOPMP Architecture Specification
 :company: RISC-V.org
-:revdate: 05/2023
-:revnumber: 1.0.0-draft2
+:revdate: September, 2023
+:revnumber: 1.0.0-draft3
 :revremark: This document is in development. Assume everything can change. See http://riscv.org/spec-state for details.
 :url-riscv: http://riscv.org
 :doctype: book
@@ -36,8 +36,8 @@ endif::[]
 :footnote:
 :xrefstyle: short
 
-= RISC-V IOPMP Specification Document
-Paul Ku ; Channing Tang; RISC-V IOPMP Task Group
+= RISC-V IOPMP Architecture Specification
+RISC-V IOPMP Task Group
 
 // Preamble
 [WARNING]

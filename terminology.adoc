@@ -1,37 +1,63 @@
 [[Concepts]]
-== Concepts
+== Terminology and Concepts
 
-This document uses the term security monitor to refer to the software in charge of security-related tasks. The security monitor also programs the IOPMPs. The security monitor is not confided to run on a core or a hart. It could be distributed on more than one core, virtualized on a virtual platform, or cascaded within a nested sub-platform.
+This document refers to the term “secure monitor” as the software responsible for managing security-related tasks, including the programming of IOPMPs. The secure monitor is not restricted to operating on a single CPU or hart; instead, it has the flexibility to be distributed across multiple CPUs.
 
-For a register or a field X, X[n] represents the bit-n of X and X[n:m] for the bit-n to bit-m of X.
+Use X(_n_) represents the __n__-th register in the register array X, which starts from 0.
+
+Use X[__n__] represents the __n__-th bit of a register X or register field X,  and X[__n__:__m__] represent the __n__-th to __m__-th bits of a register X or register field X.
 
 === Source-ID and Transaction
 
-Source-ID, SID for short, is a unique ID to identify a bus initiator or a group of bus initiators with the same permission. When a bus initiator wants to access a piece of memory, it issues a transaction. A transaction should be tagged with an SID indicating which bus initiator issued it. We will discuss about the exception in the next section. Associating bus initiators with SID could be implementation-dependent and is out of the scope of this document, but the IOPMP does have requirement on the uniqueness of SIDs which will be discussed when we talking about the cascading IOPMPs. The number of bits of an SID is implementation-dependent. However, there are some suggestions in this document if SID is programmable. SID could be a vulnerability because a malicious program can gain extra permission by forging SID. Hardwired SID can avoid such a risk. However, in the cases of requiring more flexibility, locking SID before entering REE can be a good choice. If a system provides programmable SIDs during the runtime, the write permission of SIDs should be controlled very carefully.
-
-If a bus initiator has multiple channels and every channel is granted different access permissions, every channel should have its own SID. If a bus initiator runs in different privilege modes, such as a processor, every privilege mode should have a different SID if the system is designed to use IOPMPs to regulate its access. The usage of multiple SIDs is also applied to multiple virtual machines with different permissions.
+Source-ID, SID for short, is a unique ID to identify a bus initiator or a group of bus initiators with the same permission. When a bus initiator wants to access a piece of memory, it issues a transaction. A transaction should be tagged with an SID to identify the issuing bus initiator. We will discuss about the exception in the next section. Tagging bus initiators with SID could be implementation-dependent. The number of bits of an SID is implementation-dependent as well. If different channels of a bus initiator could be granted different access permissions, they should have its own SID.
 
 === Source-Enforcement
 
-If the scope of an IOPMP contains only one bus initiator or a set of bus initiators with the same permission, the Source-ID can be ignored in bus initiator side as well as the transactions going through the IOPMP. In the case, we denote the IOPMP performs source enforcement, IOPMP-SE for short. In the rest of the cases, we still need SID to distinct the transaction issuers.
+If all transactions going through the IOPMP are issued by the same bus initiator or a set of bus initiators with the same permission, the Source-ID can be ignored on the bus initiator side and the above transactions. In the case, we denote the IOPMP performs source enforcement, IOPMP-SE for short.
 
-=== Initiator Port and Target Port
+=== Initiator Port, Receiver Port and Control Port
 
-An IOPMP has at least a initiator port and at least a target port. A target port is where a transaction goes into the IOPMP, and a initiator port is where a transaction leaves it if the transaction passes all the checks.
+An IOPMP has at least a initiator port, at least a receiver port and one control port. A receiver port is where a transaction goes into the IOPMP, and a initiator port is where a transaction leaves it if the transaction passes all the checks. The control port is used to program the IOPMP.
 
 === Memory Domain
 
-A memory domain, MD for short, is a concept inside an IOPMP. It is used to group a set of memory regions for a specific purpose and is indexed from zero. For example, a network interface controller, NIC, may have three memory regions: an RX region, a TX region, and a region of control registers. We could group them into one MD. If a processor can fully control the NIC, it can associate with this MD. However, associating the memory domain doesn’t mean having full permissions on all memory regions. The permission of each region is defined in the corresponding IOPMP entry. However, there is an extension to adhere the permission to the MD that will be introduced in the appendix.
+An SID is an abstract representation of a transaction source. It encompasses one or more transaction initiators that are granted identical permissions. On the other hand, a Memory Domain, MD for short, is an abstract representation of a transaction destination that groups a set of memory regions for a specific purpose. MDs are indexed from zero. For example, a network interface controller, NIC, may have three memory regions: an RX region, a TX region, and a region of control registers. We could group them into one MD. If a processor can fully control the NIC, it can be associated with the MD. An SID associated with a MD doesn’t mean having full permissions on all memory regions of the MD. The permission of each region is defined in the corresponding IOPMP entry. However, there is an extension to adhere the permission to the MD that will be introduced in the Appendix A3.
 
-One thing should be noted: one SID may associate with more than one MD, and one MD may be associated with more than one SID. However, some models may limit the flexibility due to different requirements.
+It’s important to note that, generally speaking, a single SID can be associated with multiple Memory Domains (MDs), and vice versa. However, certain models may impose restrictions on this flexibility, which will be discussed in the following chapter.
 
 === IOPMP Entry and IOPMP Entry Array
 
-IOPMP entry array is the most fundamental structure of an IOPMP and is a list of ordered IOPMP entries. An IOPMP entry is indexed from zero and defines a rule when checking a transaction: including a memory region and the read/write permission. Each IOPMP entry belongs to exactly one memory domain, and a memory domain may have multiple IOPMP entries. An SID associating with an MD also means it associates with all IOPMP entries belonging to the MD.
+The IOPMP entry array, a fundamental structure of an IOPMP, is a list of IOPMP entries. Each entry, starting from an index of zero, defines how to check a transaction. An entry includes a specified memory region and the corresponding read/write permissions.
 
-IOPMP entries are statically prioritized. The lowest-numbered IOPMP entry that (1) matches any byte of the in-coming transaction and (2) is associated with the SID carried by the transaction determines whether the transaction is legal. The matching IOPMP entry must match all bytes of a transaction, or the transaction is illegal, irrespective of its permission.
+Memory domains are a partition of the entry array. Each entry is tied to exactly one memory domain, while a single memory domain could have multiple entries. 
+
+When an SID is associated with a Memory Domain (MD), it is also inherently associated with all the entries that belong to that MD. An SID could be associated with multiple Memory Domains, and one Memory Domain could be associated with multiple SIDs.
 
 As to an IOPMP-SE, the only structure of it is the IOPMP entry array. Due to no SID, when selecting the matching IOPMP entry, an IOPMP-SE ignores the SID comparison.
 
+=== Priority and Matching Logic
+
+IOPMP entries exhibit partial prioritization. Entries with indices below __prio_entry__ are prioritized according to their index, with lower indices having higher priority. These entries are referred to as priority entries. Conversely, entries with indices greater than or equal to __prio_entry__ are treated equally and assigned the lowest priority. These entries are referred to as non-priority entries. The value of __prio_entry__ is implement-dependent.
+
+NOTE: The specification incorporates both priority and non-priority entries due to considerations of security, latency, and area. Priority entries, which are locked, safeguard the most sensitive data, even in the event of secure software being compromised. However, implementing a large number of these priority entries results in higher latency and increased area usage. On the other hand, non-priority entries are treated equally and can be cached in smaller numbers. This approach reduces the amortized latency, power consumption, and area when the locality is sufficiently high. Thus, the mix of entry types in the specification allows for a balance between security and performance.
+
+The entry with the highest priority that (1) matches any byte of the incoming transaction and (2) is associated with the SID carried by the transaction determines whether the transaction is legal. If the matching entry is priority entry, the matching entry must match all bytes of a transaction, or the transaction is illegal, irrespective of its permission. If one of non-priority matching entries matches all bytes of a transaction and grants enough permission, the transaction is legal. A transaction matching no entry is illegal.
+
 .IOPMP Block Diagram.
 image::iopmp_unit_block_diagram.png[]
+
+=== Error Reactions
+When an IOPMP detects an illegal transaction, it initiates three actions. Firstly, it should respond to the bus. Secondly, it could trigger an interrupt. Lastly, it could generate an error report. They are defined in the ERRREACT register.
+In the event of an illegal read access, an IOPMP can respond in one of three ways: it can indicate a bus error, a decode error, or it can respond a success with fabricated data. Similarly, for an illegal write access, an IOPMP can respond with either a bus error, a decode error, or a success. The response options mentioned are dependent on the specific implementation and are WARL. In cases where an implementation only supports one option for the aforementioned selections, these can be hardwired.
+
+In addition, an IOPMP has the capability to trigger an interrupt when it detects an illegal access. Specifically, if the ERRREACT.ie is enabled and ERRREACT.ire is set to 1, an interrupt is triggered for an illegal read access. Similarly, if the ERRREACT.ie is enabled and ERRREACT.iwe is set to 1, an interrupt is triggered for an illegal write access. Regardless of whether ERRREACT.ie is set to 1, ERRREACT.ip will be set to 1 for an illegal read with ERRREACT.ire = 1 or an illegal write with ERRREACT.iwe = 1. When ERRREACT.ip is set, no new interrupt will be triggered and the error capture record (registers ERR_XXX) is valid until the bit is cleared. The bit is write-1-clean and not affected by the lock bit of ERRREACT.l.
+
+The error capture record maintains the specifics of the most recent illegal access detected. This capture only occurs when ERRREACT.ip is set to 0. If ERRREACT.ip is set to 1, the record will not be updated, even if a new illegal access is detected. In other words, ERRREACT.ip indicates whether the content of the capture record is valid and should be intentionally cleared in order to capture subsequent illegal accesses. All fields in the error capture record are optional. If a field is not implemented, it should be wired to zero.
+
+=== Prefetch Violation
+Prefetching is a common technique used to minimize read latency. It does this by predicting the next or subsequent addresses and preloading them. However, there’s a chance that a predicted address could fall into an illegal region, which would be detected by IOPMP. Such illegal access might be seen as a false security alarm because it’s the result of the prefetcher’s speculation, not an actual security attack. Responding to such an event would unnecessarily burden the security software. Therefore, IOPMP can react differently to a violation caused by a prefetch access, as opposed to a typical illegal access. IOPMP could respond to the prefetcher, which issues the access, with a bus error or decode error. This would alert the prefetcher to its error and stop further speculation, at least within this speculation stream. All of this happens without the need for software intervention, allowing IOPMP to work more seamlessly with prefetchers.
+
+The implementation-dependent flag, ERRREACT.pee, instructs the IOPMP to differentiate between a prefetch access and a normal access. This is applicable if the bus protocol of the receiver port has a corresponding signal to identify a prefetch access. When ERRREACT.pee = 1, the ERRREACT.rpe is the response for an illegal prefetch access. In this case, no interrupt is triggered, and the ERRREACT.ip is not updated.
+
+
+
