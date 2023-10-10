@@ -1,4 +1,4 @@
 [Appendix_A1]
-== A1: Reference Data Path
+== A1: Multi-Faults Extension
 
 TBD

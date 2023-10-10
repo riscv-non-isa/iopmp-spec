@@ -1,20 +1,28 @@
-[[Tables_Reduction_and_Detection]]
-== Tables Reduction and Detection
+[[Other_IOPMP_Models]]
+== Other IOPMP Models
+=== Tables Reduction
+The full model comprises two tables and an array, offering substantial flexibility for configuring an IOPMP. However, this comes at the cost of increased latency and area usage. The chapter presents the other models designed to simplify these tables, thereby catering to diverse design requirements. 
 
-The full model has two tables and one array. It provides good flexibility to configure an IOPMP but sacrifices the latency and the area. In this section, we introduce the methods to reduce these tables in order to reach different design requirements. Some of the bits can be hardwired. However, for the sake of software detection and portability, the values read from these hardwired bits should maintain the same sematic as that of the full model.
+Regarding the IOPMP array, it serves as the primary storage for IOPMP entries and is indispensable. Its size, however, can be minimized. Memory domains can be shared among SIDs, leading to shared entries between these SIDs. This sharing mechanism may contribute to reducing the overall size of the IOPMP array. Nevertheless, if a design doesn't encompass many shared regions, simplifying the SRCMD table, as done in the isolation and compact-_k_ models, could be a viable consideration.
 
-The latency consideration here is about checking a transaction instead of accessing the IOPMP control registers because programming IOPMPs is considered less frequent. That is, we will not address the latency of updating the tables or the IOPMP entries.
+As to the MDCFG table, it mainly plays a role of a partation of the entries in the IOPMP. Besides programming each MDCFG(_m_).t for every MD _m_, we could also consider evenly distributing entries across each MD. The rapid-_k_, dynamic-_k_, and compact-_k_ models do so.
 
-As to the IOPMP array, it is the body of storing the IOPMP entries, so it cannot be omitted. We can only reduce its size. Memory domains can be shared among different SIDs, so the entries belonging to these shared MDs are shared among SIDs. Sharing entries may help to reduce the size of the IOPMP array.
+=== The Rapid-_k_ Model
+The rapid-_k_ model is based on the full model, and to shorten the latency, it omits the lookup of the MDCFG table. Every memory domain has exactly _k_ entries where _k_ is implementation-dependent and non-programmable. The value _k_ is stored in MDCFG(0).t. Implementing MDCFG(_j_) is not required when _j_>0. MDCFGLCK.f is wired to the number of MDs and MDCFGLCK.l should be 1.
 
-The SRCMD table can be hardwired fully or partially to save area. For some cases, we can farther save the latency. Every SRC~_s_~MD.MD should have the same programmable bits, so one can just detect SRC~_t_~MD.MD if SRC~_t_~MD.L is not wired to 1. If all SRC~_s_~MD.L are wired to 1, there is no reason to implement MDMSK. If all bits in SRC~_s_~MD.MD are hardwired, SRC~_s_~MD.L should be wired to 1, too.
+=== The Dynamic-_k_ Model
+The dynamic-_k_ model is based on the rapid-_k_ model, except the _k_ value is programmable. That is, MDCFG(0).t is WARL and accepts a limited set of values. MDCFGLCK.f is wired to the number of MDs, and MDCFGLCK.l indicates if MDCFG(0).t is still programmable or locked.
 
-The SRCMD table can be replaced by simple circuits in order to save area or latency. A special reduction makes SRC~_s_~MD.MD=(1 << _s_) for all _s_. It replaces a table look by a binary decoder, which shortens the latency to retrieve the corresponding MD. In the case, there is no any shared MD and it supports up to 63 SIDs.
+=== The Isolation Model
+The bitmap implementation of the SRCMD table facilitates the sharing of regions between SIDs. The isolation model is designed for the case of no or a few shared regions. In this model, each SID is exactly associated with one MD. Thus, SRCMD table lookup is not needed. SID _i_ is associated with MD _i_ exactly. It benefits the area, the latency, and complexity. The penalty is to duplicate the same entries once some shared regions are needed. In this model, the SRCMD table and the MDLCK(H) registers are omitted.
 
-As to the MDCFG table, the MD~_m_~CFG.T can also be hardwired to save area and/or shorten the latency in some cases. It means that the ownership of every IOPMP entry is fixed all the time. Hardwiring MD~_m_~CFG.F to a non-zero value is not a usual case because it makes some highest priority IOPMP entries nonprogrammable by software at any time. If MD~_m_~CFG.F is hardwired, MD~_m_~CFG.L should be wired to 1.
+The number of SIDs to support is bounded by the maximal number of MDs, 63.
 
-A special reduction makes MD~_m_~CFG.T=_(m+1)_*_k_ for all m. It replaces a table lookup by a simple circuit, e.g., _k_ is a power of 2. It can save some area and shorten the latency as well.
+There is no constraint imposed on the MDCFG table and the MDCFGLCK register.
 
-Every MD~_m_~CFG should have the same programmable bits in an IOPMP except the dynamic-_k_ model. We will describe it in the next section.
+=== The Compact-_k_ Model
+The compact-_k_ model is the smallest model. Based on the isolation model, it requres that every MD has exactly _k_ entries and _k_ is not programmable. MDCFG(0).t holds the value _k_, MDCFGLCK.f is wired to the number of MDs and MDCFGLCK.l is 1.
 
-IOPMP-SE is a special case since it only needs the IOPMP entry array. The two tables are not needed, not even hardwired, and do not occupy any address space.
+=== Model Detections
+
+To distinguish the above models, the user can read register HWCFG0.model to determine the current implemented IOPMP model.
