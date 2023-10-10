@@ -70,6 +70,15 @@ h|Field  |Bits    |R/W    |Description
 4+h|HWCFG0{set:cellbgcolor:#D3D3D3}
 4+h|0x0008
 h|Field  |Bits    |R/W    |Description
+|{set:cellbgcolor:#FFFFFF}sid_num |15:0   |R     |Indicate the supported number of SID in the instance
+|entry_num |31:16  |R     |Indicate the supported number of entries in the instance
+|===
+
+[cols="<2,<1,<1,<6",stripes=even]
+|===
+4+h|HWCFG1{set:cellbgcolor:#D3D3D3}
+4+h|0x000C
+h|Field  |Bits    |R/W    |Description
 |{set:cellbgcolor:#FFFFFF}model |3:0  |R   a|Indicate the iopmp instance model
 * 0x0: Full model: the number of MDCFG registers is equal to HWCFG0.md_num, all MDCFG registers are readable and writable.
 
@@ -89,15 +98,6 @@ h|Field  |Bits    |R/W    |Description
 |sid_transl_prog |9:9  |W1C   | A write-1-set bit is sticky to 0 and indicate if the field sid_transl is programmable. Support only for sid_transl_en=1, otherwise, wired to 0.
 |md_num |30:24     |R     |Indicate the supported number of MD in the instance
 |enable |31:31 |W1S |Indicate if the IOPMP checks transactions. If it is implemented, it should be initial to 0 and sticky to 1. If it is not implemented, it should be wired to 1.
-|===
-
-[cols="<2,<1,<1,<6",stripes=even]
-|===
-4+h|HWCFG1{set:cellbgcolor:#D3D3D3}
-4+h|0x000C
-h|Field  |Bits    |R/W    |Description
-|{set:cellbgcolor:#FFFFFF}sid_num |15:0   |R     |Indicate the supported number of SID in the instance
-|entry_num |31:16  |R     |Indicate the supported number of entries in the instance
 |===
 
 
