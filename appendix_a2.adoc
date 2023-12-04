@@ -1,6 +1,7 @@
-[Appendix_A2]
+[[Appendix_A2]]
 == A2: Run Out Memory Domains
 In this specification, the support is capped at 63 memory domains. However, this chapter provides pertinent recommendations for situations that necessitate a larger number of memory domains.
+
 
 === A2.1 Parallel IOPMP
 Multiple IOPMPs can be placed in parallel. A transaction should be directed to one of these IOPMPs for its check. The chosen IOPMP then determines its legality. There are two potential methods for routing the transaction: by address or by SID. Address-based routing divides the address space into multiple disjoint sets, and a transaction is directed to the IOPMP based on its starting address. Similarly, SID-based routing divides all possible SIDs, and a transaction is directed to the IOPMP based on its SID.
@@ -8,6 +9,7 @@ Multiple IOPMPs can be placed in parallel. A transaction should be directed to o
 [NOTE]
 ====
 Placing IOPMPs in parallel can seamlessly enhance the support for an increased number of memory domains since all the IOPMPs are located in the same position. This arrangement may also concurrently increase the checking throughput.
+
 ====
 
 === A2.2 Cascading IOPMP
@@ -17,4 +19,5 @@ Cascading multiple IOPMPs allows a transaction to traverse through more than one
 ====
 The integration of several independently developed smaller Systems on a Chip (SoCs) to construct a larger SoC reduces the chip count in a device. This approach also decreases costs by enabling the use of larger and shared memory devices. In such a system, each subsystem upholds its governance through its own secure software, SID assignment, and security configuration. The cascading approach facilitates this: the secure software manages the IOPMP in the boundary of the subsystem. The boundary IOPMP assigns a new SID to each outgoing transaction, representing that it has been checked by the IOPMP. 
 The outer IOPMPs are tasked with controlling the transactions from a subsystem perspective by the new subsystem-level SID. That is, the IOPMP only considers the legality of the transactions initiated from a specific subsystem instead of individual transaction initiators. The boundary IOPMP hides some details of the subsystem good for protecting intellect properties. The development flow becomes more abstract, reusable, and modularized.
+
 ====
