@@ -3,9 +3,29 @@
 
 This document refers to the term “secure monitor” as the software responsible for managing security-related tasks, including the programming of IOPMPs. The secure monitor is not restricted to operating on a single CPU or hart; instead, it has the flexibility to be distributed across multiple CPUs.
 
-Use X(_n_) represents the __n__-th register in the register array X, which starts from 0.
-
-Use X[__n__] represents the __n__-th bit of a register X or register field X,  and X[__n__:__m__] represent the __n__-th to __m__-th bits of a register X or register field X.
+{set:cellbgcolor:#0000}
+[cols="<1,<3",stripes=even]
+|===
+2+h|Glossary/ Acronyms{set:cellbgcolor:#D3D3D3}
+h|Term h|Description
+|{set:cellbgcolor:#FFFFFF}DC| don't care
+|IMP|implementation-dependent
+|MMIO|memory mapped input/output devices
+|NA4|naturally aligned four-byte region, one of the address matching mode used in RISC-V PMP and IOPMP
+|NAPOT|naturally aligned power-of-2 region, one of the address matching mode used in RISC-V PMP and IOPMP
+|N/A| not available
+|RX|transmitter
+|TOR|top boundary of an arbitrary range, one of the address matching mode used in RISC-V PMP and IOPMP
+|TX|receiver
+|WARL|write any read legal
+|W1C|write '1' clear 
+|W1CS|write '1' clear and sticky to 0
+|W1S|write '1' set
+|W1SS|write '1' set and sticky to 1
+|X( _n_ )|the _n_-th register in the register array X, which starts from 0.
+|X[ _n_ ]|the _n_-th bit of a register X or register field X
+|X[ _n_ : _m_ ]|the _n_-th to _m_-th bits of a register X or register field X.
+|===
 
 === Source-ID and Transaction
 
@@ -27,13 +47,15 @@ It’s important to note that, generally speaking, a single SID can be associate
 
 === IOPMP Entry and IOPMP Entry Array
 
-The IOPMP entry array, a fundamental structure of an IOPMP, is a list of IOPMP entries. Each entry, starting from an index of zero, defines how to check a transaction. An entry includes a specified memory region and the corresponding read/write permissions.
+The IOPMP entry array, a fundamental structure of an IOPMP, contains IOPMP entries. Each entry, starting from an index of zero, defines how to check a transaction. An entry includes a specified memory region and the corresponding read/write permissions.
+
+IOPMP entry encodes the memory region in the same way as the RISC-V PMP, which are OFF, NA4, NAPOT, and TOR. Please refer to the RISC-V unprivileged spec for the details of the encoding schemes.
+
+NOTE: Since the address encoding scheme of TOR refers to the previous entry's memory region, which is not in the same memory domain, it would cause two kinds of unexpected results. If the first entry of a memory domain selects TOR, the entry refers to the previous memory domain. When the previous memory domain may not change unexpectedly, the region of this entry will be altered. To prevent the unexpected change of memory region, one should avoid adopting TOR for the first entry of a memory domain. The second issue is that the memory region of the last entry is referred by the next memory domain. To avoid it, one can set an OFF for the last entry of a memory domain with the maximal address. 
 
 Memory domains are a partition of the entry array. Each entry is tied to exactly one memory domain, while a single memory domain could have multiple entries. 
 
-When an SID is associated with a Memory Domain (MD), it is also inherently associated with all the entries that belong to that MD. An SID could be associated with multiple Memory Domains, and one Memory Domain could be associated with multiple SIDs.
-
-As to an IOPMP-SE, the only structure of it is the IOPMP entry array. Due to no SID, when selecting the matching IOPMP entry, an IOPMP-SE ignores the SID comparison.
+When an SID is associated with a Memory Domain, it is also inherently associated with all the entries that belong to that MD. An SID could be associated with multiple Memory Domains, and one Memory Domain could be associated with multiple SIDs.
 
 === Priority and Matching Logic
 
@@ -48,14 +70,14 @@ image::iopmp_unit_block_diagram.png[]
 
 === Error Reactions
 When an IOPMP detects an illegal transaction, it initiates three actions. Firstly, it should respond to the bus. Secondly, it could trigger an interrupt. Lastly, it could generate an error report. They are defined in the ERRREACT register.
-In the event of an illegal read access, an IOPMP can respond in one of three ways: it can indicate a bus error, a decode error, or it can respond a success with fabricated data. Similarly, for an illegal write access, an IOPMP can respond with either a bus error, a decode error, or a success. The response options mentioned are dependent on the specific implementation and are WARL. In cases where an implementation only supports one option for the aforementioned selections, these can be hardwired.
+In the event of an illegal read access or instruction fetch, an IOPMP can respond in one of three ways: it can indicate a bus error, a decode error, or it can respond a success with fabricated data. Similarly, for an illegal write access, an IOPMP can respond with either a bus error, a decode error, or a success. The response options mentioned are dependent on the specific implementation and are WARL. In cases where an implementation only supports one option for the aforementioned selections, these can be hardwired.
 
-In addition, an IOPMP has the capability to trigger an interrupt when it detects an illegal access. Specifically, if the ERRREACT.ie is enabled and ERRREACT.ire is set to 1, an interrupt is triggered for an illegal read access. Similarly, if the ERRREACT.ie is enabled and ERRREACT.iwe is set to 1, an interrupt is triggered for an illegal write access. Regardless of whether ERRREACT.ie is set to 1, ERRREACT.ip will be set to 1 for an illegal read with ERRREACT.ire = 1 or an illegal write with ERRREACT.iwe = 1. When ERRREACT.ip is set, no new interrupt will be triggered and the error capture record (registers ERR_XXX) is valid until the bit is cleared. The bit is write-1-clean and not affected by the lock bit of ERRREACT.l.
+In addition, an IOPMP has the capability to trigger an interrupt when it detects an illegal access. Specifically, if the ERRREACT.ie is enabled and ERRREACT.ire is set to 1, an interrupt is triggered for an illegal read access or instruction fetch. Similarly, if the ERRREACT.ie is enabled and ERRREACT.iwe is set to 1, an interrupt is triggered for an illegal write access. Regardless of whether ERRREACT.ie is set to 1, ERRREACT.ip will be set to 1 for an illegal read with ERRREACT.ire = 1 or an illegal write with ERRREACT.iwe = 1. When ERRREACT.ip is set, no new interrupt will be triggered and the error capture record (registers ERR_XXX) is valid until the bit is cleared. The bit is write-1-clear and not affected by the lock bit of ERRREACT.l.
 
 The error capture record maintains the specifics of the most recent illegal access detected. This capture only occurs when ERRREACT.ip is set to 0. If ERRREACT.ip is set to 1, the record will not be updated, even if a new illegal access is detected. In other words, ERRREACT.ip indicates whether the content of the capture record is valid and should be intentionally cleared in order to capture subsequent illegal accesses. All fields in the error capture record are optional. If a field is not implemented, it should be wired to zero.
 
 === Prefetch Violation
-Prefetching is a common technique used to minimize read latency. It does this by predicting the next or subsequent addresses and preloading them. However, there’s a chance that a predicted address could fall into an illegal region, which would be detected by IOPMP. Such illegal access might be seen as a false security alarm because it’s the result of the prefetcher’s speculation, not an actual security attack. Responding to such an event would unnecessarily burden the security software. Therefore, IOPMP can react differently to a violation caused by a prefetch access, as opposed to a typical illegal access. IOPMP could respond to the prefetcher, which issues the access, with a bus error or decode error. This would alert the prefetcher to its error and stop further speculation, at least within this speculation stream. All of this happens without the need for software intervention, allowing IOPMP to work more seamlessly with prefetchers.
+Prefetching is a common technique used to minimize the latency of reading data or instructions. It does this by predicting the next or subsequent addresses and preloading them. However, there’s a chance that a predicted address could fall into an illegal region, which would be detected by IOPMP. Such illegal access might be seen as a false security alarm because it’s the result of the prefetcher’s speculation, not an actual security attack. Responding to such an event would unnecessarily burden the security software. Therefore, IOPMP can react differently to a violation caused by a prefetch access, as opposed to a typical illegal access. IOPMP could respond to the prefetcher, which issues the access, with a bus error or decode error. This would alert the prefetcher to its error and stop further speculation, at least within this speculation stream. All of this happens without the need for software intervention, allowing IOPMP to work more seamlessly with prefetchers.
 
 The implementation-dependent flag, ERRREACT.pee, instructs the IOPMP to differentiate between a prefetch access and a normal access. This is applicable if the bus protocol of the receiver port has a corresponding signal to identify a prefetch access. When ERRREACT.pee = 1, the ERRREACT.rpe is the response for an illegal prefetch access. In this case, no interrupt is triggered, and the ERRREACT.ip is not updated.
 
