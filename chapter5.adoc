@@ -17,25 +17,25 @@
 |SIDSCP 
 
 2+|{set:cellbgcolor:#D3D3D3} Configuration Protection
-|{set:cellbgcolor:#FFFFFF} MDMSK | Lock Register for SRCMD table.
+|{set:cellbgcolor:#FFFFFF} MDMSK/MDMSKH | Lock Register for SRCMD table.
 |{set:cellbgcolor:#FFFFFF} MDCFGLCK | Lock register for MDCFG table
 |{set:cellbgcolor:#FFFFFF} ENTRYLCK | Lock register for IOPMP entry array.
 
 2+|{set:cellbgcolor:#D3D3D3} Error Reporting
-|{set:cellbgcolor:#FFFFFF}ERR_REQINFO .3+.^| Indicate the information regarding the latest captured violation
+|{set:cellbgcolor:#FFFFFF}ERR_REQINFO .3+.^| Indicate the information regarding the first captured violation
 |ERR_REQID    
 |{set:cellbgcolor:#FFFFFF} ERR_REQADDR/ERR_REQADDRH
 |ERR_USER(0~7) | (Optional) User-defined violation information
 
-.2+|0x0800 2+|{set:cellbgcolor:#D3D3D3} MDCFG Table,  _m_ =0...md_num -1
+.2+|0x0800 2+|{set:cellbgcolor:#D3D3D3} MDCFG Table,  _m_ =0...HWCFG0.md_num -1
 |{set:cellbgcolor:#FFFFFF}MDCFG(_m_)  |MD config register, which is to specify the indices of IOPMP entries belonging to a MD.
 
-.4+|0x1000    2+|{set:cellbgcolor:#D3D3D3} SRCMD Table, _s_ = 0...sid_num-1
+.4+|0x1000    2+|{set:cellbgcolor:#D3D3D3} SRCMD Table, _s_ = 0...HWCFG1.sid_num-1
 |{set:cellbgcolor:#FFFFFF}SRCMD_EN(_s_)/SRCMD_ENH(_s_)    |The bitmapped MD enabling register of the source '_s_' that SRCMD_EN(_s_)[_j_] indicates if the source is associated with MD _j_ and SRCMD_ENH(_s_)[_j_] indicates if the source is associated with MD (_j_+31).
 |SRCMD_R(_s_)/SRCMD_RH(_s_)|(Optional) bitmapped MD read eanble register, '_s_' corresponding to number of sources, it indicates source _s_  read permission on MDs.
 |SRCMD_W(_s_)/SRCMD_WH(_s_)|(Optional) bitmapped MD write eanble register, '_s_' corresponding to number of sources, it indicates source _s_  write permission on MDs.    
 
-.5+|ENTRYOFFSET    2+|{set:cellbgcolor:#D3D3D3} Entry Array, _i_ =0…entry_num-1
+.5+|ENTRYOFFSET    2+|{set:cellbgcolor:#D3D3D3} Entry Array, _i_ =0…HWCFG1.entry_num-1
 |{set:cellbgcolor:#FFFFFF}ENTRY_ADDR(_i_)|The address (region) for entry _i_
 |ENTRY_ADDRH(_i_)               |(Optional for 32-bit system)
 |ENTRY_CFG(_i_)                 |The configuration of entry _i_
@@ -79,9 +79,9 @@ h|Field                         |Bits   |R/W    |Default    |Description
 
 * 0x2: Dynamic-k model: a single MDCFG register to indicate the k value, readable and writable.
 
-* 0x3 Isolation model: the number of MDCFG registers is equal to HWCFG0.md_num, all MDCFG registers are readable and writable.
+* 0x3: Isolation model: the number of MDCFG registers is equal to HWCFG0.md_num, all MDCFG registers are readable and writable.
 
-* 0x4 Compact-k model: a single MDCFG register to indicate the k value, read only.
+* 0x4: Compact-k model: a single MDCFG register to indicate the k value, read only.
 
 |tor_en                         |4:4    |R      |IMP        |Indicate if TOR is supported
 |sps_en                         |5:5    |R      |IMP        |Indicate the secondary permission settings is supported
@@ -255,7 +255,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 - 0x01 = read 
 - 0x02 = write 
 - 0x03 = execution
-|{set:cellbgcolor:#FFFFFF} rsv1   |3:3    |ZERO      |0          |
+|{set:cellbgcolor:#FFFFFF} rsv1   |3:3    |ZERO      |0          |Must be zero on write, reserved for future
 |{set:cellbgcolor:#FFFFFF} etype     |6:4   |R      |0          a| {set:cellbgcolor:#FFFFFF}Indicated the type of violation
 
 - 0x00 = no error
@@ -266,11 +266,11 @@ h|Field                         |Bits       |R/W    |Default    |Description
 - 0x05 = not hit any rule
 - 0x06 = unknown SID
 - 0x07 = user-defined error
-|{set:cellbgcolor:#FFFFFF} rsv2   |30:7    |ZERO      |0          |
+|{set:cellbgcolor:#FFFFFF} rsv2   |30:7    |ZERO      |0          |Must be zero on write, reserved for future
 |===
 When the bus matrix doesn't have a signal to indicate an instruction fetch, the ttype and etype can never return "execution" (0x03) and "execution error" (0x03), respectively.
 
-*ERR_REQID* Indicate the errored SID.
+*ERR_REQID* Indicates the errored SID and entry index.
 
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
@@ -303,9 +303,9 @@ h|Field                         |Bits       |R/W    |Default    |Description
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
 5+h|{set:cellbgcolor:#D3D3D3} ERR_USER(_i_)
-5+h|0x0080 + 0x04 * _i_
+5+h|0x0080 + 0x04 * _i_, _i_ = 0...7
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}user   |31:0       |IMP      |IMP          a|User-defined registers
+|{set:cellbgcolor:#FFFFFF}user   |31:0       |IMP      |IMP          a|(Optional) user-defined registers
 |===
 
 
@@ -315,7 +315,7 @@ The MDCFG table is a lookup to specify the number of IOPMP entries that is assoc
 . Full model: the number of MDCFG registers is equal to HWCFG0.md_num, all MDCFG registers are readable and writable.
 . Rapid-_k_ model: a single MDCFG register to indicate the _k_ value, read only. Only MDCFG(0) is implemented.
 . Dynamic-_k_ model:  a single MDCFG register to indicate the _k_ value, readable and writable. Only MDCFG(0) is implemented.
-. isolation model: the number of MDCFG registers is equal to HWCFG0.md_num, all MDCFG registers are readable and writable.
+. Isolation model: the number of MDCFG registers is equal to HWCFG0.md_num, all MDCFG registers are readable and writable.
 . Compact-_k_ model:  a single MDCFG register to indicate the _k_ value, read only. Only MDCFG(0) is implemented.
 
 [cols="<2,<1,<1,<1,<6",stripes=even]
@@ -337,55 +337,55 @@ Only the full model, the rapid-_k_ model and the dynamic-_k_ model implement the
 // The last MD is always enabled to allow access to full protection range. field value be 'DC' -- don't care
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
-5+h|0x1000 + (s)*32
-5+h|{set:cellbgcolor:#D3D3D3} SRCMD_EN(s), s = 0...HWCFG1.sid_num-1
+5+h|0x1000 + (_s_)*32
+5+h|{set:cellbgcolor:#D3D3D3} SRCMD_EN(_s_), _s_ = 0...HWCFG1.sid_num-1
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}l     |0:0        |W1SS     |0          | A sticky lock bit. When set, locks SRCMD_EN(_i_), SRCMD_R(_i_) and SRCMD_W(_i_)
-|md                             |31:1       |WARL   |DC         | md[__j__] = 1 indicates md __j__ is associated with SID __s__.
+|{set:cellbgcolor:#FFFFFF}l     |0:0        |W1SS     |0          | A sticky lock bit. When set, locks SRCMD_EN(_s_), SRCMD_ENH(_s_), SRCMD_R(_s_), SRCMD_RH(_s_), SRCMD_W(_s_), and SRCMD_WH(_s_) if any.
+|md                             |31:1       |WARL   |DC         | md[_j_] = 1 indicates MD _j_ is associated with SID _s_.
 |===
 
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
-5+h|0x1004 + (s)*32
-5+h|{set:cellbgcolor:#D3D3D3} SRCMD_ENH(s), s = 0...HWCFG1.sid_num-1
+5+h|0x1004 + (_s_)*32
+5+h|{set:cellbgcolor:#D3D3D3} SRCMD_ENH(_s_), _s_ = 0...HWCFG1.sid_num-1
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}mdh   |31:0       |WARL   |DC         | mdh[__j__] = 1 indicates (md __j__+31) is associated with SID __s__.
+|{set:cellbgcolor:#FFFFFF}mdh   |31:0       |WARL   |DC         | mdh[_j_] = 1 indicates MD (_j_+31) is associated with SID _s_.
 |===
 
-*SRCMD_R* and *SRCMD_W* are optional registers; When SPS extension is enabled, the IOPMP checks both the R/W and the IOPMP_ENTRY_CFG.R/W permission and follows a fail-first rule.
+*SRCMD_R*, *SRCMD_RH*, *SRCMD_W* and *SRCMD_WH* are optional registers; When SPS extension is enabled, the IOPMP checks both the R/W and the ENTRY_CFG.r/w permission and follows a fail-first rule.
 
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
-5+h|{set:cellbgcolor:#D3D3D3} SRCMD_R(s), s = 0...HWCFG1.sid_num-1
-5+h|0x1008 + (s)*32
+5+h|{set:cellbgcolor:#D3D3D3} SRCMD_R(_s_), _s_ = 0...HWCFG1.sid_num-1
+5+h|0x1008 + (_s_)*32
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}rsv    |0:0       |ZERO   |0|Must be zero on write, reserved for future
-|{set:cellbgcolor:#FFFFFF}md    |31:1       |WARL   |DC         | md[_j_] = 1 indicates SID _s_ has read permission to the corresponding MD[_j_]. 
+|{set:cellbgcolor:#FFFFFF}md    |31:1       |WARL   |DC         | md[_j_] = 1 indicates SID _s_ has read permission to the corresponding MD _j_. 
 |===
 
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
-5+h|{set:cellbgcolor:#D3D3D3} SRCMD_RH(s), s = 0...HWCFG1.sid_num-1
-5+h|0x100C + (s)*32
+5+h|{set:cellbgcolor:#D3D3D3} SRCMD_RH(s), _s_ = 0...HWCFG1.sid_num-1
+5+h|0x100C + (_s_)*32
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}mdh   |31:0       |WARL   |DC         | mdh[_j_] = 1 indicates SID _s_ has read permission to MD([_j_]+31). 
+|{set:cellbgcolor:#FFFFFF}mdh   |31:0       |WARL   |DC         | mdh[_j_] = 1 indicates SID _s_ has read permission to MD (_j_+31). 
 |===
 
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
-5+h|{set:cellbgcolor:#D3D3D3} SRCMD_W(s), s = 0...HWCFG1.sid_num-1
-5+h|0x1010 + (s)*32
+5+h|{set:cellbgcolor:#D3D3D3} SRCMD_W(_s_), _s_ = 0...HWCFG1.sid_num-1
+5+h|0x1010 + (_s_)*32
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}rsv    |0:0       |ZERO   |0| Must be zero on write, reserved for future
-|{set:cellbgcolor:#FFFFFF}md    |31:1       |WARL   |DC         | md[_j_] = 1 indicates SID _s_ has write permission to the corresponding MD[_j_]. 
+|{set:cellbgcolor:#FFFFFF}md    |31:1       |WARL   |DC         | md[_j_] = 1 indicates SID _s_ has write permission to the corresponding MD _j_. 
 |===
 
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
-5+h|{set:cellbgcolor:#D3D3D3} SRCMD_WH(s), s = 0...HWCFG1.sid_num-1
-5+h|0x1014 + (s)*32
+5+h|{set:cellbgcolor:#D3D3D3} SRCMD_WH(_s_), _s_ = 0...HWCFG1.sid_num-1
+5+h|0x1014 + (_s_)*32
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}mdh   |31:0       |WARL   |DC         | mdh[_j_] = 1 indicates SID _s_ has write permission to MD([_j_]+31). 
+|{set:cellbgcolor:#FFFFFF}mdh   |31:0       |WARL   |DC         | mdh[_j_] = 1 indicates SID _s_ has write permission to MD (_j_+31). 
 |===
 
 === *Entry Array Registers*

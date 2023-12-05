@@ -32,7 +32,7 @@ Besides, every SRCMD_EN(_s_) register has a bit l, which is used to lock the reg
 [NOTE]
 ====
 Locking the SRCMD table in either way can prevent the table from being altered accidentally or maliciously.
-By locking the association of the MD containing the configuration regions of a component, one can prevent the component from being configured by unwanted SDIDs. To make it more secure, one can use another high-priority MD containing the same regions but no permission, let it be associated with all unwanted SDIDs, and then lock the two MDs' associations by MDLCK. By adopting this approach, it is possible to safeguard the configuration from direct access by potentially compromised security software.
+By locking the association of the MD containing the configuration regions of a component, one can prevent the component from being configured by unwanted SIDs. To make it more secure, one can use another high-priority MD containing the same regions but no permission, let it be associated with all unwanted SIDs, and then lock the two MDs' associations by MDLCK/MDLCKH. By adopting this approach, it is possible to safeguard the configuration from direct access by potentially compromised security software.
 ====
 
 ==== MDCFG Table Protection
