@@ -1,11 +1,11 @@
 [Appendix_A3]
-== A3: Sencondary Permission Setting
+== A3: Secondary Permission Setting
 
-IOPMP/SPS is an extension to support different sources to share memory domain while allowing each sources to have different R/W/X permission to a single memory domain.
+IOPMP/SPS (Secondary Permission Setting) is an extension to support different sources to share memory domain while allowing each sources to have different R/W/X permission to a single memory domain.
 
-If the IOPMP/SPS extension is implemented, each SRCMD table entry shall additionally define two registers: SRCMD_R(_s_) and SRCMD_R(_s_). Register SRCMD_R(_s_) and SRCMD_R(_s_) each occupies a 64-bit space, and has a fields, SRCMD_R(_s_).md and SRCMD_W(_s_).md respectively. Setting lock to SRCMD_EN(_s_).l also locks SRCMD_R(_s_) and SRCMD_W(_s_). 
+If the IOPMP/SPS extension is implemented, each SRCMD table entry shall additionally define read and write permission registers: SRCMD_R(_s_) and SRCMD_W(_s_), and SRCMD_RH(_s_) and SRCMD_WH(_s_) if applicable. Register SRCMD_R(_s_) and SRCMD_W(_s_) each  has a single fields, SRCMD_R(_s_).md and SRCMD_W(_s_).md respectively representing the read and write permission for each memory domain for source _s_. Setting lock to SRCMD_EN(_s_).l also locks SRCMD_R(_s_), SRCMD_RH(_s_), SRCMD_W(_s_), and SRCMD_WH(_s_).
 
 IOPMP/SPS has two sets of permission settings: one from IOPMP entry and the other from SRCMD_R/SRCMD_W. IOPMP/SPS shall check read and write permission on both the SRCMD table and entries, a transaction fail the IOPMP/SPS check if it violates either of the permission settings.
 
-Besides, IOPMP/SPS can offer the control of execution permission. If the signal indicating an instruction fetch is carried by a transaction, the second permission setting can control instruction fetches.
+The IOPMP/SPS register for setting executable permission on each memory domain is [TBD]. 
 
