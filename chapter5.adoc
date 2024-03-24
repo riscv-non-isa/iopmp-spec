@@ -135,27 +135,22 @@ h|Field                         |Bits   |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}ie    |1:1    |RW     |0          |Enable the interrupt of the IOPMP
 |{set:cellbgcolor:#FFFFFF}rsv1   |3:2  |ZERO   |0     | Must be zero on write, reserved for future
 |{set:cellbgcolor:#FFFFFF}ire   |4:4    |WARL   |0     | To triggle the interrupt on illegal read if ie = 1
-|{set:cellbgcolor:#FFFFFF}rre   |7:5    |WARL   |0    a| Response on read illegal access
+|{set:cellbgcolor:#FFFFFF}rre   |5:5    |WARL   |0    a| Response on read illegal access
 
 * 0x0: respond a bus error
-* 0x1: respond a decode error 
-* 0x2: respond a success with data, all of which are zeros.
-* 0x3: respond a success with data, all of which are ones.
-* 0x4~0x7: user defined 
+* 0x1: do not respond a bus error. User to define the behavior, e.g., bus respond a pre-defined value to the initiator. 
 |{set:cellbgcolor:#FFFFFF}iwe   |8:8    |WARL   |0     | To triggle the interrupt on illegal write if ie = 1
-|{set:cellbgcolor:#FFFFFF}rwe   |11:9   |WARL   |0     a| Response on write illegal access
+|{set:cellbgcolor:#FFFFFF}rwe   |9:9   |WARL   |0     a| Response on write illegal access
 
 * 0x0: respond a bus error
-* 0x1: respond a decode error 
-* 0x2: respond a success
-* 0x3~0x7: user defined 
+* 0x1： do not respond a bus error. User to define the behavior, e.g., bus could respond a pre-defined value to the initiator or siliently drop. 
 |{set:cellbgcolor:#FFFFFF}rsv2   |27:12  |ZERO   |0     | Must be zero on write, reserved for future
 |{set:cellbgcolor:#FFFFFF}pee   |28:28  |WARL   |0     | Enable to differentiate between a prefetch access and an illegal access. If the feature is not implemented, it should be wired to 0.
-|{set:cellbgcolor:#FFFFFF}rpe   |31:29  |WARL   |0     a| Response on prefetch error
+|{set:cellbgcolor:#FFFFFF}rpe   |29:29  |WARL   |0     a| Response on prefetch error
 
 * 0x0: respond a bus error
-* 0x1: respond a decode error 
-* 0x2~0x7: user defined 
+* 0x1： do not respond a bus error. User to define the behavior, e.g., bus could respond a pre-defined value to the initiator or siliently drop.
+
 |===
 
 An implementation can optionally support the full and partial functions defined in the fields ree, rwe, and rpe.
@@ -420,7 +415,16 @@ h|Field                         |Bits       |R/W    |Default    |Description
 * 0x1: TOR
 * 0x2: NA4
 * 0x3: NAPOT
-|{set:cellbgcolor:#FFFFFF}rsv |31:5       |ZERO   |0 |Must be zero on write, reserved for future
+|{set:cellbgcolor:#FFFFFF}rsv |7:5       |ZERO   |0 |Must be zero on write, reserved for future
+|{set:cellbgcolor:#FFFFFF}esr   |8:8    |WARL   |0    a| Error response suprression on read
+
+* 0x0: respond a bus error
+* 0x1: do not respond a bus error. User to define the behavior, e.g., bus respond a pre-defined value to the initiator. (Probably we can get rid of the global ERREACT.rre/rwe)
+|{set:cellbgcolor:#FFFFFF}esw   |9:9    |WARL   |0    a| Error response suprression on write
+
+* 0x0: respond a bus error
+* 0x1: do not respond a bus error. User to define the behavior, e.g., bus respond a pre-defined value to the initiator.
+|{set:cellbgcolor:#FFFFFF}rsv |31:10       |ZERO   |0 |Must be zero on write, reserved for future
 |===
 The bits, r, w, and x, grant the read, write, or execution permission, respectively. Not each bit should be programmable. Some or all of them could be wired. Besides, an implementation can optionally impose constraints on their combinations. For example, x and w can't be 1 simultaneously. 
 
