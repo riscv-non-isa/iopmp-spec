@@ -5,56 +5,60 @@
 |===
 |OFFSET |Register |Description
 
-.18+|0x0000  2+|{set:cellbgcolor:#D3D3D3} INFO
+.19+|0x0000  2+|{set:cellbgcolor:#D3D3D3} INFO
 |{set:cellbgcolor:#FFFFFF} VERSION |Indicates the specification and the IP vendor.
 |{set:cellbgcolor:#FFFFFF} IMPLEMENTATION | Indicates the implementation version.
-|{set:cellbgcolor:#FFFFFF} HWCFG0~2 |Indicate the configurations of current IOPMP instance
+|{set:cellbgcolor:#FFFFFF} HWCFG0~2 |Indicate the configurations of current IOPMP instance.
 |{set:cellbgcolor:#FFFFFF} ENTRYOFFSET |Indicates the internal address offsets of each table.
-|{set:cellbgcolor:#FFFFFF} ERRREACT | Indicates the reactions for the violaions
 
 2+|{set:cellbgcolor:#D3D3D3} Programming Protection
 |{set:cellbgcolor:#FFFFFF} MDSTALL/MDSTALLH .2+.^| (Optional) Stall and resume the transaction checks when programming the IOPMP.
-|SIDSCP 
+|RRIDSCP 
 
 2+|{set:cellbgcolor:#D3D3D3} Configuration Protection
-|{set:cellbgcolor:#FFFFFF} MDMSK/MDMSKH | Lock Register for SRCMD table.
-|{set:cellbgcolor:#FFFFFF} MDCFGLCK | Lock register for MDCFG table
+|{set:cellbgcolor:#FFFFFF} MDLCK/MDLCKH | Lock register for SRCMD table.
+|{set:cellbgcolor:#FFFFFF} MDCFGLCK | Lock register for MDCFG table.
 |{set:cellbgcolor:#FFFFFF} ENTRYLCK | Lock register for IOPMP entry array.
 
 2+|{set:cellbgcolor:#D3D3D3} Error Reporting
-|{set:cellbgcolor:#FFFFFF}ERR_REQINFO .3+.^| Indicate the information regarding the first captured violation
+|{set:cellbgcolor:#FFFFFF} ERR_CFG | Indicates the reactions for the violaions
+|{set:cellbgcolor:#FFFFFF}ERR_REQINFO .3+.^| Indicate the information regarding the first captured violation.
 |ERR_REQID    
 |{set:cellbgcolor:#FFFFFF} ERR_REQADDR/ERR_REQADDRH
-|ERR_USER(0~7) | (Optional) User-defined violation information
+|ERR_MFR| (Optional) To retrieve which RRIDs make subsequent violations.
+|ERR_USER(0~7) | (Optional) User-defined violation information.
 
 .2+|0x0800 2+|{set:cellbgcolor:#D3D3D3} MDCFG Table,  _m_ =0...HWCFG0.md_num -1
 |{set:cellbgcolor:#FFFFFF}MDCFG(_m_)  |MD config register, which is to specify the indices of IOPMP entries belonging to a MD.
 
-.4+|0x1000    2+|{set:cellbgcolor:#D3D3D3} SRCMD Table, _s_ = 0...HWCFG1.sid_num-1
-|{set:cellbgcolor:#FFFFFF}SRCMD_EN(_s_)/SRCMD_ENH(_s_)    |The bitmapped MD enabling register of the source '_s_' that SRCMD_EN(_s_)[_j_] indicates if the source is associated with MD _j_ and SRCMD_ENH(_s_)[_j_] indicates if the source is associated with MD (_j_+31).
-|SRCMD_R(_s_)/SRCMD_RH(_s_)|(Optional) bitmapped MD read eanble register, '_s_' corresponding to number of sources, it indicates source _s_  read permission on MDs.
-|SRCMD_W(_s_)/SRCMD_WH(_s_)|(Optional) bitmapped MD write eanble register, '_s_' corresponding to number of sources, it indicates source _s_  write permission on MDs.    
+.4+|0x1000    2+|{set:cellbgcolor:#D3D3D3} SRCMD Table, _s_ = 0...HWCFG1.rrid_num-1
+|{set:cellbgcolor:#FFFFFF}SRCMD_EN(_s_)/SRCMD_ENH(_s_)    |The bitmapped MD enabling register of the requestor _s_ that *SRCMD_EN(_s_)[_j_]* indicates if the requestor is associated with MD _j_ and *SRCMD_ENH(_s_)[_j_]* indicates if the requestor is associated with MD (_j_+31).
+|SRCMD_R(_s_)/SRCMD_RH(_s_)|(Optional) bitmapped MD read eanble register, _s_ corresponding to number of requestors, it indicates requestor _s_  read permission on MDs.
+|SRCMD_W(_s_)/SRCMD_WH(_s_)|(Optional) bitmapped MD write eanble register, _s_ corresponding to number of requestors, it indicates requestor _s_  write permission on MDs.    
 
 .5+|ENTRYOFFSET    2+|{set:cellbgcolor:#D3D3D3} Entry Array, _i_ =0…HWCFG1.entry_num-1
-|{set:cellbgcolor:#FFFFFF}ENTRY_ADDR(_i_)|The address (region) for entry _i_
-|ENTRY_ADDRH(_i_)               |(Optional for 32-bit system)
-|ENTRY_CFG(_i_)                 |The configuration of entry _i_
-|ENTRY_USER_CFG(_i_)            |(Optional) extension to support user customized attributes
+|{set:cellbgcolor:#FFFFFF}ENTRY_ADDR(_i_)|The address (region) for entry _i_.
+|ENTRY_ADDRH(_i_)               |(Optional for 32-bit system).
+|ENTRY_CFG(_i_)                 |The configuration of entry _i_.
+|ENTRY_USER_CFG(_i_)            |(Optional) extension to support user customized attributes.
 |===
+
+[NOTE]
+====
+If a field is optional and not implemented in an implemented register, it should return zero when read, unless otherwise specified. If an optional register is not implemented, the behavior is implementation-dependent, unless otherwise specified.
+====
 
 === *INFO registers*
 
-// should not use '-', should use 'IMP' or 'ID'
-
-The INFO registers are use to indicate the IOPMP instance configuration info.
+INFO registers are use to indicate the IOPMP instance configuration info.
 {set:cellbgcolor:#0000}
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
 5+h|VERSION{set:cellbgcolor:#D3D3D3}
 5+h|0x0000
 h|Field                         |Bits   |R/W   |Default    |Description
-|{set:cellbgcolor:#FFFFFF}vendor|23:0   |R     |IMP        |the vendor ID
-|specver                        |31:24  |R     |IMP        |the specification version
+|{set:cellbgcolor:#FFFFFF}vendor|23:0   |R     |IMP        |The vendor ID
+|specver                        |31:24  |R     |IMP        |The specification version
 |===
 
 [cols="<2,<1,<1,<1,<6",stripes=even]
@@ -62,10 +66,9 @@ h|Field                         |Bits   |R/W   |Default    |Description
 5+h|IMPLEMENTATION{set:cellbgcolor:#D3D3D3}
 5+h|0x0004
 h|Field                         |Bits   |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}impid |31:0   |R      |IMP        |the implementation ID
+|{set:cellbgcolor:#FFFFFF}impid |31:0   |R      |IMP        |The implementation ID
 |===
 
-// All field shall be 'IMP', updated register address
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
 5+h|HWCFG0{set:cellbgcolor:#D3D3D3}
@@ -73,27 +76,31 @@ h|Field                         |Bits   |R/W    |Default    |Description
 h|Field                         |Bits   |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}model |3:0    |R      |IMP        a|Indicate the iopmp instance model
 
-* 0x0: Full model: the number of MDCFG registers is equal to HWCFG0.md_num, all MDCFG registers are readable and writable.
+* 0x0: Full model: the number of MDCFG registers is equal to *HWCFG0.md_num*, all MDCFG registers are readable and writable.
 
 * 0x1: Rapid-k model: a single MDCFG register to indicate the k value, read only.
 
 * 0x2: Dynamic-k model: a single MDCFG register to indicate the k value, readable and writable.
 
-* 0x3: Isolation model: the number of MDCFG registers is equal to HWCFG0.md_num, all MDCFG registers are readable and writable.
+* 0x3: Isolation model: the number of MDCFG registers is equal to *HWCFG0.md_num*, all MDCFG registers are readable and writable.
 
 * 0x4: Compact-k model: a single MDCFG register to indicate the k value, read only.
 
 |tor_en                         |4:4    |R      |IMP        |Indicate if TOR is supported
-|sps_en                         |5:5    |R      |IMP        |Indicate the secondary permission settings is supported
-|user_cfg_en                    |6:6    |R      |IMP        |Indicate the if user customized attributes is supported
-|prient_prog                    |7:7    |W1CS   |IMP        |A write-1-clear bit is sticky to 0 and indicates if prio_entry is programmable. Reset to 1 if the implementation supports programmable prio_entry, otherwise, wired to 0.
-|sid_transl_en                  |8:8    |R      |IMP        |Indicate the if tagging a new SID on the initiator port is supported
-|sid_transl_prog                |9:9    |W1CS   |IMP        |A write-1-set bit is sticky to 0 and indicate if the field sid_transl is programmable. Support only for sid_transl_en=1, otherwise, wired to 0.
-|chk_x|10:10  |R     | IMP| Indicate if the IOPMP checks execution violations
-|no_x|11:11  |R     | IMP| For chk_x=1, the IOPMP with no_x=1 always fails execution transactions; otherwise, it should depend on the per-entry x-bit. For chk_x=0, no_x has no effect.
-|no_w|12:12  |R     | IMP| Indicate if the IOPMP always fails write transactions
-|stall_en|13:13  |R     | IMP| Indicate if the IOPMP implements stall-related features, which are MDSTALL, MDSTALLH, and SIDSCP registers.
-|rsv   |23:14  |ZERO   |0     | Must be zero on write, reserved for future
+|sps_en                         |5:5    |R      |IMP        |Indicate secondary permission settings is supported; which are *SRCMD_R/RH(_i_)* and *SRCMD_W/WH* registers.
+|user_cfg_en                    |6:6    |R      |IMP        |Indicate if user customized attributes is supported; which are *ENTRY_USER_CFG(_i_)* registers.
+|prient_prog                    |7:7    |W1CS   |IMP        |A write-1-clear bit is sticky to 0 and indicates if *HWCFG2.prio_entry* is programmable. Reset to 1 if the implementation supports programmable *prio_entry*, otherwise, wired to 0.
+|rrid_transl_en                  |8:8    |R      |IMP        |Indicate the if tagging a new RRID on the initiator port is supported
+|rrid_transl_prog                |9:9    |W1CS   |IMP        |A write-1-set bit is sticky to 0 and indicate if the field sid_transl is programmable. Support only for *rrid_transl_en*=1, otherwise, wired to 0.
+|chk_x|10:10  |R     | IMP| Indicate if the IOPMP implements the check of an instruction fetch. On *chk_x*=0, all fields of illegal instruction fetchs are ignored, including *HWCFG0.no_x*, *ERR_CFG.ixe*, *ERR_CFG.rxe*, *ENTRY_CFG(_i_).sixe*, *ENTRY_CFG(_i_).esxe*, and *ENTRY_CFG(_i_).x*. It should be wired to zero if there is no indication for an instruction fetch.
+|no_x|11:11  |R     | IMP| For *chk_x*=1, the IOPMP with *no_x*=1 always fails on an instruction fetch; otherwise, it should depend on *x*-bit in *ENTRY_CFG(_i_)*. For *chk_x*=0, *no_x* has no effect.
+|no_w|12:12  |R     | IMP| Indicate if the IOPMP always fails write accesses considered as as no rule matched.
+|stall_en|13:13  |R     | IMP| Indicate if the IOPMP implements stall-related features, which are *MDSTALL*, *MDSTALLH*, and *RRIDSCP* registers.
+|peis|14:14  |R     | IMP| Indicate if the IOPMP implements interrupt suppression per entry, including fields *sire*, *siwe*, and *sixe* in *ENTRY_CFG(_i_)*.
+|pees|15:15 | R |IMP| Indicate if the IOPMP implements the error suppression per entry, including fields *esre*, *eswe*, and *esxe* in *ENTRY_CFG(_i_)*.
+|mfr_en|16:16 | R |IMP| Indicate if the IOPMP implements Multi Faults Record Extension, that is *ERR_MFR* and *ERR_REQINFO.svc*.
+
+|rsv   |23:16  |ZERO   |0     | Must be zero on write, reserved for future
 |md_num                         |30:24  |R      |IMP        |Indicate the supported number of MD in the instance
 |enable                         |31:31  |W1SS   |0          |Indicate if the IOPMP checks transactions by default. If it is implemented, it should be initial to 0 and sticky to 1. If it is not implemented, it should be wired to 1.
 |===
@@ -103,7 +110,7 @@ h|Field                         |Bits   |R/W    |Default    |Description
 5+h|HWCFG1{set:cellbgcolor:#D3D3D3}
 5+h|0x000C
 h|Field                         |Bits   |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}sid_num |15:0 |R      |IMP        |Indicate the supported number of SID in the instance
+|{set:cellbgcolor:#FFFFFF}rrid_num |15:0 |R      |IMP        |Indicate the supported number of RRID in the instance
 |entry_num                      |31:16  |R      |IMP        |Indicate the supported number of entries in the instance
 |===
 
@@ -114,7 +121,7 @@ h|Field                         |Bits   |R/W    |Default    |Description
 5+h|0x0010
 h|Field                         |Bits   |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}prio_entry |15:0|WARL |IMP        |Indicate the number of entries matched with priority. These rules should be placed in the lowest order. Within these rules, the lower order has a higher priority.
-|sid_transl                     |31:16  |WARL   |IMP        | The SID tagged to outgoing transactions. Support only for sid_transl_en=1.
+|rrid_transl                     |31:16  |WARL   |IMP        | The RRID tagged to outgoing transactions. Support only for *HWCFG0.rrid_transl_en*=1.
 |===
 
 [cols="<2,<1,<1,<1,<6",stripes=even]
@@ -122,42 +129,12 @@ h|Field                         |Bits   |R/W    |Default    |Description
 5+h|ENTRYOFFSET{set:cellbgcolor:#D3D3D3}
 5+h|0x0014
 h|Field                         |Bits   |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}offset|31:0   |R      |IMP        |Indicate the offset address of the IOPMP array from the base of an IOPMP instance, a.k.a. the address of VERSION. Note: the offset is a signed number. That is, the IOPMP array can be placed in front of VERSION.  
+|{set:cellbgcolor:#FFFFFF}offset|31:0   |R      |IMP        |Indicate the offset address of the IOPMP array from the base of an IOPMP instance, a.k.a. the address of *VERSION*. Note: the offset is a signed number. That is, the IOPMP array can be placed in front of *VERSION*.  
 |===
-
-// Can we split the interrupt enable and pending status into two registers? Lock is not needed?
-[cols="<2,<1,<1,<1,<6",stripes=even]
-|===
-5+h|ERRREACT{set:cellbgcolor:#D3D3D3}
-5+h|0x0018
-h|Field                         |Bits   |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}l     |0:0    |W1SS   |0          |Lock fields to ERRREACT register.
-|{set:cellbgcolor:#FFFFFF}ie    |1:1    |RW     |0          |Enable the interrupt of the IOPMP
-|{set:cellbgcolor:#FFFFFF}rsv1   |3:2  |ZERO   |0     | Must be zero on write, reserved for future
-|{set:cellbgcolor:#FFFFFF}ire   |4:4    |WARL   |0     | To triggle the interrupt on illegal read if ie = 1
-|{set:cellbgcolor:#FFFFFF}rre   |5:5    |WARL   |0    a| Response on read illegal access
-
-* 0x0: respond a bus error
-* 0x1: do not respond a bus error. User to define the behavior, e.g., bus respond a pre-defined value to the initiator. 
-|{set:cellbgcolor:#FFFFFF}iwe   |8:8    |WARL   |0     | To triggle the interrupt on illegal write if ie = 1
-|{set:cellbgcolor:#FFFFFF}rwe   |9:9   |WARL   |0     a| Response on write illegal access
-
-* 0x0: respond a bus error
-* 0x1： do not respond a bus error. User to define the behavior, e.g., bus could respond a pre-defined value to the initiator or siliently drop. 
-|{set:cellbgcolor:#FFFFFF}rsv2   |27:12  |ZERO   |0     | Must be zero on write, reserved for future
-|{set:cellbgcolor:#FFFFFF}pee   |28:28  |WARL   |0     | Enable to differentiate between a prefetch access and an illegal access. If the feature is not implemented, it should be wired to 0.
-|{set:cellbgcolor:#FFFFFF}rpe   |29:29  |WARL   |0     a| Response on prefetch error
-
-* 0x0: respond a bus error
-* 0x1： do not respond a bus error. User to define the behavior, e.g., bus could respond a pre-defined value to the initiator or siliently drop.
-
-|===
-
-An implementation can optionally support the full and partial functions defined in the fields ree, rwe, and rpe.
 
 === *Programming Protection Registers*
 
-The MDSTALL(H) and SIDSCP registers are all optional and used to support atomicity issue while programming the IOPMP, as the IOPMP rule may not be updated in a single transaction.
+*MDSTALL(H)* and *RRIDSCP* registers are all optional and used to support atomicity issue while programming the IOPMP, as the IOPMP rule may not be updated in a single transaction.
 
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
@@ -165,8 +142,9 @@ The MDSTALL(H) and SIDSCP registers are all optional and used to support atomici
 5+h|0x0030
 h|Field                         |Bits   |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}exempt|0:0    |W      |N/A          | Stall transactions with exempt selected MDs, or Stall selected MDs.
-|is_stalled                     |0:0    |R      |0          | Indicate if the requested stalls have occured
-|md                             |31:1   |WARL      |0          |Writting md[__i__]=1 selects MD __i__; reading md[__i__] = 1 means MD __i__ selected.
+|is_stalled                     |0:0    |R      |0          | After the last writing of *MDSTALL* (included) plus any following writing *RRIDSCP*, 1 indicates that all requested stalls take effect; otherwise, 0.
+After the last writing *MDSTALLH* (if any) and then *MDSTALL* by zero, 0 indicates that all transactions have been resumed;  otherwise, 1.
+|md                             |31:1   |WARL      |0          |Writting *md[__i__]*=1 selects MD __i__; reading *md[__i__]* = 1 means MD __i__ selected.
 |===
 
 [cols="<2,<1,<1,<1,<6",stripes=even]
@@ -174,31 +152,39 @@ h|Field                         |Bits   |R/W    |Default    |Description
 5+h|MDSTALLH{set:cellbgcolor:#D3D3D3}
 5+h|0x0034
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}mdh    |31:0       |WARL      |0          |Writting mdh[__i__]=1 selects MD (__i__+31); reading mdh[__i__] = 1 means MD (__i__+31) selected.
+|{set:cellbgcolor:#FFFFFF}mdh    |31:0       |WARL      |0          |Writting *mdh[__i__]*=1 selects MD (__i__+31); reading *mdh[__i__]* = 1 means MD (__i__+31) selected.
 |===
 
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
-5+h|SIDSCP{set:cellbgcolor:#D3D3D3}
+5+h|RRIDSCP{set:cellbgcolor:#D3D3D3}
 5+h|0x0038
 h|Field                         |Bits       |R/W    |Default    |Description
-|sid                            |15:0       |WARL   |DC          |SID to select
+|{set:cellbgcolor:#FFFFFF}rrid                            |15:0       |WARL   |DC          |RRID to select
 |{set:cellbgcolor:#FFFFFF}rsv    |29:16       |ZERO   |0|Must be zero on write, reserved for future
-|{set:cellbgcolor:#FFFFFF}op    |31:30      |W      |N/A          | 0: query, 1: stall transactions associated with selected SID, 2: don't stall transactions associated with selected SID, and 3: reserved
-|stat                           |31:30      |R      |0          | 0: SIDSCP not implemented, 1: transactions associated with selected SID are stalled, 2: transactions associated with selected SID not are stalled, and 3: unimplemented or unselectable SID
+|{set:cellbgcolor:#FFFFFF}op    |31:30      |W      |N/A          a| 
+* 0: query
+* 1: stall transactions associated with selected RRID
+* 2: don't stall transactions associated with selected RRID
+* 3: reserved
+|stat                           |31:30      |R      |0          a|
+* 0: *RRIDSCP* not implemented
+* 1: transactions associated with selected RRID are stalled
+* 2: transactions associated with selected RRID not are stalled
+* 3: unimplemented or unselectable RRID
 |===
 
 === *Configuration Protection Registers*
 
-*MDLCK* and *MDLCKH* are optional registers with a bitmap field to indicate which MDs are locked in the SRCMD table. 
+*MDLCK* and *MDLCKH* are optional registers with a bitmap field to indicate which MDs are locked in SRCMD table. 
 
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
 5+h|MDLCK{set:cellbgcolor:#D3D3D3}
 5+h|0x0040
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}l     |0:0        |W1SS   |0          | Lock bit to MDLCK and MDLCKH register.
-|md                             |31:1       |WARL   |0          | md[__j__] is stickly to 1 and indicates if SRCMD_EN(__i__).md[__j__], SRCMD_R(__i__).md[__j__] and SRCMD_W(__i__).md[__j__] are locked for all __i__. 
+|{set:cellbgcolor:#FFFFFF}l     |0:0        |W1SS   |0          | Lock bit to *MDLCK* and *MDLCKH* register.
+|md                             |31:1       |WARL   |0          | *md[__j__]* is stickly to 1 and indicates if *SRCMD_EN(__i__).md[__j__]*, *SRCMD_R(__i__).md[__j__]* and *SRCMD_W(__i__).md[__j__]* are locked for all __i__. 
 |===
 
 [cols="<2,<1,<1,<1,<6",stripes=even]
@@ -206,75 +192,102 @@ h|Field                         |Bits       |R/W    |Default    |Description
 5+h|{set:cellbgcolor:#D3D3D3} MDLCKH
 5+h|0x0044
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}mdh   |31:0       |WARL   |0          | mdh[__j__] is stickly to 1 and indicates if SRCMD_ENH(__i__).mdh[__j__], SRCMD_RH(__i__).mdh[__j__] and SRCMD_WH(__i__).mdh[__j__] are locked for all __i__.
+|{set:cellbgcolor:#FFFFFF}mdh   |31:0       |WARL   |0          | *mdh[__j__]* is stickly to 1 and indicates if *SRCMD_ENH(__i__).mdh[__j__]*, *SRCMD_RH(__i__).mdh[__j__]* and *SRCMD_WH(__i__).mdh[__j__]* are locked for all __i__.
 |===
 
 *MDCFGLCK* is the lock register to MDCFG table.
 
-// MDCFG.f = # of static mds
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
 5+h|{set:cellbgcolor:#D3D3D3} MDCFGLCK
 5+h|0x0048
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}l     |0:0        |W1SS    |0          | Lock bit to MDCFGLCK register.
-|f                              |7:1        |RW     |IMP        | Indicate the number of locked MDCFG entries, MDCFG entry[_f_-1:0] is locked. SW shall write a value that is no smaller than current number.
-|{set:cellbgcolor:#FFFFFF}rsv    |31:8       |ZERO   |0         | 
+|{set:cellbgcolor:#FFFFFF}l     |0:0        |W1SS    |0          | Lock bit to *MDCFGLCK* register. For Rapid-k model and Compact-k model, *l* should be 1. For Dynamic-K model, *l* indicates if *MDCFG(0).t* is still programmable or locked.
+|f                              |7:1        |WARL     |IMP        | Indicate the number of locked MDCFG entries – *MDCFG(_i_)* is locked for _i_ < *f*. 
+For Rapid-k model, Dynamic-k model and Compact-k model, *f* is ignored. For the rest of the models, the field should be monotonically increased only until the next reset cycle.
+|{set:cellbgcolor:#FFFFFF}rsv    |31:8       |ZERO   |0         | Must be zero on write, reserved for future
 |===
 
-
 *ENTRYLCK* is the lock register to entry array.
-// MDCFG.f = # of static entries
+
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
 5+h|{set:cellbgcolor:#D3D3D3} ENTRYLCK
 5+h|0x004C
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}l     |0:0        |W1SS   |0          | Lock bit to ENTRYLCK register.
-|{set:cellbgcolor:#FFFFFF}f     |16:1       |WARL   |IMP        | Indicate the number of locked IOPMP entries – IOPMP_ENTRY(0) ~ IOPMP_ENTRY(_f_-1) are locked. SW shall write a value that is no smaller than current number. 
+|{set:cellbgcolor:#FFFFFF}l     |0:0        |W1SS   |0          | Lock bit to *ENTRYLCK* register.
+|{set:cellbgcolor:#FFFFFF}f     |16:1       |WARL   |IMP        | Indicate the number of locked IOPMP entries – *ENTRY_ADDR(_i_)*, *ENTRY_ADDRH(_i_)*, *ENTRY_CFG(_i_)*, and *ENTRY_USER_CFG(_i_)* are locked for _i_ < *f*. The field should be monotonically increased only until the next reset cycle. 
 |{set:cellbgcolor:#FFFFFF}rsv    |31:17       |ZERO   |0 | Must be zero on write, reserved for future
 |===
 
 === *Error Capture Registers*
-*ERR_REQINFO* Captures more detailed error infomation.
+
+*ERR_CFG* is a read/write WARL register used to configure the global error reporting behavior on an IOPMP violation.
+
+[cols="<2,<1,<1,<1,<6",stripes=even]
+|===
+5+h|ERR_CFG{set:cellbgcolor:#D3D3D3}
+5+h|0x0060
+h|Field                         |Bits   |R/W    |Default    |Description
+|{set:cellbgcolor:#FFFFFF}l     |0:0    |W1SS   |0          |Lock fields to *ERR_CFG* register
+|{set:cellbgcolor:#FFFFFF}ie    |1:1    |RW     |0          |Enable the interrupt of the IOPMP
+|{set:cellbgcolor:#FFFFFF}ire   |2:2    |WARL   |0     | To trigger an interrupt on an illegal read access
+|{set:cellbgcolor:#FFFFFF}iwe   |3:3    |WARL   |0     | To trigger an interrupt on an illegal write access
+|{set:cellbgcolor:#FFFFFF}ixe   |4:4    |WARL   |0     | To trigger an interrupt on an illegal instruction fetch.
+|{set:cellbgcolor:#FFFFFF}rre   |5:5    |WARL   |0    a| Response on an illegal read accesses
+
+* 0x0: respond an implementation-dependent error, such as a bus error
+* 0x1: respond a success with a pre-defined value to the initiator instead of an error
+
+|{set:cellbgcolor:#FFFFFF}rwe   |6:6   |WARL   |0     a| Response on an illegal write access:
+
+* 0x0: respond an error if a response is needed
+* 0x1: respond a success to the initiator instead of an error if a response is needed
+
+
+Implemented only for *HWCFG0.chk_x*=1.
+|{set:cellbgcolor:#FFFFFF}rxe   |7:7   |WARL   |0     a| Response on an illegal instruction fetch:
+
+* 0x0: respond an error
+* 0x1: respond a success with a pre-defined value to the initiator instead of an error. 
+
+Implemented only for *HWCFG0.chk_x*=1.
+|{set:cellbgcolor:#FFFFFF}rsv   |31:8  |ZERO   |0     | Must be zero on write, reserved for future
+|===
+
+An implementation can optionally support the full and partial functions defined in the fields *ree*, *rwe*, and *rxe*.
+//Paul 4/4:  As discussed on 4/3, we should pick a new name to replace 'ip'.
+*ERR_REQINFO* captures more detailed error infomation.
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
 5+h|{set:cellbgcolor:#D3D3D3} ERR_REQINFO
-5+h|0x0060
+5+h|0x0064
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}ip    |0:0    |R     |0      | Indicate if an interrupt is pending on read. for 1, the illegal capture recorder (ERR_REQID, ERR_REQADDR, ERR_REQADDRH, and fields in this register) has valid content and won't be updated even on subsequent violations.
+|{set:cellbgcolor:#FFFFFF}ip    |0:0    |R     |0      | Indicate if an interrupt is pending on read. for 1, the illegal capture recorder (*ERR_REQID*, *ERR_REQADDR*, *ERR_REQADDRH*, and fields in this register) has valid content and won't be updated even on subsequent violations.
 |{set:cellbgcolor:#FFFFFF}ip    |0:0    |W1C   |N/A     | Write 1 clears the bit and the illegal recorder reactivates. Write 0 causes no effect on the bit.
 |{set:cellbgcolor:#FFFFFF} ttype     |2:1   |R      |0          a|{set:cellbgcolor:#FFFFFF}Indicated the transaction type
 
 - 0x00 = reserved
-- 0x01 = read 
-- 0x02 = write 
-- 0x03 = execution
+- 0x01 = read access
+- 0x02 = write access
+- 0x03 = instruction fetch
 |{set:cellbgcolor:#FFFFFF} rsv1   |3:3    |ZERO      |0          |Must be zero on write, reserved for future
 |{set:cellbgcolor:#FFFFFF} etype     |6:4   |R      |0          a| {set:cellbgcolor:#FFFFFF}Indicated the type of violation
 
 - 0x00 = no error
-- 0x01 = read error
-- 0x02 = write error
-- 0x03 = execution error
+- 0x01 = illegal read access
+- 0x02 = illegal write access
+- 0x03 = illegal instruction fetch
 - 0x04 = partial hit on a priority rule
 - 0x05 = not hit any rule
-- 0x06 = unknown SID
+- 0x06 = unknown RRID
 - 0x07 = user-defined error
-|{set:cellbgcolor:#FFFFFF} rsv2   |30:7    |ZERO      |0          |Must be zero on write, reserved for future
-|===
-When the bus matrix doesn't have a signal to indicate an instruction fetch, the ttype and etype can never return "execution" (0x03) and "execution error" (0x03), respectively.
+|{set:cellbgcolor:#FFFFFF} svc   |7:7    |R      |0          |Indicate there is a subsequent violation caught in *ERR_MFR*.
+Implemented only for *HWCFG0.mfr_en*=1, otherwise, ZERO.
 
-*ERR_REQID* Indicates the errored SID and entry index.
-
-[cols="<2,<1,<1,<1,<6",stripes=even]
+|{set:cellbgcolor:#FFFFFF} rsv2   |30:8    |ZERO      |0          |Must be zero on write, reserved for future
 |===
-5+h|{set:cellbgcolor:#D3D3D3} ERR_REQID
-5+h|0x0064
-h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}sid   |15:0       |R      |DC          a|Indicate the errored SID.
-|{set:cellbgcolor:#FFFFFF}eid   |31:16  |R      |DC          |Indicated the errored entry index.
-|===
+When the bus matrix doesn't have a signal to indicate an instruction fetch, the *ttype* and *etype* can never return "instruction fetch" (0x03) and "instruction fetch error" (0x03), respectively.
 
 *ERR_REQADDR* and *ERR_REQADDRH* indicate the errored request address.
 
@@ -293,6 +306,32 @@ h|Field                         |Bits       |R/W    |Default    |Description
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}addrh |31:0       |R      |DC         |Indicate the errored address[65:34]
 |===
+// Paul 4/4: I am thinking of whether 'eid' should be a mandatory field. Could we make it optional?
+*ERR_REQID* indicates the errored RRID and entry index.
+[cols="<2,<1,<1,<1,<6",stripes=even]
+|===
+5+h|{set:cellbgcolor:#D3D3D3} ERR_REQID
+5+h|0x0070
+h|Field                         |Bits       |R/W    |Default    |Description
+|{set:cellbgcolor:#FFFFFF}rrid   |15:0       |R      |DC          a|Indicate the errored RRID.
+|{set:cellbgcolor:#FFFFFF}eid   |31:16  |R      |DC          |Indicates the index pointing to the entry that catches the violation. If no entry is hit, i.e., *etype*=0x05, the value of this field is invalid.
+|===
+
+*ERR_MFR* is an optional register. If Multi-Faults Record Extension is enabled (*HWCFG0.mfr_en*=1), *ERR_MFR* can be used to retrieve which RRIDs make subsequent violations.
+[cols="<2,<1,<1,<1,<6",stripes=even]
+|===
+5+h|{set:cellbgcolor:#D3D3D3} ERR_MFR
+5+h|0x0074
+h|Field                         |Bits       |R/W    |Default    |Description
+|{set:cellbgcolor:#FFFFFF}svw |15:0       |R      |DC         | Subsequent violations in the window indexed by *svi*. *svw[_j_]*=1 for the at lease one subsequent violation issued from RRID= *svi**16 + _j_.
+|{set:cellbgcolor:#FFFFFF}svi |27:16       |RW      |0         | Window's index to search subsequent violations. When read, *svi* moves forward until one subsequent violation is found or *svi* has been rounded back to the same value. After read, the window's content, *svw*, should be clean.
+|{set:cellbgcolor:#FFFFFF}rsv |30:28    |ZERO      |0          |Must be zero on write, reserved for future
+|{set:cellbgcolor:#FFFFFF}svs |31:31       |R      |DC         a| the status of this window's content:
+
+* 0x0 : no subsequent violation found
+* 0x1 : subsequent violation found
+|===
+
 
 *ERR_USER(0..7)* are optional registers to provide users to define their own error capture information.
 [cols="<2,<1,<1,<1,<6",stripes=even]
@@ -305,74 +344,74 @@ h|Field                         |Bits       |R/W    |Default    |Description
 
 
 === *MDCFG Table*
-The MDCFG table is a lookup to specify the number of IOPMP entries that is associated with each MD. For different models:
+MDCFG table is a lookup to specify the number of IOPMP entries that is associated with each MD. For different models:
 
-. Full model: the number of MDCFG registers is equal to HWCFG0.md_num, all MDCFG registers are readable and writable.
-. Rapid-_k_ model: a single MDCFG register to indicate the _k_ value, read only. Only MDCFG(0) is implemented.
-. Dynamic-_k_ model:  a single MDCFG register to indicate the _k_ value, readable and writable. Only MDCFG(0) is implemented.
-. Isolation model: the number of MDCFG registers is equal to HWCFG0.md_num, all MDCFG registers are readable and writable.
-. Compact-_k_ model:  a single MDCFG register to indicate the _k_ value, read only. Only MDCFG(0) is implemented.
+. Full model: the number of MDCFG registers is equal to *HWCFG0.md_num*, all MDCFG registers are readable and writable.
+. Rapid-_k_ model: a single MDCFG register to indicate the _k_ value, read only. Only *MDCFG(0)* is implemented.
+. Dynamic-_k_ model:  a single MDCFG register to indicate the _k_ value, readable and writable. Only *MDCFG(0)* is implemented.
+. Isolation model: the number of MDCFG registers is equal to *HWCFG0.md_num*, all MDCFG registers are readable and writable.
+. Compact-_k_ model:  a single MDCFG register to indicate the _k_ value, read only. Only *MDCFG(0)* is implemented.
 
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
 5+h|{set:cellbgcolor:#D3D3D3} MDCFG(_m_), _m_ = 0...HWCFG0.md_num-1, support up to 63 MDs
 5+h|0x0800 + (_m_)*4
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}t     |15:0       |WARL   |DC/IMP         |Indicate the top range of memory domain m. An IOPMP entry with index j belongs to MD m                 
+|{set:cellbgcolor:#FFFFFF}t     |15:0       |WARL   |DC/IMP         a|Indicate the top range of memory domain _m_. An IOPMP entry with index _j_ belongs to MD _m_                 
       
-                     - If MDCFG(_m_-1).t ≤ j < MDCFG(_m_).t, where m>0. The MD0 owns the IOPMP entries with index j<MDCFG(0).t.
-                     - If MDCFG(_m_-1).t >= MDCFG(_m_).t, then MD _m_  is empty.
-                     - For rapid-_k_, dynamic-_k_ and compact-_k_ models, MDCFG(0).t indicates the number of IOPMP entries belongs to each MD, that is, the _k_ value. The MDCFG(_i_) can be omitted for _i_>0.
+                     - If *MDCFG(_m_-1).t* ≤ _j_ < *MDCFG(_m_).t,* where m>0. MD0 owns the IOPMP entries with index _j_ < *MDCFG(0).t*.
+                     - If *MDCFG(_m_-1).t* >= *MDCFG(_m_).t*, then MD _m_  is empty.
+                     - For rapid-_k_, dynamic-_k_ and compact-_k_ models, *MDCFG(0).t* indicates the number of IOPMP entries belongs to each MD, that is, the _k_ value. The *MDCFG(_i_)* can be omitted for _i_>0.
 |{set:cellbgcolor:#FFFFFF}rsv    |31:16       |ZERO   |0 |Must be zero on write, reserved for future 
 |===
 
 
 === *SRCMD Table Registers*
-Only the full model, the rapid-_k_ model and the dynamic-_k_ model implement the SRCMD table.
-// The last MD is always enabled to allow access to full protection range. field value be 'DC' -- don't care
+Only full model, rapid-_k_ model and dynamic-_k_ model implement SRCMD table.
+
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
+5+h|{set:cellbgcolor:#D3D3D3} SRCMD_EN(_s_), _s_ = 0...HWCFG1.rrid_num-1
 5+h|0x1000 + (_s_)*32
-5+h|{set:cellbgcolor:#D3D3D3} SRCMD_EN(_s_), _s_ = 0...HWCFG1.sid_num-1
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}l     |0:0        |W1SS     |0          | A sticky lock bit. When set, locks SRCMD_EN(_s_), SRCMD_ENH(_s_), SRCMD_R(_s_), SRCMD_RH(_s_), SRCMD_W(_s_), and SRCMD_WH(_s_) if any.
-|md                             |31:1       |WARL   |DC         | md[_j_] = 1 indicates MD _j_ is associated with SID _s_.
+|{set:cellbgcolor:#FFFFFF}l     |0:0        |W1SS     |0          | A sticky lock bit. When set, locks *SRCMD_EN(_s_)*, *SRCMD_ENH(_s_)*, *SRCMD_R(_s_)*, *SRCMD_RH(_s_)*, *SRCMD_W(_s_)*, and *SRCMD_WH(_s_)* if any.
+|md                             |31:1       |WARL   |DC         | *md[_j_]* = 1 indicates MD _j_ is associated with RRID _s_.
 |===
 
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
+5+h|{set:cellbgcolor:#D3D3D3} SRCMD_ENH(_s_), _s_ = 0...HWCFG1.rrid_num-1
 5+h|0x1004 + (_s_)*32
-5+h|{set:cellbgcolor:#D3D3D3} SRCMD_ENH(_s_), _s_ = 0...HWCFG1.sid_num-1
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}mdh   |31:0       |WARL   |DC         | mdh[_j_] = 1 indicates MD (_j_+31) is associated with SID _s_.
+|{set:cellbgcolor:#FFFFFF}mdh   |31:0       |WARL   |DC         | *mdh[_j_]* = 1 indicates MD (_j_+31) is associated with RRID _s_.
 |===
 
-*SRCMD_R*, *SRCMD_RH*, *SRCMD_W* and *SRCMD_WH* are optional registers; When SPS extension is enabled, the IOPMP checks both the R/W and the ENTRY_CFG.r/w permission and follows a fail-first rule.
+*SRCMD_R*, *SRCMD_RH*, *SRCMD_W* and *SRCMD_WH* are optional registers; When SPS extension is enabled, the IOPMP checks both the R/W and the *ENTRY_CFG.r/w* permission and follows a fail-first rule.
 
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
-5+h|{set:cellbgcolor:#D3D3D3} SRCMD_R(_s_), _s_ = 0...HWCFG1.sid_num-1
+5+h|{set:cellbgcolor:#D3D3D3} SRCMD_R(_s_), _s_ = 0...HWCFG1.rrid_num-1
 5+h|0x1008 + (_s_)*32
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}rsv    |0:0       |ZERO   |0|Must be zero on write, reserved for future
-|{set:cellbgcolor:#FFFFFF}md    |31:1       |WARL   |DC         | md[_j_] = 1 indicates SID _s_ has read permission to the corresponding MD _j_. 
+|{set:cellbgcolor:#FFFFFF}md    |31:1       |WARL   |DC         | *md[_j_]* = 1 indicates RRID _s_ has read permission to the corresponding MD _j_. 
 |===
 
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
-5+h|{set:cellbgcolor:#D3D3D3} SRCMD_RH(s), _s_ = 0...HWCFG1.sid_num-1
+5+h|{set:cellbgcolor:#D3D3D3} SRCMD_RH(s), _s_ = 0...HWCFG1.rrid_num-1
 5+h|0x100C + (_s_)*32
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}mdh   |31:0       |WARL   |DC         | mdh[_j_] = 1 indicates SID _s_ has read permission to MD (_j_+31). 
+|{set:cellbgcolor:#FFFFFF}mdh   |31:0       |WARL   |DC         | *mdh[_j_]* = 1 indicates RRID _s_ has read permission to MD (_j_+31). 
 |===
 
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
-5+h|{set:cellbgcolor:#D3D3D3} SRCMD_W(_s_), _s_ = 0...HWCFG1.sid_num-1
+5+h|{set:cellbgcolor:#D3D3D3} SRCMD_W(_s_), _s_ = 0...HWCFG1.rrid_num-1
 5+h|0x1010 + (_s_)*32
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}rsv    |0:0       |ZERO   |0| Must be zero on write, reserved for future
-|{set:cellbgcolor:#FFFFFF}md    |31:1       |WARL   |DC         | md[_j_] = 1 indicates SID _s_ has write permission to the corresponding MD _j_. 
+|{set:cellbgcolor:#FFFFFF}md    |31:1       |WARL   |DC         | *md[_j_]* = 1 indicates RRID _s_ has write permission to the corresponding MD _j_. 
 |===
 
 [cols="<2,<1,<1,<1,<6",stripes=even]
@@ -380,7 +419,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 5+h|{set:cellbgcolor:#D3D3D3} SRCMD_WH(_s_), _s_ = 0...HWCFG1.sid_num-1
 5+h|0x1014 + (_s_)*32
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}mdh   |31:0       |WARL   |DC         | mdh[_j_] = 1 indicates SID _s_ has write permission to MD (_j_+31). 
+|{set:cellbgcolor:#FFFFFF}mdh   |31:0       |WARL   |DC         | *mdh[_j_]* = 1 indicates RRID _s_ has write permission to MD (_j_+31). 
 |===
 
 === *Entry Array Registers*
@@ -399,7 +438,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}addrh |31:0       |WARL   |DC |The physical address[65:34] of protected memory region. 
 |===
-A complete 64-bit address consists of these two registers, ENTRY_ADDR and ENTRY_ADDRH. However, an IOPMP can only manage a segment of space, so an implementation would have a certain number of the most significant bits that are the same among all entries. These bits are allowed to be hardwired.
+A complete 64-bit address consists of these two registers, *ENTRY_ADDR* and *ENTRY_ADDRH*. However, an IOPMP can only manage a segment of space, so an implementation would have a certain number of the most significant bits that are the same among all entries. These bits are allowed to be hardwired.
 
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
@@ -408,32 +447,44 @@ A complete 64-bit address consists of these two registers, ENTRY_ADDR and ENTRY_
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}r     |0:0        .3+.^|WARL     .3+.^|DC         |The read permission to protected memory region 
 |w                              |1:1        |The write permission to the protected memory region
-|x                              |2:2        |The executable permission to the protected memory region. Optional field, if unimplemented, write any read the same value as r field.
+|x                              |2:2        |The instruction fetch permission to the protected memory region. Optional field, if unimplemented, write any read the same value as r field.
 |a                              |4:3        |WARL   |DC         a|The address mode of the IOPMP entry
 
 * 0x0: OFF
 * 0x1: TOR
 * 0x2: NA4
 * 0x3: NAPOT
-|{set:cellbgcolor:#FFFFFF}rsv |7:5       |ZERO   |0 |Must be zero on write, reserved for future
-|{set:cellbgcolor:#FFFFFF}esr   |8:8    |WARL   |0    a| Error response suprression on read
+|{set:cellbgcolor:#FFFFFF}sire |5:5       |WARL   |0 | To suppress interrupt for an illegal read access caught by the entry
 
-* 0x0: respond a bus error
-* 0x1: do not respond a bus error. User to define the behavior, e.g., bus respond a pre-defined value to the initiator. (Probably we can get rid of the global ERREACT.rre/rwe)
-|{set:cellbgcolor:#FFFFFF}esw   |9:9    |WARL   |0    a| Error response suprression on write
+|{set:cellbgcolor:#FFFFFF}siwe |6:6       |WARL   |0 |Suppress interrupt for write violations caught by the entry
 
-* 0x0: respond a bus error
-* 0x1: do not respond a bus error. User to define the behavior, e.g., bus respond a pre-defined value to the initiator.
-|{set:cellbgcolor:#FFFFFF}rsv |31:10       |ZERO   |0 |Must be zero on write, reserved for future
+|{set:cellbgcolor:#FFFFFF}sixe |7:7       |WARL   |0 |Suppress interrupt on an illegal instruction fetch caught by the entry
+
+|{set:cellbgcolor:#FFFFFF}sere   |8:8    |WARL   |0    a| Supress the (bus) error on an illegal read access caught by the entry
+
+* 0x0: the response by *ERR_CFG.rre* 
+* 0x1: do not respond an error. User to define the behavior, e.g., respond a success with an implementation-dependent value to the initiator.
+
+|{set:cellbgcolor:#FFFFFF}sewe   |9:9    |WARL   |0    a| Supress the (bus) error on an illegal write access caught by the entry
+
+* 0x0: the response by *ERR_CFG.rwe* 
+* 0x1: do not respond an error. User to define the behavior, e.g., respond a success if response is needed
+
+|{set:cellbgcolor:#FFFFFF}sexe   |10:10    |WARL   |0    a| Supress the (bus) error on an illegal instruction fetch caught by the entry
+
+* 0x0: the response by *ERR_CFG.rxe*
+* 0x1: do not respond an error. User to define the behavior, e.g., respond a success with an implementation-dependent value to the initiator.
+|{set:cellbgcolor:#FFFFFF}rsv |31:11       |ZERO   |0 |Must be zero on write, reserved for future
 |===
-The bits, r, w, and x, grant the read, write, or execution permission, respectively. Not each bit should be programmable. Some or all of them could be wired. Besides, an implementation can optionally impose constraints on their combinations. For example, x and w can't be 1 simultaneously. 
 
-The *ENTRY_USER_CFG* implementation defined registers that allows the users to define their own additional IOPMP check rules beside the rules defined in *ENTRY_CFG*.
+Bits, *r*, *w*, and *x*, grant read, write, or instruction fetch permission, respectively. Not each bit should be programmable. Some or all of them could be wired. Besides, an implementation can optionally impose constraints on their combinations. For example, *x* and *w* can't be 1 simultaneously. 
+
+*ENTRY_USER_CFG* implementation defined registers that allows users to define their own additional IOPMP check rules beside the rules defined in *ENTRY_CFG*.
 
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
 5+h|{set:cellbgcolor:#D3D3D3} ENTRY_USER_CFG(_i_), _i_ =0...HWCFG1.entry_num-1
 5+h|ENTRYOFFSET + 0xC + (_i_)*16
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}im    |31:0       |IMP     |DC         |User customized permission field 
+|{set:cellbgcolor:#FFFFFF}im    |31:0       |IMP     |IMP         |User customized field 
 |===

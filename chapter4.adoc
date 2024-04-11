@@ -1,28 +1,28 @@
 [[Other_IOPMP_Models]]
 == Other IOPMP Models
 === Tables Reduction
-The full model comprises two tables and an array, offering substantial flexibility for configuring an IOPMP. However, this comes at the cost of increased latency and area usage. The chapter presents the other models designed to simplify these tables, thereby catering to diverse design requirements. 
+Full model comprises two tables and an array, offering substantial flexibility for configuring an IOPMP. However, this comes at the cost of increased latency and area usage. The chapter presents the other models designed to simplify these tables, thereby catering to diverse design requirements. 
 
-Regarding the IOPMP array, it serves as the primary storage for IOPMP entries and is indispensable. Its size, however, can be minimized. Memory domains can be shared among SIDs, leading to shared entries between these SIDs. This sharing mechanism may contribute to reducing the overall size of the IOPMP array. Nevertheless, if a design doesn't encompass many shared regions, simplifying the SRCMD table, as done in the isolation and compact-_k_ models, could be a viable consideration.
+The IOPMP array functions as the primary repository for IOPMP entries with it's size adjustable. Sharing memory domains among RRIDs can result in shared entries between them. This sharing approach has the potential to decrease the overall footprint of the IOPMP array. Nevertheless, if a design doesn't encompass many shared regions, simplifying the SRCMD table, as demonstrated in the isolation and compact-_k_ models, could be a viable consideration.
 
-As to the MDCFG table, it mainly plays a role of a partation of the entries in the IOPMP. Besides programming each MDCFG(_m_).t for every MD _m_, we could also consider evenly distributing entries across each MD. The rapid-_k_, dynamic-_k_, and compact-_k_ models do so.
+As to MDCFG table, its primary function is to partition the entries within the IOPMP. Besides programming each *MDCFG(_m_).t* for every MD _m_, an alternative approach involves evenly distributing entries across each MD. This distribution method is implemented in the Rapid-_k_, dynamic-_k_, and compact-_k_ models.
 
-=== The Rapid-_k_ Model
-The rapid-_k_ model is based on the full model, and to shorten the latency, it omits the lookup of the MDCFG table. Every memory domain has exactly _k_ entries where _k_ is implementation-dependent and non-programmable. The value _k_ is stored in MDCFG(0).t. Implementing MDCFG(_j_) is not required when _j_>0. MDCFGLCK.f is wired to the number of MDs and MDCFGLCK.l should be 1.
+=== Rapid-k Model
+The Rapid-_k_ model is based on Full model and aims to reduce latency by eliminating the need to lookup the MDCFG table. In this model, each memory domain has exactly _k_ entries where _k_ is implementation-dependent and non-programmable. Only MDCFG(0) is utilized, rendering the implementation of MDCFG(j) unnecessary for j greater than 0.  *MDCFG(0).t* store the value _k_, while *MDCFGLCK.f* is ignored and *MDCFGLCK.l* should be 1.
 
-=== The Dynamic-_k_ Model
-The dynamic-_k_ model is based on the rapid-_k_ model, except the _k_ value is programmable. That is, MDCFG(0).t is WARL and accepts a limited set of values. MDCFGLCK.f is wired to the number of MDs, and MDCFGLCK.l indicates if MDCFG(0).t is still programmable or locked.
+=== Dynamic-k Model
+Dynamic-_k_ model is based on rapid-_k_ model, except the _k_ value is programmable. That is, *MDCFG(0).t* is WARL and accepts a limited set of values. *MDCFGLCK.f* is ignored, and *MDCFGLCK.l* indicates if *MDCFG(0).t* is still programmable or locked.
 
-=== The Isolation Model
-The bitmap implementation of the SRCMD table facilitates the sharing of regions between SIDs. The isolation model is designed for the case of no or a few shared regions. In this model, each SID is exactly associated with one MD. Thus, SRCMD table lookup is not needed. SID _i_ is associated with MD _i_ exactly. It benefits the area, the latency, and complexity. The penalty is to duplicate the same entries once some shared regions are needed. In this model, the SRCMD table and the MDLCK(H) registers are omitted.
+=== Isolation Model
+The bitmap implementation of SRCMD table facilitates the sharing of regions between RRIDs. The Isolation model is specifically tailored for scenarios where there are minimal to no shared regions. In this model, each RRID is exactly associated with a signle MD, eliminating the necessity for SRCMD table lookups. Each RRID _i_ is directly associated with MD _i_, resulting in advantages in terms of area, latency, and system complexity. However, duplication of entries occurs when shared regions are required, representing a potential drawback. In this model, SRCMD table and *MDLCK(H)* registers are omitted.
 
-The number of SIDs to support is bounded by the maximal number of MDs, 63.
+The number of RRIDs to support is bounded by the maximal number of MDs, 63.
 
-There is no constraint imposed on the MDCFG table and the MDCFGLCK register.
+There is no constraint imposed on MDCFG table and *MDCFGLCK* register.
 
-=== The Compact-_k_ Model
-The compact-_k_ model is the smallest model. Based on the isolation model, it requres that every MD has exactly _k_ entries and _k_ is not programmable. MDCFG(0).t holds the value _k_, MDCFGLCK.f is wired to the number of MDs and MDCFGLCK.l is 1.
+=== Compact-k Model
+The Compact-_k_ model, being the most compact variant, is based on the Isolation model. It mandates that each MD has exactly _k_ entries with _k_ being non-programmable. Only *MDCFG(0)* is implemented. *MDCFG(0).t* holds the value _k_, *MDCFGLCK.f* is ignored and *MDCFGLCK.l* is 1.
 
 === Model Detections
 
-To distinguish the above models, the user can read register HWCFG0.model to determine the current implemented IOPMP model.
+To distinguish the above models, the user can read register *HWCFG0.model* to determine the current implemented IOPMP model.
