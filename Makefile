@@ -48,7 +48,7 @@ JUNK := *.pdf *.aux *.log *.bbl *.blg *.toc *.out *.fdb_latexmk *.fls *.synctex.
 iopmp-spec: riscv-iopmp-specification.pdf
 
 riscv-iopmp-specification.pdf: $(SRCDIR)/header.adoc $(SRCDIR)/*.adoc
-	@echo "Building Privileged ISA"
+	@echo "Building IOPMP specification"
 	rm -f $@.tmp
 	asciidoctor-pdf $(ASCIIDOCTOR_OPTS) --out-file=$@.tmp $<
 	mv $@.tmp $@

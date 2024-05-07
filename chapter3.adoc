@@ -12,7 +12,12 @@ For easier description, *SRCMD(_s_)* is a 64-bit register representing the conca
 
 Field *SRCMD(_s_).md* is a bitmapped field and has up to 63 bits. Bit *md[_j_]* in *SRCMD(_s_)* indicates if MD _j_ is associated with RRID _s_. For unimplemented memory domains, the corresponding bits should be zero. A Full model IOPMP supports up to 63 memory domains. For a system requiring more memory domains than 63, please refer to Appendix A2.
 
-When a transaction with RRID _s_ arrives at an IOPMP, the IOPMP retrieves all associated MDs with RRID _s_ by looking up SRCMD table. Then, by using MDCFG table, the IOPMP can obtain all entries for a MD. MDCFG table, viewed as a partition of the entries in the IOPMP, contains an array of registers. Each register in this array, denoted as *MDCFG(_m_)*, corresponds to a specific memory domain _m_. Field *MDCFG(_m_).t* indicates the top index of IOPMP entry belonging to the memory domain _m_. An IOPMP entry with index _j_ belongs to MD _m_ if *MDCFG(_m_-1).t* &#8804; _j_ < *MDCFG(_m_).t*, where _m_ > 0. MD 0 owns the IOPMP entries with index _j_ < *MDCFG(0).t*.
+When a transaction with RRID _s_ arrives at an IOPMP, the IOPMP retrieves all associated MDs with RRID _s_ by looking up SRCMD table. Then, by using MDCFG table, the IOPMP can obtain all entries for a MD. MDCFG table, viewed as a partition of the entries in the IOPMP, contains an array of registers. Each register in this array, denoted as *MDCFG(_m_)*, corresponds to a specific memory domain _m_. Field *MDCFG(_m_).t* indicates the top index of IOPMP entry belonging to the memory domain _m_. An IOPMP entry with index _j_ belongs to MD _m_ if *MDCFG(_m_-1).t* &#8804; _j_ < *MDCFG(_m_).t*, where _m_ > 0. MD 0 owns the IOPMP entries with index _j_ < *MDCFG(0).t*. *MDCFG(_m_+1).t* should be programmed larger than or equal to *MDCFG(_m_).t*. The IOPMP behavior of improperly programming them is implementation-dependent as long as (1) an entry must belong to at most one memory domain and (2) the index of an entry in a lower-indexed memory domain should be lower than that in a higher-indexed memory domain.
+
+[NOTE]
+====
+For programmers, to ensure the portability, MDCFG(_m_).t should be increased monotonically for _m_ during the runtime, that is, MDCFG(_m_).t &#8804; MDCFG(_m_+1).t for any legal _m_. Programming or initializing MDCFGs may temporarily cause improper settings; however, these registers are typically not changed at a high frequency, and one could stall the IOPMP while programming them. Thus, the specification doesn't impose too many requirements on the case.
+====
 
 After retrieving all associated IOPMP entries, a Full model IOPMP checks the transaction according to these entries.
 

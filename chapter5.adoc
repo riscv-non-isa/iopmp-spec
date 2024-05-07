@@ -234,6 +234,7 @@ h|Field                         |Bits   |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}ire   |2:2    |WARL   |0     | To trigger an interrupt on an illegal read access
 |{set:cellbgcolor:#FFFFFF}iwe   |3:3    |WARL   |0     | To trigger an interrupt on an illegal write access
 |{set:cellbgcolor:#FFFFFF}ixe   |4:4    |WARL   |0     | To trigger an interrupt on an illegal instruction fetch.
+Implemented only for *HWCFG0.chk_x*=1.
 |{set:cellbgcolor:#FFFFFF}rre   |5:5    |WARL   |0    a| Response on an illegal read accesses
 
 * 0x0: respond an implementation-dependent error, such as a bus error
@@ -244,8 +245,6 @@ h|Field                         |Bits   |R/W    |Default    |Description
 * 0x0: respond an error if a response is needed
 * 0x1: respond a success to the initiator instead of an error if a response is needed
 
-
-Implemented only for *HWCFG0.chk_x*=1.
 |{set:cellbgcolor:#FFFFFF}rxe   |7:7   |WARL   |0     a| Response on an illegal instruction fetch:
 
 * 0x0: respond an error
@@ -263,15 +262,18 @@ An implementation can optionally support the full and partial functions defined 
 5+h|{set:cellbgcolor:#D3D3D3} ERR_REQINFO
 5+h|0x0064
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}ip    |0:0    |R     |0      | Indicate if an interrupt is pending on read. for 1, the illegal capture recorder (*ERR_REQID*, *ERR_REQADDR*, *ERR_REQADDRH*, and fields in this register) has valid content and won't be updated even on subsequent violations.
-|{set:cellbgcolor:#FFFFFF}ip    |0:0    |W1C   |N/A     | Write 1 clears the bit and the illegal recorder reactivates. Write 0 causes no effect on the bit.
+
+|{set:cellbgcolor:#FFFFFF}v    |0:0    |R     |0      | Indicate if the illegal capture recorder (*ERR_REQID*, *ERR_REQADDR*, *ERR_REQADDRH*, and fields in this register) has a valid content and will keep the content until the bit is cleared. An interrupt will be triggered if *ERR_CFG.ie* or *ERR_CFG.ire/iwe/ixe* is not disabled, the interrupt will keep asserted until the error valid is cleared.
+|{set:cellbgcolor:#FFFFFF}v    |0:0    |W1C   |N/A     | Write 1 clears the bit, the illegal recorder reactivates and the interrupt (if enabled). Write 0 causes no effect on the bit.
 |{set:cellbgcolor:#FFFFFF} ttype     |2:1   |R      |0          a|{set:cellbgcolor:#FFFFFF}Indicated the transaction type
 
 - 0x00 = reserved
 - 0x01 = read access
 - 0x02 = write access
 - 0x03 = instruction fetch
+
 |{set:cellbgcolor:#FFFFFF} rsv1   |3:3    |ZERO      |0          |Must be zero on write, reserved for future
+
 |{set:cellbgcolor:#FFFFFF} etype     |6:4   |R      |0          a| {set:cellbgcolor:#FFFFFF}Indicated the type of violation
 
 - 0x00 = no error
@@ -314,7 +316,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 5+h|0x0070
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}rrid   |15:0       |R      |DC          a|Indicate the errored RRID.
-|{set:cellbgcolor:#FFFFFF}eid   |31:16  |R      |DC          |Indicates the index pointing to the entry that catches the violation. If no entry is hit, i.e., *etype*=0x05, the value of this field is invalid.
+|{set:cellbgcolor:#FFFFFF}eid   |31:16  |R      |DC          |Indicates the index pointing to the entry that catches the violation. If no entry is hit, i.e., *etype*=0x05, the value of this field is invalid. If the field is not implemented, it should be wired to 0xffff.
 |===
 
 *ERR_MFR* is an optional register. If Multi-Faults Record Extension is enabled (*HWCFG0.mfr_en*=1), *ERR_MFR* can be used to retrieve which RRIDs make subsequent violations.
