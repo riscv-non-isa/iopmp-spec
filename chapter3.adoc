@@ -65,7 +65,7 @@ The Rapid-_k_ model is based on Full model and aims to reduce latency by elimina
 ==== Dynamic-k Model
 Dynamic-_k_ model is based on rapid-_k_ model, except the _k_ value is programmable. That is, *MDCFG(0).t* is WARL and accepts a limited set of values. *MDCFGLCK.f* is ignored, and *MDCFGLCK.l* indicates if *MDCFG(0).t* is still programmable or locked.
 
-===== Isolation Model
+==== Isolation Model
 The bitmap implementation of SRCMD table facilitates the sharing of regions between RRIDs. The Isolation model is specifically tailored for scenarios where there are minimal to no shared regions. In this model, each RRID is exactly associated with a single MD, eliminating the necessity for SRCMD table lookups. Each RRID _i_ is directly associated with MD _i_, resulting in advantages in terms of area, latency, and system complexity. However, duplication of entries occurs when shared regions are required, representing a potential drawback. In this model, SRCMD table and *MDLCK(H)* registers are omitted.
 
 The number of RRIDs to support is bounded by the maximal number of MDs, 63.
