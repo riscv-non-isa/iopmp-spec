@@ -255,7 +255,6 @@ Implemented only for *HWCFG0.chk_x*=1.
 |===
 
 An implementation can optionally support the full and partial functions defined in the fields *ree*, *rwe*, and *rxe*.
-//Paul 4/4:  As discussed on 4/3, we should pick a new name to replace 'ip'.
 *ERR_REQINFO* captures more detailed error infomation.
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
@@ -308,7 +307,6 @@ h|Field                         |Bits       |R/W    |Default    |Description
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}addrh |31:0       |R      |DC         |Indicate the errored address[65:34]
 |===
-// Paul 4/4: I am thinking of whether 'eid' should be a mandatory field. Could we make it optional?
 *ERR_REQID* indicates the errored RRID and entry index.
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
