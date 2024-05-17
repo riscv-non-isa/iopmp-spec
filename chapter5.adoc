@@ -230,31 +230,14 @@ h|Field                         |Bits       |R/W    |Default    |Description
 5+h|0x0060
 h|Field                         |Bits   |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}l     |0:0    |W1SS   |0          |Lock fields to *ERR_CFG* register
-|{set:cellbgcolor:#FFFFFF}ie    |1:1    |RW     |0          |Enable the interrupt of the IOPMP
-|{set:cellbgcolor:#FFFFFF}ire   |2:2    |WARL   |0     | To trigger an interrupt on an illegal read access
-|{set:cellbgcolor:#FFFFFF}iwe   |3:3    |WARL   |0     | To trigger an interrupt on an illegal write access
-|{set:cellbgcolor:#FFFFFF}ixe   |4:4    |WARL   |0     | To trigger an interrupt on an illegal instruction fetch.
-Implemented only for *HWCFG0.chk_x*=1.
-|{set:cellbgcolor:#FFFFFF}rre   |5:5    |WARL   |0    a| Response on an illegal read accesses
+|{set:cellbgcolor:#FFFFFF}ie    |1:1    |RW     |0          |Enable the interrupt of the IOPMP rule violation.
+|{set:cellbgcolor:#FFFFFF}rs   |2:2    |WARL   |0     | To suppress an error response on an IOPMP rule violation.
 
 * 0x0: respond an implementation-dependent error, such as a bus error
 * 0x1: respond a success with a pre-defined value to the initiator instead of an error
-
-|{set:cellbgcolor:#FFFFFF}rwe   |6:6   |WARL   |0     a| Response on an illegal write access:
-
-* 0x0: respond an error if a response is needed
-* 0x1: respond a success to the initiator instead of an error if a response is needed
-
-|{set:cellbgcolor:#FFFFFF}rxe   |7:7   |WARL   |0     a| Response on an illegal instruction fetch:
-
-* 0x0: respond an error
-* 0x1: respond a success with a pre-defined value to the initiator instead of an error. 
-
-Implemented only for *HWCFG0.chk_x*=1.
-|{set:cellbgcolor:#FFFFFF}rsv   |31:8  |ZERO   |0     | Must be zero on write, reserved for future
+|{set:cellbgcolor:#FFFFFF}rsv   |31:3  |ZERO   |0     | Must be zero on write, reserved for future
 |===
 
-An implementation can optionally support the full and partial functions defined in the fields *ree*, *rwe*, and *rxe*.
 *ERR_REQINFO* captures more detailed error infomation.
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
