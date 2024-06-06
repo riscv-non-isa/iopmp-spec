@@ -79,3 +79,9 @@ The Compact-_k_ model, being the most compact variant, is based on the Isolation
 
 To distinguish the above models, the user can read register *HWCFG0.model* to determine the current implemented IOPMP model.
 
+==== Prelocked Configurations
+
+Prelocked configurations in the specification mean the fields or registers are locked right after reset. They are not programmable at all. In practice, they could be hardwired and/or implemented by read-only memory. The obvious benefits are saving gate counts, no programming mistakes, and no malicious modification. Every lock mechanism in this chapter can be optionally pre-locked.
+The non-zero reset value of *MDCFGLCK.f* reflects the pre-locked *MDCFG(_j_)*, where _j_< *MDCFGLCK.f*. The non-zero reset value of ENTRYLCK.f reflects the existing pre-locked entries. *SRCMD_EN/R/W(H)* can have prelocked bits fully or partially based on presets of *MDLCK.md* and *SRCMD_EN.l*.
+The rest of the lock bits can be preset, too. They are *ERR_CFG.l*, *MDLCK.l*, *MDCFGLCK.l*, and *ENTRYLCK.l*.
+
