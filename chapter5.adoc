@@ -91,7 +91,7 @@ h|Field                         |Bits   |R/W    |Default    |Description
 |user_cfg_en                    |6:6    |R      |IMP        |Indicate if user customized attributes is supported; which are *ENTRY_USER_CFG(_i_)* registers.
 |prient_prog                    |7:7    |W1CS   |IMP        |A write-1-clear bit is sticky to 0 and indicates if *HWCFG2.prio_entry* is programmable. Reset to 1 if the implementation supports programmable *prio_entry*, otherwise, wired to 0.
 |rrid_transl_en                  |8:8    |R      |IMP        |Indicate the if tagging a new RRID on the initiator port is supported
-|rrid_transl_prog                |9:9    |W1CS   |IMP        |A write-1-set bit is sticky to 0 and indicate if the field sid_transl is programmable. Support only for *rrid_transl_en*=1, otherwise, wired to 0.
+|rrid_transl_prog                |9:9    |W1CS   |IMP        |A write-1-set bit is sticky to 0 and indicate if the field rrid_transl is programmable. Support only for *rrid_transl_en*=1, otherwise, wired to 0.
 |chk_x|10:10  |R     | IMP| Indicate if the IOPMP implements the check of an instruction fetch. On *chk_x*=0, all fields of illegal instruction fetchs are ignored, including *HWCFG0.no_x*, *ERR_CFG.ixe*, *ERR_CFG.rxe*, *ENTRY_CFG(_i_).sixe*, *ENTRY_CFG(_i_).esxe*, and *ENTRY_CFG(_i_).x*. It should be wired to zero if there is no indication for an instruction fetch.
 |no_x|11:11  |R     | IMP| For *chk_x*=1, the IOPMP with *no_x*=1 always fails on an instruction fetch; otherwise, it should depend on *x*-bit in *ENTRY_CFG(_i_)*. For *chk_x*=0, *no_x* has no effect.
 |no_w|12:12  |R     | IMP| Indicate if the IOPMP always fails write accesses considered as as no rule matched.
@@ -399,7 +399,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
-5+h|{set:cellbgcolor:#D3D3D3} SRCMD_WH(_s_), _s_ = 0...HWCFG1.sid_num-1
+5+h|{set:cellbgcolor:#D3D3D3} SRCMD_WH(_s_), _s_ = 0...HWCFG1.rrid_num-1
 5+h|0x1014 + (_s_)*32
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}mdh   |31:0       |WARL   |DC         | *mdh[_j_]* = 1 indicates RRID _s_ has write permission to MD (_j_+31). 
@@ -445,17 +445,17 @@ h|Field                         |Bits       |R/W    |Default    |Description
 
 |{set:cellbgcolor:#FFFFFF}sere   |8:8    |WARL   |0    a| Supress the (bus) error on an illegal read access caught by the entry
 
-* 0x0: the response by *ERR_CFG.rre* 
+* 0x0: respond an error if ERR_CFG.rs is 0x0. 
 * 0x1: do not respond an error. User to define the behavior, e.g., respond a success with an implementation-dependent value to the initiator.
 
 |{set:cellbgcolor:#FFFFFF}sewe   |9:9    |WARL   |0    a| Supress the (bus) error on an illegal write access caught by the entry
 
-* 0x0: the response by *ERR_CFG.rwe* 
+* 0x0: respond an error if ERR_CFG.rs is 0x0. 
 * 0x1: do not respond an error. User to define the behavior, e.g., respond a success if response is needed
 
 |{set:cellbgcolor:#FFFFFF}sexe   |10:10    |WARL   |0    a| Supress the (bus) error on an illegal instruction fetch caught by the entry
 
-* 0x0: the response by *ERR_CFG.rxe*
+* 0x0: respond an error if ERR_CFG.rs is 0x0.
 * 0x1: do not respond an error. User to define the behavior, e.g., respond a success with an implementation-dependent value to the initiator.
 |{set:cellbgcolor:#FFFFFF}rsv |31:11       |ZERO   |0 |Must be zero on write, reserved for future
 |===

@@ -60,7 +60,7 @@ The IOPMP array functions as the primary repository for IOPMP entries with it's 
 As to MDCFG table, its primary function is to partition the entries within the IOPMP. Besides programming each *MDCFG(_m_).t* for every MD _m_, an alternative approach involves evenly distributing entries across each MD. This distribution method is implemented in the Rapid-_k_, dynamic-_k_, and compact-_k_ models.
 
 ==== Rapid-k Model
-The Rapid-_k_ model is based on Full model and aims to reduce latency by eliminating the need to lookup the MDCFG table. In this model, each memory domain has exactly _k_ entries where _k_ is implementation-dependent and non-programmable. Only MDCFG(0) is utilized, rendering the implementation of MDCFG(j) unnecessary for j greater than 0.  *MDCFG(0).t* store the value _k_, while *MDCFGLCK.f* is ignored and *MDCFGLCK.l* should be 1.
+The Rapid-_k_ model is based on Full model and aims to reduce latency by eliminating the need to lookup the MDCFG table. In this model, each memory domain has exactly _k_ entries where _k_ is implementation-dependent and non-programmable. Only *MDCFG(0)* is utilized, rendering the implementation of MDCFG(j) unnecessary for j greater than 0.  *MDCFG(0).t* store the value _k_, while *MDCFGLCK.f* is ignored and *MDCFGLCK.l* should be 1.
 
 ==== Dynamic-k Model
 Dynamic-_k_ model is based on rapid-_k_ model, except the _k_ value is programmable. That is, *MDCFG(0).t* is WARL and accepts a limited set of values. *MDCFGLCK.f* is ignored, and *MDCFGLCK.l* indicates if *MDCFG(0).t* is still programmable or locked.
@@ -82,6 +82,6 @@ To distinguish the above models, the user can read register *HWCFG0.model* to de
 ==== Prelocked Configurations
 
 Prelocked configurations in the specification mean the fields or registers are locked right after reset. They are not programmable at all. In practice, they could be hardwired and/or implemented by read-only memory. The obvious benefits are saving gate counts, no programming mistakes, and no malicious modification. Every lock mechanism in this chapter can be optionally pre-locked.
-The non-zero reset value of *MDCFGLCK.f* reflects the pre-locked *MDCFG(_j_)*, where _j_< *MDCFGLCK.f*. The non-zero reset value of ENTRYLCK.f reflects the existing pre-locked entries. *SRCMD_EN/R/W(H)* can have prelocked bits fully or partially based on presets of *MDLCK.md* and *SRCMD_EN.l*.
+The non-zero reset value of *MDCFGLCK.f* reflects the pre-locked *MDCFG(_j_)*, where _j_< *MDCFGLCK.f*. The non-zero reset value of *ENTRYLCK.f* reflects the existing pre-locked entries. *SRCMD_EN/R/W(H)* can have prelocked bits fully or partially based on presets of *MDLCK.md* and *SRCMD_EN.l*.
 The rest of the lock bits can be preset, too. They are *ERR_CFG.l*, *MDLCK.l*, *MDCFGLCK.l*, and *ENTRYLCK.l*.
 
