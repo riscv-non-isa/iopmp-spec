@@ -1,3 +1,4 @@
+[#APPENDIX_A2]
 [Appendix_A2]
 == A2: Run Out Memory Domains
 In this specification, the support is capped at 63 memory domains. However, this chapter provides pertinent recommendations for situations that necessitate a larger number of memory domains.
@@ -5,7 +6,7 @@ In this specification, the support is capped at 63 memory domains. However, this
 
 *A2.1 Parallel IOPMP*
 
-Multiple IOPMPs can be placed in parallel. A transaction should be directed to one of these IOPMPs for its check. The chosen IOPMP then determines its legality. There are two potential methods for routing the transaction: by address or by RRID. Address-based routing divides the address space into multiple disjoint sets, and a transaction is directed to the IOPMP based on its starting address. Similarly, RRID-based routing divides all possible SIDs, and a transaction is directed to the IOPMP based on its RRID.
+Multiple IOPMPs can be placed in parallel. A transaction should be directed to one of these IOPMPs for its check. The chosen IOPMP then determines its legality. There are two potential methods for routing the transaction: by address or by RRID. Address-based routing divides the address space into multiple disjoint sets, and a transaction is directed to the IOPMP based on its starting address. Similarly, RRID-based routing divides all possible RRIDs, and a transaction is directed to the IOPMP based on its RRID.
 
 [NOTE]
 ====
