@@ -1,3 +1,0 @@
-[[Static_Rules]]
-== Static Rules
-TBD
