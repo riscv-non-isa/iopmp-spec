@@ -57,7 +57,7 @@ This format is based on Format 1, except *HWCFG0.md_entry_num* is programmable. 
 
 [#SECTION_3_4]
 === IOPMP Models
-For the sake of convenience of discussion, some highly used combinations of *HWCFG0* have an alias name, which are *srcmd_fmt*=0 and *mdcfg_fmt*=0 as the full model, *srcmd_fmt*=0 and *mdcfg_fmt*=1 as the rapid-_k_ model, where _k_ = (*md_entry_num* + 1), *srcmd_fmt*=0 and *mdcfg_fmt*=2 as the dynamic-_k_ model, where _k_ = (*md_entry_num* + 1), and *srcmd_fmt*=1 and *mdcfg_fmt*=1 as the compact-_k_ model, where _k_ = (*md_entry_num* + 1).
+For the sake of convenience of discussion, some highly used combinations of *HWCFG0* have an alias name, which are *srcmd_fmt*=0 and *mdcfg_fmt*=0 as the full model, *srcmd_fmt*=0 and *mdcfg_fmt*=1 as the rapid-_k_ model, where _k_ = (*md_entry_num* + 1), *srcmd_fmt*=0 and *mdcfg_fmt*=2 as the dynamic-_k_ model, where _k_ = (*md_entry_num* + 1), *srcmd_fmt*=1 and *mdcfg_fmt*=0 as the isolation model, and *srcmd_fmt*=1 and *mdcfg_fmt*=1 as the compact-_k_ model, where _k_ = (*md_entry_num* + 1).
 
 [#SECTION_3_5]
 === Configuration Protection
