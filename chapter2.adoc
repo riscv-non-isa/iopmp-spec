@@ -96,9 +96,9 @@ Entries indexed by _i_~0~, _i_~1~, …​, _i~N~_ match all bytes of the transac
 * Read access transaction: +
 *ERR_CFG.ie* && ( !*ENTRY_CFG(_i_~0~).sire* || !*ENTRY_CFG(_i_~1~).sire* || ... || !*ENTRY_CFG(_i~N~_).sire* )
 * Write access transaction: +
-*ERR_CFG.ie* && ( !*ENTRY_CFG(_i_~0~).siwe* || !*ENTRY_CFG(_i_~1~).siwe* || ... || *ENTRY_CFG(_i~N~_).siwe* )
+*ERR_CFG.ie* && ( !*ENTRY_CFG(_i_~0~).siwe* || !*ENTRY_CFG(_i_~1~).siwe* || ... || !*ENTRY_CFG(_i~N~_).siwe* )
 * Instruction fetch transaction: +
-*ERR_CFG.ie* && ( !*ENTRY_CFG(_i_~0~).sixe* || !*ENTRY_CFG(_i_~1~).sixe* || ... || *ENTRY_CFG(_i~N~_).sixe* )
+*ERR_CFG.ie* && ( !*ENTRY_CFG(_i_~0~).sixe* || !*ENTRY_CFG(_i_~1~).sixe* || ... || !*ENTRY_CFG(_i~N~_).sixe* )
 
 
 Transactions that violates the IOPMP rule will by default yield a bus error. Additionally, the bus error response behavior on an IOPMP violation can be optionally configured globally via *ERR_CFG* register or locally through each *ENTRY_CFG* register. The IOPMP will signal the bus to the presence of a violation but will suppress the bus error if *ERR_CFG.rs* is implemented and set to 1 on a violation.  User-defined suppression behavior allows, for example, a read response of 0x0.  Likewise, the bus error response on an illegal write or instruction fetch. 
@@ -110,9 +110,9 @@ Entries indexed by _i_~0~, _i_~1~, …​, _i~N~_ match all bytes of the transac
 * Read access transaction: + 
 !*ERR_CFG.rs* && ( !*ENTRY_CFG(_i_~0~).sere* || !*ENTRY_CFG(_i_~1~).sere* || ... || !*ENTRY_CFG(_i~N~_).sere* )
 * Write access transaction: +
-!*ERR_CFG.rs* && ( !*ENTRY_CFG(_i_~0~).sewe* || *ENTRY_CFG(_i_~1~).sewe* || ... || !*ENTRY_CFG(_i~N~_).sewe* )
+!*ERR_CFG.rs* && ( !*ENTRY_CFG(_i_~0~).sewe* || !*ENTRY_CFG(_i_~1~).sewe* || ... || !*ENTRY_CFG(_i~N~_).sewe* )
 * Instruction fetch transaction: +
-!*ERR_CFG.rs* && ! ( !*ENTRY_CFG(_i_~0~).sexe* || !*ENTRY_CFG(_i_~1~).sexe* || ... || !*ENTRY_CFG(_i~N~_).sexe* )
+!*ERR_CFG.rs* && ( !*ENTRY_CFG(_i_~0~).sexe* || !*ENTRY_CFG(_i_~1~).sexe* || ... || !*ENTRY_CFG(_i~N~_).sexe* )
 
 The error capture record maintains the specifics of the first illegal access detected, except the following two conditions are held: (1) any interrupt-suppress bit regarding the access is set, and (2) no bus error is returned. New error capture only occurs when there is no currently pending error, namely *ERR_REQINFO.v* is ‘0’. If there exists an pending error (*v* is ‘1’), the record will not be updated, even if a new illegal access is detected. In other words, *v*  indicates whether the content of the capture record is valid and should be intentionally cleared in order to capture subsequent illegal accesses. One can write 1 to the bit to clear it. The error capture record is optional. If it is not implemented, *v* should be wired to zero. One can implement the error capture record is implemented but not *ERR_REQID.eid*. In this case, *ERR_REQID.eid* should be wired to 0xffff.
 
