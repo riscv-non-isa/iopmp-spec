@@ -74,7 +74,7 @@ h|Field                         |Bits   |R/W    |Default    |Description
 5+h|HWCFG0{set:cellbgcolor:#D3D3D3}
 5+h|0x0008
 h|Field                         |Bits   |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}mdcfg_fmt|1:0    |R      |IMP        a|Indicate the MDCFG format
+|{set:cellbgcolor:#FFFFFF}mdcfg_fmt |1:0    |R      |IMP        a|Indicate the MDCFG format
 
 * 0x0: Format 0. MDCFG table is implemented.
 
@@ -85,7 +85,7 @@ h|Field                         |Bits   |R/W    |Default    |Description
 * 0x3: reserved.
 
 Please refer to <<#SECTION_3_3, MDCFG Table Formats>> for details.
-|srcmd_fmt                      |3:2    |R      |IMP        a|Indicate the SRCMD format
+|{set:cellbgcolor:#FFFFFF}srcmd_fmt                      |3:2    |R      |IMP        a|Indicate the SRCMD format
 
 * 0x0: Format 0. *SRCMD_EN(_s_)* and *SRCMD_ENH(_s_)* are available.
 
@@ -184,7 +184,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 * 1: stall transactions associated with selected RRID
 * 2: don't stall transactions associated with selected RRID
 * 3: reserved
-|stat                           |31:30      |R      |0          a|
+|{set:cellbgcolor:#FFFFFF}stat                           |31:30      |R      |0          a|
 * 0: *RRIDSCP* not implemented
 * 1: transactions associated with selected RRID are stalled
 * 2: transactions associated with selected RRID not are stalled
@@ -248,7 +248,9 @@ h|Field                         |Bits       |R/W    |Default    |Description
 h|Field                         |Bits   |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}l     |0:0    |W1SS   |0          |Lock fields to *ERR_CFG* register
 |{set:cellbgcolor:#FFFFFF}ie    |1:1    |RW     |0          |Enable the interrupt of the IOPMP rule violation.
-|{set:cellbgcolor:#FFFFFF}rs   |2:2    |WARL   |0     a| To suppress an error response on an IOPMP rule violation.
+|{set:cellbgcolor:#FFFFFF}rs   |2:2    |WARL   |0     a| 
+
+To suppress an error response on an IOPMP rule violation.
 
 * 0x0: respond an implementation-dependent error, such as a bus error
 * 0x1: respond a success with a pre-defined value to the initiator instead of an error
@@ -266,7 +268,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 
 |{set:cellbgcolor:#FFFFFF}v    |0:0    |R     |0      | Indicate if the illegal capture recorder (*ERR_REQID*, *ERR_REQADDR*, *ERR_REQADDRH*, and fields in this register) has a valid content and will keep the content until the bit is cleared. An interrupt will be triggered if a violation is detected and related interrupt enable/supression configure bits are not disabled, the interrupt will keep asserted until the error valid is cleared.
 |{set:cellbgcolor:#FFFFFF}v    |0:0    |W1C   |N/A     | Write 1 clears the bit, the illegal recorder reactivates and the interrupt (if enabled). Write 0 causes no effect on the bit.
-|{set:cellbgcolor:#FFFFFF} ttype     |2:1   |R      |0          a|{set:cellbgcolor:#FFFFFF}Indicated the transaction type
+|{set:cellbgcolor:#FFFFFF} ttype     |2:1   |R      |0          a|{set:cellbgcolor:#FFFFFF} Indicated the transaction type
 
 - 0x00 = reserved
 - 0x01 = read access
@@ -315,7 +317,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 5+h|{set:cellbgcolor:#D3D3D3} ERR_REQID
 5+h|0x0070
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}rrid   |15:0       |R      |DC          a|Indicate the errored RRID.
+|{set:cellbgcolor:#FFFFFF}rrid  |15:0       |R      |DC        |Indicate the errored RRID.
 |{set:cellbgcolor:#FFFFFF}eid   |31:16  |R      |DC          |Indicates the index pointing to the entry that catches the violation. If no entry is hit, i.e., *etype*=0x05, the value of this field is invalid. If the field is not implemented, it should be wired to 0xffff.
 |===
 
@@ -340,7 +342,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 5+h|{set:cellbgcolor:#D3D3D3} ERR_USER(_i_)
 5+h|0x0080 + 0x04 * _i_, _i_ = 0...7
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}user   |31:0       |IMP      |IMP          a|(Optional) user-defined registers
+|{set:cellbgcolor:#FFFFFF}user   |31:0       |IMP      |IMP     |(Optional) user-defined registers
 |===
 
 === *MDCFG Table*
@@ -488,7 +490,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 * 0x0: respond an error if *ERR_CFG.rs* is 0x0. 
 * 0x1: do not respond an error. User to define the behavior, e.g., respond a success with an implementation-dependent value to the initiator.
 
-|{set:cellbgcolor:#FFFFFF}sewe   |9:9    |WARL   |0    a| Suppress the (bus) error on an illegal write access caught by the entry
+|{set:cellbgcolor:#FFFFFF}sewe   |9:9    |WARL   |0    a|{set:cellbgcolor:#FFFFFF} Suppress the (bus) error on an illegal write access caught by the entry
 
 * 0x0: respond an error if *ERR_CFG.rs* is 0x0. 
 * 0x1: do not respond an error. User to define the behavior, e.g., respond a success if response is needed
