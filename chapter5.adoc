@@ -102,12 +102,12 @@ Please refer to <<#SECTION_3_2, SRCMD Table Formats>> for details.
 |prient_prog                    |7:7    |W1CS   |IMP        |A write-1-clear bit is sticky to 0 and indicates if *HWCFG2.prio_entry* is programmable. Reset to 1 if the implementation supports programmable *prio_entry*, otherwise, wired to 0.
 |rrid_transl_en                  |8:8    |R      |IMP        |Indicate the if tagging a new RRID on the initiator port is supported
 |rrid_transl_prog                |9:9    |W1CS   |IMP        |A write-1-clear bit is sticky to 0 and indicate if the field rrid_transl is programmable. Support only for *rrid_transl_en*=1, otherwise, wired to 0.
-|chk_x|10:10  |R     | IMP| Indicate if the IOPMP implements the check of an instruction fetch. On *chk_x*=0, all fields of illegal instruction fetches are ignored, including *HWCFG0.no_x*, *ENTRY_CFG(_i_).sixe*, *ENTRY_CFG(_i_).esxe*, and *ENTRY_CFG(_i_).x*. It should be wired to zero if there is no indication for an instruction fetch.
+|chk_x|10:10  |R     | IMP| Indicate if the IOPMP implements the check of an instruction fetch. On *chk_x*=0, all fields of illegal instruction fetches are ignored, including *HWCFG0.no_x*, *ENTRY_CFG(_i_).sixe*, *ENTRY_CFG(_i_).sexe*, and *ENTRY_CFG(_i_).x*. It should be wired to zero if there is no indication for an instruction fetch.
 |no_x|11:11  |R     | IMP| For *chk_x*=1, the IOPMP with *no_x*=1 always fails on an instruction fetch; otherwise, it should depend on *x*-bit in *ENTRY_CFG(_i_)*. For *chk_x*=0, *no_x* has no effect.
 |no_w|12:12  |R     | IMP| Indicate if the IOPMP always fails write accesses considered as as no rule matched.
 |stall_en|13:13  |R     | IMP| Indicate if the IOPMP implements stall-related features, which are *MDSTALL*, *MDSTALLH*, and *RRIDSCP* registers.
 |peis|14:14  |R     | IMP| Indicate if the IOPMP implements interrupt suppression per entry, including fields *sire*, *siwe*, and *sixe* in *ENTRY_CFG(_i_)*.
-|pees|15:15 | R |IMP| Indicate if the IOPMP implements the error suppression per entry, including fields *esre*, *eswe*, and *esxe* in *ENTRY_CFG(_i_)*.
+|pees|15:15 | R |IMP| Indicate if the IOPMP implements the error suppression per entry, including fields *sere*, *sewe*, and *sexe* in *ENTRY_CFG(_i_)*.
 |mfr_en|16:16 | R |IMP| Indicate if the IOPMP implements Multi Faults Record Extension, that is *ERR_MFR* and *ERR_REQINFO.svc*.
 
 |md_entry_num   |23:17  |WARL   |IMP     a| When *HWCFG0.mdcfg_fmt* = 
@@ -318,7 +318,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 5+h|0x0070
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}rrid  |15:0       |R      |DC        |Indicate the errored RRID.
-|{set:cellbgcolor:#FFFFFF}eid   |31:16  |R      |DC          |Indicates the index pointing to the entry that catches the violation. If no entry is hit, i.e., *etype*=0x05, the value of this field is invalid. If the field is not implemented, it should be wired to 0xffff.
+|{set:cellbgcolor:#FFFFFF}eid   |31:16  |R      |DC          |Indicates the index pointing to the entry that catches the violation. If no entry is hit, i.e., *etype*=0x05 or 0x06, the value of this field is invalid. If the field is not implemented, it should be wired to 0xffff.
 |===
 
 *ERR_MFR* is an optional register. If Multi-Faults Record Extension is enabled (*HWCFG0.mfr_en*=1), *ERR_MFR* can be used to retrieve which RRIDs make subsequent violations.
