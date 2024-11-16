@@ -101,16 +101,16 @@ Please refer to <<#SECTION_3_2, SRCMD Table Formats>> for details.
 |user_cfg_en                    |6:6    |R      |IMP        |Indicate if user customized attributes is supported; which are *ENTRY_USER_CFG(_i_)* registers.
 |prient_prog                    |7:7    |W1CS   |IMP        |A write-1-clear bit is sticky to 0 and indicates if *HWCFG2.prio_entry* is programmable. Reset to 1 if the implementation supports programmable *prio_entry*, otherwise, wired to 0.
 |rrid_transl_en                  |8:8    |R      |IMP        |Indicate the if tagging a new RRID on the initiator port is supported
-|rrid_transl_prog                |9:9    |W1CS   |IMP        |A write-1-set bit is sticky to 0 and indicate if the field rrid_transl is programmable. Support only for *rrid_transl_en*=1, otherwise, wired to 0.
-|chk_x|10:10  |R     | IMP| Indicate if the IOPMP implements the check of an instruction fetch. On *chk_x*=0, all fields of illegal instruction fetches are ignored, including *HWCFG0.no_x*, *ENTRY_CFG(_i_).sixe*, *ENTRY_CFG(_i_).esxe*, and *ENTRY_CFG(_i_).x*. It should be wired to zero if there is no indication for an instruction fetch.
+|rrid_transl_prog                |9:9    |W1CS   |IMP        |A write-1-clear bit is sticky to 0 and indicate if the field rrid_transl is programmable. Support only for *rrid_transl_en*=1, otherwise, wired to 0.
+|chk_x|10:10  |R     | IMP| Indicate if the IOPMP implements the check of an instruction fetch. On *chk_x*=0, all fields of illegal instruction fetches are ignored, including *HWCFG0.no_x*, *ENTRY_CFG(_i_).sixe*, *ENTRY_CFG(_i_).sexe*, and *ENTRY_CFG(_i_).x*. It should be wired to zero if there is no indication for an instruction fetch.
 |no_x|11:11  |R     | IMP| For *chk_x*=1, the IOPMP with *no_x*=1 always fails on an instruction fetch; otherwise, it should depend on *x*-bit in *ENTRY_CFG(_i_)*. For *chk_x*=0, *no_x* has no effect.
 |no_w|12:12  |R     | IMP| Indicate if the IOPMP always fails write accesses considered as as no rule matched.
 |stall_en|13:13  |R     | IMP| Indicate if the IOPMP implements stall-related features, which are *MDSTALL*, *MDSTALLH*, and *RRIDSCP* registers.
 |peis|14:14  |R     | IMP| Indicate if the IOPMP implements interrupt suppression per entry, including fields *sire*, *siwe*, and *sixe* in *ENTRY_CFG(_i_)*.
-|pees|15:15 | R |IMP| Indicate if the IOPMP implements the error suppression per entry, including fields *esre*, *eswe*, and *esxe* in *ENTRY_CFG(_i_)*.
+|pees|15:15 | R |IMP| Indicate if the IOPMP implements the error suppression per entry, including fields *sere*, *sewe*, and *sexe* in *ENTRY_CFG(_i_)*.
 |mfr_en|16:16 | R |IMP| Indicate if the IOPMP implements Multi Faults Record Extension, that is *ERR_MFR* and *ERR_REQINFO.svc*.
 
-|md_entry_num   |23:16  |WARL   |IMP     a| When *HWCFG0.mdcfg_fmt* = 
+|md_entry_num   |23:17  |WARL   |IMP     a| When *HWCFG0.mdcfg_fmt* = 
 
 * 0x0: must be zero
 
@@ -318,7 +318,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 5+h|0x0070
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}rrid  |15:0       |R      |DC        |Indicate the errored RRID.
-|{set:cellbgcolor:#FFFFFF}eid   |31:16  |R      |DC          |Indicates the index pointing to the entry that catches the violation. If no entry is hit, i.e., *etype*=0x05, the value of this field is invalid. If the field is not implemented, it should be wired to 0xffff.
+|{set:cellbgcolor:#FFFFFF}eid   |31:16  |R      |DC          |Indicates the index pointing to the entry that catches the violation. If no entry is hit, i.e., *etype*=0x05 or 0x06, the value of this field is invalid. If the field is not implemented, it should be wired to 0xffff.
 |===
 
 *ERR_MFR* is an optional register. If Multi-Faults Record Extension is enabled (*HWCFG0.mfr_en*=1), *ERR_MFR* can be used to retrieve which RRIDs make subsequent violations.
@@ -387,11 +387,6 @@ h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}mdh   |31:0       |WARL   |DC         | *mdh[_m_]* = 1 indicates MD (_m_+31) is associated with RRID _s_.
 |===
 
-// Paul (10/8): rewritten
-// TY: (10/09)
-//    1. Remove r variable.
-//    2. Replace character entity reference for special character (e.g., ≥, from $gt; to &#8804;) because asciidoctor-pdf will fail during parsing the formatted text.
-//    3. Revert the width of colums.
 *SRCMD_PERM(_m_)* and *SRCMD_PERMH(_m_)* are available when *HWCFG0.srcmd_fmt* = 2.
 In Format 2, an IOPMP checks both the permission of *SRCMD_PERM(H)(_m_)* and the *ENTRY_CFG.r/w/x* permission. A transaction is legal if any of them allows the transaction.
 
@@ -408,7 +403,7 @@ h|Field                         |Bits             |R/W  |Default |Description
 5+h|{set:cellbgcolor:#D3D3D3} SRCMD_PERMH(_m_), _m_ = 0...HWCFG0.md_num-1
 5+h|0x1004 + (_m_)*32
 h|Field                         |Bits             |R/W  |Default |Description
-|{set:cellbgcolor:#FFFFFF}permh     | 31:0 | WARL | DC | Holds two bits per RRID that give the RRID’s read and write permissions for the entry. Bit 2*(_s_-16) holds the read permission for RRID _s_, and bit 2*(_s_-16)+1 holds the write permission for RRID _s_, where _s_ &#8805;16. The register is implemented when *HWCFG0.num_rrid* > 16.
+|{set:cellbgcolor:#FFFFFF}permh     | 31:0 | WARL | DC | Holds two bits per RRID that give the RRID’s read and write permissions for the entry. Bit 2*(_s_-16) holds the read permission for RRID _s_, and bit 2*(_s_-16)+1 holds the write permission for RRID _s_, where _s_ &#8805;16. The register is implemented when *HWCFG0.rrid_num* > 16.
 |===
 
 *SRCMD_R*, *SRCMD_RH*, *SRCMD_W* and *SRCMD_WH* are optional registers for the SRCMD table in Format 0; When SPS extension is enabled, the IOPMP checks both the R/W/X and the *ENTRY_CFG.r/w/x* permission and follows a fail-first rule.
