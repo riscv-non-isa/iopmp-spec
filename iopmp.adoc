@@ -70,6 +70,7 @@ include::chapter5.adoc[]
 include::appendix_a1.adoc[]
 include::appendix_a2.adoc[]
 include::appendix_a3.adoc[]
+include::appendix_a4.adoc[]
 
 //the index must precede the bibliography
 include::index.adoc[]
