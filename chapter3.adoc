@@ -65,7 +65,7 @@ The term 'lock' refers to a hardware feature that renders one or more fields or 
 
 [#SECTION_3_5_1]
 ==== SRCMD Table Protection
-The two fields *MDLCK.md* and *MDLCKH.mdh* have 63 bits together. Every bit is used to lock the association bits with a memory domain in the SRCMD table. In Format 0,  for MD _m_&#x2264;31, *MDLCK.md[_m_]* looks *SRCMD(_s_).md[_m_]* for all existing RRID _s_. In Format 1, there is no *MDLCK*. In Format 2, *MDLCK.md[_m_]* locks both *SRCMD_PERM(_m_).r* and *SRCMD_PERM(_m_).w*. For MD _m_&#x2265;32, one should use *MDLCKH.mdh* to lock corresponding bits.
+The two fields *MDLCK.md* and *MDLCKH.mdh* have 63 bits together. Every bit is used to lock the association bits with a memory domain in the SRCMD table. In Format 0,  for MD _m_&#x2264;31, *MDLCK.md[_m_]* locks *SRCMD(_s_).md[_m_]* for all existing RRID _s_. In Format 1, there is no *MDLCK*. In Format 2, *MDLCK.md[_m_]* locks both *SRCMD_PERM(_m_)* and *SRCMD_PERMH(_m_)*. For MD _m_&#x2265;32, one should use *MDLCKH.mdh* to lock corresponding bits.
 
 Bit *MDLCK.l* is a sticky to 1 and indicates if *MDLCK* and *MDLCKH* are locked.
 

@@ -6,7 +6,7 @@ If an optional register is not implemented, the behavior is implementation-depen
 |===
 |OFFSET |Register |Description
 
-.19+|0x0000  2+|{set:cellbgcolor:#D3D3D3} INFO
+.20+|0x0000  2+|{set:cellbgcolor:#D3D3D3} INFO
 |{set:cellbgcolor:#FFFFFF} VERSION |Indicates the specification and the IP vendor.
 |{set:cellbgcolor:#FFFFFF} IMPLEMENTATION | Indicates the implementation version.
 |{set:cellbgcolor:#FFFFFF} HWCFG0~2 |Indicate the configurations of current IOPMP instance.
@@ -27,6 +27,7 @@ If an optional register is not implemented, the behavior is implementation-depen
 |ERR_REQID    
 |{set:cellbgcolor:#FFFFFF} ERR_REQADDR/ERR_REQADDRH
 |ERR_MFR| (Optional) To retrieve which RRIDs make subsequent violations.
+|ERR_MSIADDR/ERR_MSIADDRH| (Optional) The address to trigger MSI.
 |ERR_USER(0:7) | (Optional) User-defined violation information.
 
 .2+|0x0800 2+|{set:cellbgcolor:#D3D3D3} MDCFG Table,  _m_ = 0...*HWCFG0.md_num*-1
@@ -118,7 +119,7 @@ Please refer to <<#SECTION_3_2, SRCMD Table Formats>> for details.
 
 *md_entry_num* is locked if *HWCFG0.enable* is 1.
 |md_num                         |29:24  |R      |IMP        |Indicate the supported number of MD in the instance
-|addrh_en                       |30     |R      |IMP        |Indicate if the IOPMP implements *ENTRY_ADDRH(_i_)*
+|addrh_en                       |30     |R      |IMP        |Indicate if the IOPMP implements *ENTRY_ADDRH(_i_)* and *ERR_MSIADDRH* if having
 |enable                         |31:31  |W1SS   |0          |Indicate if the IOPMP checks transactions by default. If it is implemented, it should be initial to 0 and sticky to 1. If it is not implemented, it should be wired to 1. *HWCFG0.md_entry_num* is locked if *enable* is 1.
 |===
 
@@ -245,16 +246,19 @@ h|Field                         |Bits       |R/W    |Default    |Description
 |===
 5+h|ERR_CFG{set:cellbgcolor:#D3D3D3}
 5+h|0x0060
-h|Field                         |Bits   |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}l     |0:0    |W1SS   |0          |Lock fields to *ERR_CFG* register
-|{set:cellbgcolor:#FFFFFF}ie    |1:1    |RW     |0          |Enable the interrupt of the IOPMP rule violation.
-|{set:cellbgcolor:#FFFFFF}rs   |2:2    |WARL   |0     a| 
+h|Field                           |Bits   |R/W    |Default    |Description
+|{set:cellbgcolor:#FFFFFF}l       |0:0    |W1SS   |0          |Lock fields to *ERR_CFG* register
+|{set:cellbgcolor:#FFFFFF}ie      |1:1    |RW     |0          |Enable the interrupt of the IOPMP rule violation.
+|{set:cellbgcolor:#FFFFFF}rs      |2:2    |WARL   |0         a| 
 
 To suppress an error response on an IOPMP rule violation.
 
 * 0x0: respond an implementation-dependent error, such as a bus error
 * 0x1: respond a success with a pre-defined value to the initiator instead of an error
-|{set:cellbgcolor:#FFFFFF}rsv   |31:3  |ZERO   |0     | Must be zero on write, reserved for future
+|{set:cellbgcolor:#FFFFFF}msi_en  |3:3    |WARL   |IMP        | It indicates whether the IOPMP triggers MSI
+|{set:cellbgcolor:#FFFFFF}rsv1    |7:4    |ZERO   |0     | Must be zero on write, reserved for future
+|{set:cellbgcolor:#FFFFFF}msidata |18:8   |WARL   |IMP   | The data to trigger MSI
+|{set:cellbgcolor:#FFFFFF}rsv2    |31:19  |ZERO   |0     | Must be zero on write, reserved for future
 |===
 
 
@@ -334,6 +338,22 @@ h|Field                         |Bits       |R/W    |Default    |Description
 
 * 0x0 : no subsequent violation found
 * 0x1 : subsequent violation found
+|===
+
+[cols="<2,<1,<1,<1,<6",stripes=even]
+|===
+5+h|{set:cellbgcolor:#D3D3D3} ERR_MSIADDR
+5+h|0x0078
+h|Field                           |Bits       |R/W    |Default    |Description
+|{set:cellbgcolor:#FFFFFF}msiaddr |31:0       |WARL   |IMP        | The address to trigger MSI. For *HWCFG0.addrh_en*=0, it contains bits 33 to 2 of the address; otherwise, it contains bits 31 to 0. Available only if *ERR_CFG.msi_en*=1 
+|===
+
+[cols="<2,<1,<1,<1,<6",stripes=even]
+|===
+5+h|{set:cellbgcolor:#D3D3D3} ERR_MSIADDRH
+5+h|0x007C
+h|Field                            |Bits       |R/W    |Default    |Description
+|{set:cellbgcolor:#FFFFFF}msiaddrh |31:0       |WARL   |IMP        | The higher 32 bits of the address to trigger MSI. Available only if *HWCFG0.addrh_en*=1 and *ERR_CFG.msi_en*=1
 |===
 
 *ERR_USER(0:7)* are optional registers to provide users to define their own error capture information.

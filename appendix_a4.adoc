@@ -2,5 +2,5 @@
 [Appendix_A4]
 == A4: Message-Signaled Interrupts (MSI)
 
-In systems built with an Incoming Message-Signaled Interrupt Controller (IMSIC), the IOPMP can trigger message-signaled interrupts (MSI) by writing a word of data to a specific address. The address is specified by *ERR_MSIADR* and *ERR_MSIADRH* (implemented only when *HWCFG0.addrh_en*=1), while the content to write is stored in the field msidata in the register *ERR_CFG*. The *ERR_MSIADR*, *ERR_MSIADRH*, and *ERR_CFG* are locked by the *ERR_CFG.l*.
-The bit *ERR_CFG.msi_en* indicates whether the IOPMP triggers MSI. *ERR_MSIADR*, *ERR_MSIADRH*, and *ERR_CFG.msidata* are not available when *ERR_CFG.msi_en* = 0. The bit can be programmable or hardwired.
+In systems built with an Incoming Message-Signaled Interrupt Controller (IMSIC), the IOPMP can trigger message-signaled interrupts (MSI) by writing a word of data to a specific address. The address is specified by *ERR_MSIADDR* and *ERR_MSIADDRH* (implemented only when *HWCFG0.addrh_en*=1), while the content to write is stored in the field msidata in the register *ERR_CFG*. The *ERR_MSIADDR*, *ERR_MSIADDRH*, and *ERR_CFG* are locked by the *ERR_CFG.l*.
+The bit *ERR_CFG.msi_en* indicates whether the IOPMP triggers MSI. *ERR_MSIADDR*, *ERR_MSIADDRH*, and *ERR_CFG.msidata* are not available when *ERR_CFG.msi_en* = 0. The bit can be programmable or hardwired.
