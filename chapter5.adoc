@@ -6,7 +6,7 @@ If an optional register is not implemented, the behavior is implementation-depen
 |===
 |OFFSET |Register |Description
 
-.19+|0x0000  2+|{set:cellbgcolor:#D3D3D3} INFO
+.20+|0x0000  2+|{set:cellbgcolor:#D3D3D3} INFO
 |{set:cellbgcolor:#FFFFFF} VERSION |Indicates the specification and the IP vendor.
 |{set:cellbgcolor:#FFFFFF} IMPLEMENTATION | Indicates the implementation version.
 |{set:cellbgcolor:#FFFFFF} HWCFG0~2 |Indicate the configurations of current IOPMP instance.
@@ -27,6 +27,7 @@ If an optional register is not implemented, the behavior is implementation-depen
 |ERR_REQID    
 |{set:cellbgcolor:#FFFFFF} ERR_REQADDR/ERR_REQADDRH
 |ERR_MFR| (Optional) To retrieve which RRIDs make subsequent violations.
+|ERR_MSIADDR/ERR_MSIADDRH| (Optional) The address to trigger MSI.
 |ERR_USER(0:7) | (Optional) User-defined violation information.
 
 .2+|0x0800 2+|{set:cellbgcolor:#D3D3D3} MDCFG Table,  _m_ = 0...*HWCFG0.md_num*-1
