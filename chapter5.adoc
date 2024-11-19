@@ -365,7 +365,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}user   |31:0       |IMP      |IMP     |(Optional) user-defined registers
 |===
 
-=== *MDCFG Table*
+=== *MDCFG Table Registers*
 MDCFG table is a lookup to specify the number of IOPMP entries that is associated with each MD. For different formats:
 
 . Format 0: MDCFG table is implemented.
