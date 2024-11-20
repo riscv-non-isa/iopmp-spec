@@ -28,7 +28,7 @@ The bitmap implementation of Format 1 facilitates the sharing of regions between
 
 [#SECTION_3_2_3]
 ==== SRCMD Table Format 2
-This format also has a physical SRCMD table of an array, like Format 0, but the array is indexed by the memory domain index.  For MD _i_, *SRCMD_PERM(_m_)* and *SRCMD_PERMH(_m_)* are implemented at the same addresses as *SRCMD_EN(_s_)* and *SRCMD_ENH(_s_)*. That is, there is no *SRCMD_EN(H)* in the format and every RRID implicitly associates all implemented memory domains. There is no *SRCMD_R(H)* and *SRCMD_W(H)* as well.
+This format also has a physical SRCMD table of an array, like Format 0, but the array is indexed by the memory domain index.  For MD _m_, *SRCMD_PERM(_m_)* and *SRCMD_PERMH(_m_)* are implemented at the same addresses as *SRCMD_EN(_s_)* and *SRCMD_ENH(_s_)*. That is, there is no *SRCMD_EN(H)* in the format and every RRID implicitly associates all implemented memory domains. There is no *SRCMD_R(H)* and *SRCMD_W(H)* as well.
 
 *SRCMD_PERM(_m_).r[_s_]* indicates the read permission and instruction fetch permission of RRID _s_ belongs to the memory domain _m_. *SRCMD_PERM(_m_).w[_s_]* indicates write permission of RRID _s_ belongs to the memory domain _m_. *SRCMD_PERM(_m_).r* and *SRCMD_PERM(_m_).w* are adjacent. That is, *SRCMD_PERM(_m_).r[_s_]* and *SRCMD_PERM(_m_).w[_s_]* are located at the bits (_s_ * 2) and  (_s_ * 2 + 1), respectively. For RRID indexed higher than 15, *SRCMD_PERMH(_m_)* is used. IOPMP looks at permissions in  *SRCMD_PERM(H)* and *ENTRY_CFG.r/w/x*.  As long as one of them grants the transaction under checking, it is legal. If one wants to use only *SRCMD_PERM(H)*, all *ENTRY_CFG.r/w/x* can be wired to zero.
 
@@ -65,7 +65,7 @@ The term 'lock' refers to a hardware feature that renders one or more fields or 
 
 [#SECTION_3_5_1]
 ==== SRCMD Table Protection
-The two fields *MDLCK.md* and *MDLCKH.mdh* have 63 bits together. Every bit is used to lock the association bits with a memory domain in the SRCMD table. In Format 0,  for MD 0 &#x2264; _m_ &#x2264; 30, *MDLCK.md[_m_]* locks *SRCMD(_s_).md[_m_]* for all existing RRID _s_. In Format 1, there is no *MDLCK*. In Format 2, *MDLCK.md[_m_]* locks both *SRCMD_PERM(_m_)* and *SRCMD_PERMH(_m_)*. For MD 62 &#x2265; _m_ &#x2265; 31, one should use *MDLCKH.mdh* to lock corresponding bits.
+The two fields *MDLCK.md* and *MDLCKH.mdh* have 63 bits together. Every bit is used to lock the association bits with a memory domain in the SRCMD table. In Format 0,  for MD 0 &#x2264; _m_ &#x2264; 30, *MDLCK.md[_m_]* locks *SRCMD(_s_).md[_m_]* for all existing RRID _s_. In Format 1, there is no *MDLCK*. In Format 2, *MDLCK.md[_m_]* locks both *SRCMD_PERM(_m_)* and *SRCMD_PERMH(_m_)*. For MD 31 &#x2264; _m_ &#x2264; 62, one should use *MDLCKH.mdh* to lock corresponding bits.
 
 Bit *MDLCK.l* is a sticky to 1 and indicates if *MDLCK* and *MDLCKH* are locked.
 
