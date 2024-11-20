@@ -70,6 +70,7 @@ h|Field                         |Bits   |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}impid |31:0   |R      |IMP        |The  user-defined implementation ID.
 |===
 
+[#HWCFG0]
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
 5+h|HWCFG0{set:cellbgcolor:#D3D3D3}
@@ -119,7 +120,7 @@ Please refer to <<#SECTION_3_2, SRCMD Table Formats>> for details.
 
 *md_entry_num* is locked if *HWCFG0.enable* is 1.
 |md_num                         |29:24  |R      |IMP        |Indicate the supported number of MD in the instance
-|addrh_en                       |30     |R      |IMP        |Indicate if the IOPMP implements *ENTRY_ADDRH(_i_)* and *ERR_MSIADDRH* if having
+|addrh_en                       |30     |R      |IMP        |Indicate if *ENTRY_ADDRH(_i_)* and *ERR_MSIADDRH* (if *ERR_CFG.msi_en* = 1) are available.
 |enable                         |31:31  |W1SS   |0          |Indicate if the IOPMP checks transactions by default. If it is implemented, it should be initial to 0 and sticky to 1. If it is not implemented, it should be wired to 1. *HWCFG0.md_entry_num* is locked if *enable* is 1.
 |===
 
