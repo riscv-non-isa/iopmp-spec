@@ -4,7 +4,7 @@ The spec offers several IOPMP configurations to accommodate varied platforms. Us
 
 [#SECTION_3_1]
 === SRCMD Table and MDCFG Table
-When a IOPMP receives a transaction with RRID _s_, IOPMP first lookups SRCMD table to find out all the memory domains associated to requestor _s_. An IOPMP instance can support up to 65,535 requestors, the actual number of requestor can be implementation-defined and is indicated in *HWCFG1* register. The SRCMD table defines the mapping from a transaction requestor to its associated MDs. The mapping can be in one of three formats specified in *HWCFG0.srcmd_fmt* and described in <<#SECTION_3_2, SRCMD Table Formats>>.
+When a IOPMP receives a transaction with RRID _s_, IOPMP first lookups SRCMD table to find out all the memory domains associated to requestor _s_ and the corresponding permissions. An IOPMP instance can support up to 65,535 requestors, the actual number of requestor can be implementation-defined and is indicated in *HWCFG1* register. The SRCMD table defines the mapping from a transaction requestor to its associated MDs and corresponding permissions if having. The mapping can be in one of three formats specified in *HWCFG0.srcmd_fmt* and described in <<#SECTION_3_2, SRCMD Table Formats>>. Besides, the SPS extension can limit the permission associated with RRID described in <<#APPENDIX_A3, Appendix 3>>.
 
 When the associated memory domains are retrieved, an IOPMP finds the entries. The MDCFG defines which memory domain every entry belongs to. An entry can belong to at most one memory domain, but a memory domain can own zero or more entries. MDCFG can be in one of three formats, specified in *HWCFG0.mdcfg_fmt* and described in <<#SECTION_3_3, MDCFG Table Formats>>.
 
@@ -28,7 +28,7 @@ The bitmap implementation of Format 1 facilitates the sharing of regions between
 
 [#SECTION_3_2_3]
 ==== SRCMD Table Format 2
-This format also has a physical SRCMD table of an array, like Format 0, but the array is indexed by the memory domain index.  For MD _m_, *SRCMD_PERM(_m_)* and *SRCMD_PERMH(_m_)* are implemented at the same addresses as *SRCMD_EN(_s_)* and *SRCMD_ENH(_s_)*. That is, there is no *SRCMD_EN(H)* in the format and every RRID implicitly associates all implemented memory domains. There is no *SRCMD_R(H)* and *SRCMD_W(H)* as well.
+This format also has a physical SRCMD table of an array, like Format 0, but the array is indexed by the memory domain index.  For MD _m_, *SRCMD_PERM(_m_)* and *SRCMD_PERMH(_m_)* are implemented at the same addresses as *SRCMD_EN(_s_)* and *SRCMD_ENH(_s_)*. That is, there is no *SRCMD_EN(H)* in the format and every RRID implicitly associates all implemented memory domains. That is, the format outputs the permission for every MD according to an RRID. Thus, there is no SPS extension, *SRCMD_R(H)* and *SRCMD_W(H)*.
 
 *SRCMD_PERM(_m_).r[_s_]* indicates the read permission and instruction fetch permission of RRID _s_ belongs to the memory domain _m_. *SRCMD_PERM(_m_).w[_s_]* indicates write permission of RRID _s_ belongs to the memory domain _m_. *SRCMD_PERM(_m_).r* and *SRCMD_PERM(_m_).w* are adjacent. That is, *SRCMD_PERM(_m_).r[_s_]* and *SRCMD_PERM(_m_).w[_s_]* are located at the bits (_s_ * 2) and  (_s_ * 2 + 1), respectively. For RRID indexed higher than 15, *SRCMD_PERMH(_m_)* is used. IOPMP looks at permissions in  *SRCMD_PERM(H)* and *ENTRY_CFG.r/w/x*.  As long as one of them grants the transaction under checking, it is legal. If one wants to use only *SRCMD_PERM(H)*, all *ENTRY_CFG.r/w/x* can be wired to zero.
 
