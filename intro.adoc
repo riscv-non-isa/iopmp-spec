@@ -10,5 +10,3 @@ Another hardware component in a bus matrix, the Input-Output Memory Management U
 
 .Examplary Integration of IOPMP(s) in System.
 image::iopmp_system_position.png[]
-
-
