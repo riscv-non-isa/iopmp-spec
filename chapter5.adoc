@@ -70,6 +70,7 @@ h|Field                         |Bits   |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}impid |31:0   |R      |IMP        |The  user-defined implementation ID.
 |===
 
+[#HWCFG0]
 [cols="<2,<1,<1,<1,<6",stripes=even]
 |===
 5+h|HWCFG0{set:cellbgcolor:#D3D3D3}
@@ -119,7 +120,7 @@ Please refer to <<#SECTION_3_2, SRCMD Table Formats>> for details.
 
 *md_entry_num* is locked if *HWCFG0.enable* is 1.
 |md_num                         |29:24  |R      |IMP        |Indicate the supported number of MD in the instance
-|addrh_en                       |30     |R      |IMP        |Indicate if the IOPMP implements *ENTRY_ADDRH(_i_)* and *ERR_MSIADDRH* if having
+|addrh_en                       |30     |R      |IMP        |Indicate if *ENTRY_ADDRH(_i_)* and *ERR_MSIADDRH* (if *ERR_CFG.msi_en* = 1) are available.
 |enable                         |31:31  |W1SS   |0          |Indicate if the IOPMP checks transactions by default. If it is implemented, it should be initial to 0 and sticky to 1. If it is not implemented, it should be wired to 1. *HWCFG0.md_entry_num* is locked if *enable* is 1.
 |===
 
@@ -162,7 +163,7 @@ h|Field                         |Bits   |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}exempt|0:0    |W      |N/A          | Stall transactions with exempt selected MDs, or Stall selected MDs.
 |is_stalled                     |0:0    |R      |0          | After the last writing of *MDSTALL* (included) plus any following writing *RRIDSCP*, 1 indicates that all requested stalls take effect; otherwise, 0.
 After the last writing *MDSTALLH* (if any) and then *MDSTALL* by zero, 0 indicates that all transactions have been resumed;  otherwise, 1.
-|md                             |31:1   |WARL      |0          |Writing *md[__m__]*=1 selects MD _m__; reading *md[__m__]* = 1 means MD __m__ selected.
+|md                             |31:1   |WARL      |0          |Writing *md[__m__]*=1 selects MD _m_; reading *md[__m__]* = 1 means MD __m__ selected.
 |===
 
 [cols="<2,<1,<1,<1,<6",stripes=even]
@@ -365,7 +366,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}user   |31:0       |IMP      |IMP     |(Optional) user-defined registers
 |===
 
-=== *MDCFG Table*
+=== *MDCFG Table Registers*
 MDCFG table is a lookup to specify the number of IOPMP entries that is associated with each MD. For different formats:
 
 . Format 0: MDCFG table is implemented.
