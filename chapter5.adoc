@@ -235,7 +235,7 @@ On write, the field only accepts the value larger than the previous value until 
 5+h|0x004C
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}l     |0:0        |W1SS   |0          | Lock bit to *ENTRYLCK* register.
-|{set:cellbgcolor:#FFFFFF}f     |16:1       |WARL   |IMP        | Indicate the number of locked IOPMP entries - *ENTRY_ADDR(_i_)*, *ENTRY_ADDRH(_i_)*, *ENTRY_CFG(_i_)*, and *ENTRY_USER_CFG(_i_)* are locked for _i_ < *f*. The field should be monotonically increased only until the next reset cycle. 
+|{set:cellbgcolor:#FFFFFF}f     |16:1       |WARL   |IMP        | Indicate the number of locked IOPMP entries - *ENTRY_ADDR(_i_)*, *ENTRY_ADDRH(_i_)*, *ENTRY_CFG(_i_)*, and *ENTRY_USER_CFG(_i_)* are locked for _i_ < *f*. On write, the field only accepts the value larger than the previous value until the next reset cycle; otherwise, there is no effect.
 |{set:cellbgcolor:#FFFFFF}rsv    |31:17       |ZERO   |0 | Must be zero on write, reserved for future
 |===
 
