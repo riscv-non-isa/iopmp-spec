@@ -333,7 +333,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 5+h|0x0074
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}svw |15:0       |R      |DC         | Subsequent violations in the window indexed by *svi*. *svw[_j_]*=1 for the at lease one subsequent violation issued from RRID= *svi**16 + _j_.
-|{set:cellbgcolor:#FFFFFF}svi |27:16       |RW      |0         | Window's index to search subsequent violations. When read, *svi* moves forward until one subsequent violation is found or *svi* has been rounded back to the same value. After read, the window's content, *svw*, should be clean.
+|{set:cellbgcolor:#FFFFFF}svi |27:16       |WARL      |0         | Window's index to search subsequent violations. When read, *svi* moves forward until one subsequent violation is found or *svi* has been rounded back to the same value. After read, the window's content, *svw*, should be clean.
 |{set:cellbgcolor:#FFFFFF}rsv |30:28    |ZERO      |0          |Must be zero on write, reserved for future
 |{set:cellbgcolor:#FFFFFF}svs |31:31       |R      |DC         a| The status of this window's content:
 
