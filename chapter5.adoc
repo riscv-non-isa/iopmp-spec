@@ -222,9 +222,9 @@ h|Field                         |Bits       |R/W    |Default    |Description
 5+h|0x0048
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}l     |0:0        |W1SS    |0          | Lock bit to *MDCFGLCK* register.
-|f                              |7:1        |WARL     |IMP        | Indicate the number of locked MDCFG entries - *MDCFG(_m_)* is locked for _m_ < *f*. 
+|f                              |6:1        |WARL     |IMP        | Indicate the number of locked MDCFG entries - *MDCFG(_m_)* is locked for _m_ < *f*. 
 The field should be monotonically increased only until the next reset cycle.
-|{set:cellbgcolor:#FFFFFF}rsv    |31:8       |ZERO   |0         | Must be zero on write, reserved for future
+|{set:cellbgcolor:#FFFFFF}rsv    |31:7       |ZERO   |0         | Must be zero on write, reserved for future
 |===
 
 *ENTRYLCK* is the lock register to entry array.
