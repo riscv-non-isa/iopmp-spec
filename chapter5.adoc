@@ -23,7 +23,7 @@ If an optional register is not implemented, the behavior is implementation-depen
 
 2+|{set:cellbgcolor:#D3D3D3} Error Reporting
 |{set:cellbgcolor:#FFFFFF} ERR_CFG | Indicates the reactions for the violations
-|{set:cellbgcolor:#FFFFFF}ERR_REQINFO .3+.^| Indicate the information regarding the first captured violation.
+|{set:cellbgcolor:#FFFFFF} ERR_INFO .3+.^| Indicate the information regarding captured violations.
 |ERR_REQID    
 |{set:cellbgcolor:#FFFFFF} ERR_REQADDR/ERR_REQADDRH
 |ERR_MFR| (Optional) To retrieve which RRIDs make subsequent violations.
@@ -110,7 +110,7 @@ Please refer to <<#SECTION_3_2, SRCMD Table Formats>> for details.
 |stall_en|13:13  |R     | IMP| Indicate if the IOPMP implements stall-related features, which are *MDSTALL*, *MDSTALLH*, and *RRIDSCP* registers.
 |peis|14:14  |R     | IMP| Indicate if the IOPMP implements interrupt suppression per entry, including fields *sire*, *siwe*, and *sixe* in *ENTRY_CFG(_i_)*.
 |pees|15:15 | R |IMP| Indicate if the IOPMP implements the error suppression per entry, including fields *sere*, *sewe*, and *sexe* in *ENTRY_CFG(_i_)*.
-|mfr_en|16:16 | R |IMP| Indicate if the IOPMP implements Multi Faults Record Extension, that is *ERR_MFR* and *ERR_REQINFO.svc*.
+|mfr_en|16:16 | R |IMP| Indicate if the IOPMP implements Multi Faults Record Extension, that is *ERR_MFR* and *ERR_INFO.svc*.
 
 |md_entry_num   |23:17  |WARL   |IMP     a| When *HWCFG0.mdcfg_fmt* = 
 
@@ -267,15 +267,15 @@ To suppress an error response on an IOPMP rule violation.
 |===
 
 
-*ERR_REQINFO* captures more detailed error information.
-[#REG_ERR_REQINFO]
+*ERR_INFO* captures more detailed error information.
+[#REG_ERR_INFO]
 [cols="<2,<1,<1,<1,<6"]
 |===
-5+h|{set:cellbgcolor:#D3D3D3} ERR_REQINFO
+5+h|{set:cellbgcolor:#D3D3D3} ERR_INFO
 5+h|0x0064
 h|Field                         |Bits       |R/W    |Default    |Description
 
-|{set:cellbgcolor:#FFFFFF}v    |0:0    |R     |0      | Indicate if the illegal capture recorder (*ERR_REQID*, *ERR_REQADDR*, *ERR_REQADDRH*, and fields in this register) has a valid content and will keep the content until the bit is cleared. An interrupt will be triggered if a violation is detected and related interrupt enable/supression configure bits are not disabled, the interrupt will keep asserted until the error valid is cleared.
+|{set:cellbgcolor:#FFFFFF}v    |0:0    |R     |0      | Indicate if the illegal capture recorder (*ERR_REQID*, *ERR_REQADDR*, *ERR_REQADDRH*, *ERR_INFO.ttype*, and *ERR_INFO.etype*) has a valid content and will keep the content until the bit is cleared. An interrupt will be triggered if a violation is detected and related interrupt enable/supression configure bits are not disabled, the interrupt will keep asserted until the error valid is cleared.
 |{set:cellbgcolor:#FFFFFF}v    |0:0    |W1C   |N/A     | Write 1 clears the bit, the illegal recorder reactivates and the interrupt (if enabled). Write 0 causes no effect on the bit.
 |{set:cellbgcolor:#FFFFFF} ttype     |2:1   |R      |0          a|{set:cellbgcolor:#FFFFFF} Indicated the transaction type
 
@@ -296,7 +296,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 - 0x05 = not hit any rule
 - 0x06 = unknown RRID
 - 0x07 = user-defined error
-|{set:cellbgcolor:#FFFFFF} svc   |7:7    |R      |0          |Indicate there is a subsequent violation caught in *ERR_MFR*. The field is always valid even after clearing *REQ_ERRINFO.v* and can be updated during *v* = 1.
+|{set:cellbgcolor:#FFFFFF} svc   |7:7    |R      |0          |Indicate there is a subsequent violation caught in *ERR_MFR*.
 Implemented only for *HWCFG0.mfr_en*=1, otherwise, ZERO.
 
 |{set:cellbgcolor:#FFFFFF} rsv2   |31:8    |ZERO      |0          |Must be zero on write, reserved for future
