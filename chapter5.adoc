@@ -284,7 +284,8 @@ h|Field                         |Bits       |R/W    |Default    |Description
 - 0x02 = write access
 - 0x03 = instruction fetch
 
-|{set:cellbgcolor:#FFFFFF} rsv1   |3:3    |ZERO      |0          |Must be zero on write, reserved for future
+|{set:cellbgcolor:#FFFFFF} msi_werr  |3:3   |R      |0          | It's asserted when the write access to trigger an IOPMP-originated MSI has failed. When it's not available, it should be ZERO.
+|{set:cellbgcolor:#FFFFFF} msi_werr  |3:3   |W1C    |N/A        | Write 1 clears the bit. Write 0 causes no effect on the bit.
 
 |{set:cellbgcolor:#FFFFFF} etype     |6:4   |R      |0          a| {set:cellbgcolor:#FFFFFF} Indicated the type of the first captured violation
 
@@ -299,7 +300,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF} svc   |7:7    |R      |0          |Indicate there is a subsequent violation caught in *ERR_MFR*.
 Implemented only for *HWCFG0.mfr_en*=1, otherwise, ZERO.
 
-|{set:cellbgcolor:#FFFFFF} rsv2   |31:8    |ZERO      |0          |Must be zero on write, reserved for future
+|{set:cellbgcolor:#FFFFFF} rsv   |31:8    |ZERO      |0          |Must be zero on write, reserved for future
 |===
 When the bus matrix doesn't have a signal to indicate an instruction fetch, the *ttype* and *etype* can never return "instruction fetch" (0x03) and "instruction fetch error" (0x03), respectively.
 
