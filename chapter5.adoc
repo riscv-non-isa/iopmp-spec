@@ -23,9 +23,9 @@ If an optional register is not implemented, the behavior is implementation-depen
 
 2+|{set:cellbgcolor:#D3D3D3} Error Reporting
 |{set:cellbgcolor:#FFFFFF} ERR_CFG | Indicates the reactions for the violations
-|{set:cellbgcolor:#FFFFFF} ERR_INFO .3+.^| Indicate the information regarding captured violations.
-|ERR_REQID    
-|{set:cellbgcolor:#FFFFFF} ERR_REQADDR/ERR_REQADDRH
+|{set:cellbgcolor:#FFFFFF} ERR_INFO | Indicates the information regarding captured violations.
+|ERR_REQID   | Indicates the RRID and entry index regarding the first captured violation.
+|{set:cellbgcolor:#FFFFFF} ERR_REQADDR/ERR_REQADDRH | Indicates request address regarding the first captured violation.
 |ERR_MFR| (Optional) To retrieve which RRIDs make subsequent violations.
 |ERR_MSIADDR/ERR_MSIADDRH| (Optional) The address to trigger MSI.
 |ERR_USER(0:7) | (Optional) User-defined violation information.
@@ -277,7 +277,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 
 |{set:cellbgcolor:#FFFFFF}v    |0:0    |R     |0      | Indicate if the illegal capture recorder (*ERR_REQID*, *ERR_REQADDR*, *ERR_REQADDRH*, *ERR_INFO.ttype*, and *ERR_INFO.etype*) has a valid content and will keep the content until the bit is cleared. An interrupt will be triggered if a violation is detected and related interrupt enable/supression configure bits are not disabled, the interrupt will keep asserted until the error valid is cleared.
 |{set:cellbgcolor:#FFFFFF}v    |0:0    |W1C   |N/A     | Write 1 clears the bit, the illegal recorder reactivates and the interrupt (if enabled). Write 0 causes no effect on the bit.
-|{set:cellbgcolor:#FFFFFF} ttype     |2:1   |R      |0          a|{set:cellbgcolor:#FFFFFF} Indicated the transaction type
+|{set:cellbgcolor:#FFFFFF} ttype     |2:1   |R      |0          a|{set:cellbgcolor:#FFFFFF} Indicated the transaction type of the first captured violation
 
 - 0x00 = reserved
 - 0x01 = read access
@@ -286,7 +286,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 
 |{set:cellbgcolor:#FFFFFF} rsv1   |3:3    |ZERO      |0          |Must be zero on write, reserved for future
 
-|{set:cellbgcolor:#FFFFFF} etype     |6:4   |R      |0          a| {set:cellbgcolor:#FFFFFF} Indicated the type of violation
+|{set:cellbgcolor:#FFFFFF} etype     |6:4   |R      |0          a| {set:cellbgcolor:#FFFFFF} Indicated the type of the first captured violation
 
 - 0x00 = no error
 - 0x01 = illegal read access
@@ -303,7 +303,7 @@ Implemented only for *HWCFG0.mfr_en*=1, otherwise, ZERO.
 |===
 When the bus matrix doesn't have a signal to indicate an instruction fetch, the *ttype* and *etype* can never return "instruction fetch" (0x03) and "instruction fetch error" (0x03), respectively.
 
-*ERR_REQADDR* and *ERR_REQADDRH* indicate the errored request address.
+*ERR_REQADDR* and *ERR_REQADDRH* indicate the errored request address of the first captured violation.
 
 [cols="<2,<1,<1,<1,<6"]
 |===
@@ -320,7 +320,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}addrh |31:0       |R      |DC         |Indicate the errored address[65:34]
 |===
-*ERR_REQID* indicates the errored RRID and entry index.
+*ERR_REQID* indicates the errored RRID and entry index of the first captured violation.
 [cols="<2,<1,<1,<1,<6"]
 |===
 5+h|{set:cellbgcolor:#D3D3D3} ERR_REQID
