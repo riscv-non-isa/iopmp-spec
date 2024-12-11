@@ -1,2 +1,18 @@
 *.pdf
+# Object files
+*.o
 
+# Libraries
+*.a
+
+# Executables
+*.exe
+*.out
+
+# Coverage Files
+*.gcno
+*.gcda
+
+# Binary Files
+iopmp_ref_model/bin/
+iopmp_ref_model/lib/
