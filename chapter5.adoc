@@ -283,7 +283,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 
 |{set:cellbgcolor:#FFFFFF} rsv1   |3:3    |ZERO      |0          |Must be zero on write, reserved for future
 
-|{set:cellbgcolor:#FFFFFF} etype     |7:3   |R      |0          a| {set:cellbgcolor:#FFFFFF} Indicated the type of violation
+|{set:cellbgcolor:#FFFFFF} etype     |7:4   |R      |0          a| {set:cellbgcolor:#FFFFFF} Indicated the type of violation
 
 - 0x00 = no error
 - 0x01 = illegal read access
