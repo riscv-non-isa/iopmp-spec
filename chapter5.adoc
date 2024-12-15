@@ -257,8 +257,8 @@ To suppress an error response on an IOPMP rule violation.
 * 0x0: respond an implementation-dependent error, such as a bus error
 * 0x1: respond a success with a pre-defined value to the initiator instead of an error
 |{set:cellbgcolor:#FFFFFF}msi_en  |3:3    |WARL   |IMP        | It indicates whether the IOPMP triggers MSI
-|{set:cellbgcolor:#FFFFFF}fault_mode  |3:3  |WARL   |IMP        | When MDSTALL is set, fault the transactions if the corresponding RRID is not exempt.
-|{set:cellbgcolor:#FFFFFF}rsv1    |7:4    |ZERO   |0     | Must be zero on write, reserved for future
+|{set:cellbgcolor:#FFFFFF}fault_mode  |4:4  |WARL   |IMP        | When MDSTALL is set, fault the transactions if the corresponding RRID is not exempt.
+|{set:cellbgcolor:#FFFFFF}rsv1    |7:5    |ZERO   |0     | Must be zero on write, reserved for future
 |{set:cellbgcolor:#FFFFFF}msidata |18:8   |WARL   |IMP   | The data to trigger MSI
 |{set:cellbgcolor:#FFFFFF}rsv2    |31:19  |ZERO   |0     | Must be zero on write, reserved for future
 |===
