@@ -143,11 +143,11 @@ The following table shows (1) the error types, and (2) related control bits abou
 [cols="<1,<2,<5,<3"]
 |===
 3+h| Error type  h| Control bits
-   |0x00        2+| No error                        | N/A
-   |0x01        2+| Illegal read access             | Global^1.^ and local^2.^
-   |0x02        2+| Illegal write access            | Global and local
-   |0x03        2+| Illegal instruction fetch       | Global and local
-   |0x04        2+| Partial hit on a priority rule  | Global
+   |0x00        2+| No error                          | N/A
+   |0x01        2+| Illegal read access               | Global^1.^ and local^2.^
+   |0x02        2+| Illegal write access              | Global and local
+   |0x03        2+| Illegal instruction fetch         | Global and local
+   |0x04        2+| Partial hit on a priority rule    | Global
 .2+|0x05       .2+| Not hit any rule                
    | A transaction violates permissions on non-priority rules | Global and local
   a| Other cases:
@@ -156,8 +156,13 @@ The following table shows (1) the error types, and (2) related control bits abou
     * Receives a write access transaction when *HWCFG0.no_w* is 1
     * Receives an instruction fetch transaction when *HWCFG0.no_x* is 1
    | Global
-   |0x06        2+| Unknown RRID                    | Global
-   |0x07        2+| User-defined error              | Implementation-dependent
+   |0x06        2+| Unknown RRID                      | Global
+   |0x07        2+| Error due to stalled transactions.
+
+   Available if *ERR_CFG.stall_violation_en* is 1.
+   | Global
+   |0x08 ~ 0x0B 2+| N/A, reserved for future          | N/A
+   |0x0C ~ 0x0F 2+| User-defined error                | Implementation-dependent
 |===
 
 ^1.^ Bit *ie* or *rs* in *ERR_CFG*. It depends on which reaction (i.e., interrupt or bus error response).

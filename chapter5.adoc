@@ -260,7 +260,7 @@ To suppress an error response on an IOPMP rule violation.
 
 * 0x0: the IOPMP triggers interrupt by wired interrupt
 * 0x1: the IOPMP triggers interrupt by MSI
-|{set:cellbgcolor:#FFFFFF}fault_mode  |4:4  |WARL   |IMP        | When MDSTALL is set, fault the transactions if the corresponding RRID is not exempt.
+|{set:cellbgcolor:#FFFFFF}stall_violation_en  |4:4  |WARL   |IMP        | Indicates whether the IOPMP faults stalled transactions. When the bit is set, the IOPMP faults the transactions if the corresponding RRID is not exempt from stall.
 |{set:cellbgcolor:#FFFFFF}rsv1    |7:5    |ZERO   |0     | Must be zero on write, reserved for future
 |{set:cellbgcolor:#FFFFFF}msidata |18:8   |WARL   |IMP   | The data to trigger MSI
 |{set:cellbgcolor:#FFFFFF}rsv2    |31:19  |ZERO   |0     | Must be zero on write, reserved for future
@@ -297,12 +297,13 @@ h|Field                         |Bits       |R/W    |Default    |Description
 - 0x04 = partial hit on a priority rule
 - 0x05 = not hit any rule
 - 0x06 = unknown RRID
-- 0x07 = error due to MDSTALL
-- 0x08 ~0xf = user-defined error
+- 0x07 = error due to stalled transactions. Available if *ERR_CFG.stall_violation_en* is 1.
+- 0x08 ~ 0xB = N/A, reserved for future
+- 0x0C ~ 0xF = user-defined error
 |{set:cellbgcolor:#FFFFFF} svc   |8:8    |R      |0          |Indicate there is a subsequent violation caught in *ERR_MFR*.
 Implemented only for *HWCFG0.mfr_en*=1, otherwise, ZERO.
 
-|{set:cellbgcolor:#FFFFFF} rsv2   |31:9    |ZERO      |0          |Must be zero on write, reserved for future
+|{set:cellbgcolor:#FFFFFF} rsv   |31:9    |ZERO      |0          |Must be zero on write, reserved for future
 |===
 When the bus matrix doesn't have a signal to indicate an instruction fetch, the *ttype* and *etype* can never return "instruction fetch" (0x03) and "instruction fetch error" (0x03), respectively.
 
