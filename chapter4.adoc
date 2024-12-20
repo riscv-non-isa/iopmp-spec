@@ -78,7 +78,7 @@ To query if all transactions associated with a specific RRID are stalled, do the
 
 [NOTE]
 ====
-In certain implementations, rather than stalling the related transactions, the system may opt to fault the checking transactions during an IOPMP atomic update. The procedure for faulting checking transactions is identical to Steps 1-3 mentioned above, except that, instead of stalling and delaying the transactions, transactions will be faulted and cannot be resumed. Faulting transactions can be advantageous if the system lacks sufficient buffer capacity to record and store all transactions during the IOPMP programming process. To select faulting over stalling, one should set *ERR_CFG.stall_violation_en* to 1. If any transaction is faulted due to the stalled transactions, the error information shall be logged in *ERR_REQINFO*, where *ERR_REQINFO.etype = 0x7* (error due to stalled transactions).
+In certain implementations, rather than stalling the related transactions, the system may opt to fault the checking transactions during an IOPMP atomic update. The procedure for faulting checking transactions is identical to Steps 1-3 mentioned above, except that, instead of stalling and delaying the transactions, transactions will be faulted and cannot be resumed. Faulting transactions can be advantageous if the system lacks sufficient buffer capacity to record and store all transactions during the IOPMP programming process. To select faulting over stalling, one should set *ERR_CFG.stall_violation_en* to 1. If any transaction is faulted due to the stalled transactions, the error information shall be logged in *ERR_REQINFO*, where *ERR_REQINFO.etype* = 0x7 (error due to stalled transactions).
 ====
 
 === Implementation Options
