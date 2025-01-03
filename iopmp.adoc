@@ -1,7 +1,7 @@
 [[header]]
 :description: RISC-V IOPMP Architecture Specification
 :company: RISC-V.org
-:revdate: Dec, 2024
+:revdate: Jan, 2025
 :revnumber: 0.9.2-RC3
 :revremark: This document is in development. Assume everything can change. See http://riscv.org/spec-state for details.
 :url-riscv: http://riscv.org
