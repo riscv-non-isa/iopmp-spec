@@ -6,7 +6,6 @@ This document refers to the term “secure monitor” as the software responsibl
 .Glossary and Acronyms
 [cols="<1,<3",stripes=even]
 |===
-2+h|Glossary/ Acronyms{set:cellbgcolor:#D3D3D3}
 h|Term h|Description
 |{set:cellbgcolor:#FFFFFF}DC| don't care
 |IMP|implementation-dependent
@@ -138,7 +137,7 @@ Entries indexed by _i_~0~, _i_~1~, …​, _i~N~_ match all bytes of the illegal
 
 The error capture record maintains the specifics of the first illegal access detected, except if the following two conditions are held: (1) any interrupt-suppress bit regarding the access is set, and (2) no bus error is returned. New error capture only occurs when there is no currently pending error, namely *ERR_INFO.v* is ‘0’. If a pending error exists (*v* is ‘1’), the record will not be updated, even if a new illegal access is detected. In other words, *v*  indicates whether the content of the capture record is valid and should be intentionally cleared in order to capture subsequent illegal accesses. One can write 1 to the bit to clear it. The error capture record is optional. If it is not implemented, *v* should be wired to zero. One can implement the error capture record but not *ERR_REQID.eid*. In this case, *eid* should be wired to 0xffff.
 
-If a transaction violates IOPMP rules on multiple non-priority entries which don't suppress interrupt or bus error respose, the *ERR_REQID.eid* should be one of the entries.
+If a transaction violates IOPMP rules on multiple non-priority entries which don't suppress interrupt or bus error response, the *ERR_REQID.eid* should be one of the entries.
 
 The following table shows (1) the error types, and (2) related control bits about interrupt triggering and bus error response if the IOPMP supports local control bits (*HWCFG0.peis* is 1 and/or *HWCFG0.pees* is 1):
 
