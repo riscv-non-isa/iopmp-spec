@@ -298,7 +298,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 - 0x04 = partial hit on a priority rule
 - 0x05 = not hit any rule
 - 0x06 = unknown RRID
-- 0x07 = error due to stalled transactions. It can happen when *ERR_CFG.stall_violation_en* is 1.
+- 0x07 = error due to a stalled transaction. It should not happen when *ERR_CFG.stall_violation_en* is 0.
 - 0x08 ~ 0x0D = N/A, reserved for future
 - 0x0E ~ 0x0F = user-defined error
 |{set:cellbgcolor:#FFFFFF} svc   |8:8    |R      |0          |Indicate there is a subsequent violation caught in *ERR_MFR*.
