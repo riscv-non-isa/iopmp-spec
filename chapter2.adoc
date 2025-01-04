@@ -156,7 +156,7 @@ The following table shows (1) the error types, and (2) related control bits abou
     * Receives an instruction fetch transaction when *HWCFG0.no_x* is 1
    | Global
    |0x06        2+| Unknown RRID                      | Global
-   |0x07        2+| Error due to stalled transactions. Please refer <<#SECTION_4_2_1, Faulting stalled transactions>>.
+   |0x07        2+| Error due to a stalled transaction. Please refer <<#SECTION_4_2_1, Faulting stalled transactions>>.
    | Global
    |0x08 ~ 0x0D 2+| N/A, reserved for future          | N/A
    |0x0E ~ 0x0F 2+| User-defined error                | Implementation-dependent
