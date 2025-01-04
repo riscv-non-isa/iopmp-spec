@@ -2,6 +2,7 @@
 == Registers
 If an optional register is not implemented, the behavior is implementation-dependent unless otherwise specified. An optional field in an implemented register means being WARL. If it is not programmable, it should be hardwired to value matching its meaning and should not cause any effect when written.
 
+.Register summary
 [cols="<3,<6,<14",options="header"]
 |===
 |OFFSET |Register |Description
@@ -17,20 +18,20 @@ If an optional register is not implemented, the behavior is implementation-depen
 |RRIDSCP 
 
 2+|{set:cellbgcolor:#D3D3D3} Configuration Protection
-|{set:cellbgcolor:#FFFFFF} MDLCK/MDLCKH | Lock register for SRCMD table.
-|{set:cellbgcolor:#FFFFFF} MDCFGLCK | Lock register for MDCFG table.
+|{set:cellbgcolor:#FFFFFF} MDLCK/MDLCKH | (Optional) lock register for SRCMD table.
+|{set:cellbgcolor:#FFFFFF} MDCFGLCK | (Optional) lock register for MDCFG table.
 |{set:cellbgcolor:#FFFFFF} ENTRYLCK | Lock register for IOPMP entry array.
 
 2+|{set:cellbgcolor:#D3D3D3} Error Reporting
 |{set:cellbgcolor:#FFFFFF} ERR_CFG | Indicates the reactions for the violations
-|{set:cellbgcolor:#FFFFFF} ERR_INFO | Indicates the information regarding captured violations.
-|ERR_REQID   | Indicates the RRID and entry index regarding the first captured violation.
-|{set:cellbgcolor:#FFFFFF} ERR_REQADDR/ERR_REQADDRH | Indicates request address regarding the first captured violation.
+|{set:cellbgcolor:#FFFFFF} ERR_INFO | (Optional) indicates the information regarding captured violations.
+|ERR_REQID   | (Optional) indicates the RRID and entry index regarding the first captured violation.
+|{set:cellbgcolor:#FFFFFF} ERR_REQADDR/ERR_REQADDRH | (Optional) indicates request address regarding the first captured violation.
 |ERR_MFR| (Optional) To retrieve which RRIDs make subsequent violations.
 |ERR_MSIADDR/ERR_MSIADDRH| (Optional) The address to trigger MSI.
 |ERR_USER(0:7) | (Optional) User-defined violation information.
 
-.2+|0x0800 2+|{set:cellbgcolor:#D3D3D3} MDCFG Table,  _m_ = 0...*HWCFG0.md_num*-1
+.2+|0x0800 2+|{set:cellbgcolor:#D3D3D3} MDCFG Table,  _m_ = 0...*HWCFG0.md_num*-1, only available when *HWCFG0.mdcfg_fmt* = 0.
 |{set:cellbgcolor:#FFFFFF}MDCFG(_m_)  |MD config register, which is to specify the indices of IOPMP entries belonging to a MD.
 
 .6+|0x1000    2+|{set:cellbgcolor:#D3D3D3} SRCMD Table, _s_ = 0...*HWCFG1.rrid_num*-1, only available when *HWCFG0.srcmd_fmt* = 0.
@@ -59,7 +60,7 @@ INFO registers are use to indicate the IOPMP instance configuration info.
 5+h|0x0000
 h|Field                         |Bits   |R/W   |Default    |Description
 |{set:cellbgcolor:#FFFFFF}vendor|23:0   |R     |IMP        |The JEDEC manufacturer ID.
-|specver                        |31:24  |R     |IMP        |The specification version
+|specver                        |31:24  |R     |IMP        |The specification version. (it will be defined in ratified version).
 |===
 
 [cols="<2,<1,<1,<1,<6"]
@@ -187,9 +188,9 @@ h|Field                         |Bits       |R/W    |Default    |Description
 * 2: don't stall transactions associated with selected RRID
 * 3: reserved
 |{set:cellbgcolor:#FFFFFF}stat                           |31:30      |R      |0          a|
-* 0: *RRIDSCP* not implemented
+* 0: *RRIDSCP* is not implemented
 * 1: transactions associated with selected RRID are stalled
-* 2: transactions associated with selected RRID not are stalled
+* 2: transactions associated with selected RRID are not stalled
 * 3: unimplemented or unselectable RRID
 |===
 
@@ -297,9 +298,9 @@ h|Field                         |Bits       |R/W    |Default    |Description
 - 0x04 = partial hit on a priority rule
 - 0x05 = not hit any rule
 - 0x06 = unknown RRID
-- 0x07 = error due to stalled transactions. Available if *ERR_CFG.stall_violation_en* is 1.
-- 0x08 ~ 0xB = N/A, reserved for future
-- 0x0C ~ 0xF = user-defined error
+- 0x07 = error due to stalled transactions. It can happen when *ERR_CFG.stall_violation_en* is 1.
+- 0x08 ~ 0x0D = N/A, reserved for future
+- 0x0E ~ 0x0F = user-defined error
 |{set:cellbgcolor:#FFFFFF} svc   |8:8    |R      |0          |Indicate there is a subsequent violation caught in *ERR_MFR*.
 Implemented only for *HWCFG0.mfr_en*=1, otherwise, ZERO.
 
@@ -343,7 +344,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}svw |15:0       |R      |DC         | Subsequent violations in the window indexed by *svi*. *svw[_j_]*=1 for the at lease one subsequent violation issued from RRID= *svi**16 + _j_.
 |{set:cellbgcolor:#FFFFFF}svi |27:16       |WARL      |0         | Window's index to search subsequent violations. When read, IOPMP sequentially scans all windows from *svi* until one subsequent violation is found. Once the last available window is scanned, the next window to be scanned is the first record window (index is 0). *svi* indexes the found subsequent violation or *svi* has been rounded back to the same value. After read, the window's content, *svw*, should be clean.
 |{set:cellbgcolor:#FFFFFF}rsv |30:28    |ZERO      |0          |Must be zero on write, reserved for future
-|{set:cellbgcolor:#FFFFFF}svs |31:31       |R      |DC         a| The status of this window's content:
+|{set:cellbgcolor:#FFFFFF}svs |31:31       |R      |0         a| The status of this window's content:
 
 * 0x0 : no subsequent violation found
 * 0x1 : subsequent violation found
@@ -503,23 +504,23 @@ h|Field                         |Bits       |R/W    |Default    |Description
 * 0x1: TOR
 * 0x2: NA4
 * 0x3: NAPOT
-|{set:cellbgcolor:#FFFFFF}sire |5:5       |WARL   |0 | To suppress interrupt for an illegal read access caught by the entry
+|{set:cellbgcolor:#FFFFFF}sire |5:5       |WARL   |IMP | To suppress interrupt for an illegal read access caught by the entry
 
-|{set:cellbgcolor:#FFFFFF}siwe |6:6       |WARL   |0 |Suppress interrupt for write violations caught by the entry
+|{set:cellbgcolor:#FFFFFF}siwe |6:6       |WARL   |IMP |Suppress interrupt for write violations caught by the entry
 
-|{set:cellbgcolor:#FFFFFF}sixe |7:7       |WARL   |0 |Suppress interrupt on an illegal instruction fetch caught by the entry
+|{set:cellbgcolor:#FFFFFF}sixe |7:7       |WARL   |IMP |Suppress interrupt on an illegal instruction fetch caught by the entry
 
-|{set:cellbgcolor:#FFFFFF}sere   |8:8    |WARL   |0    a| Suppress the (bus) error on an illegal read access caught by the entry
+|{set:cellbgcolor:#FFFFFF}sere   |8:8    |WARL   |IMP    a| Suppress the (bus) error on an illegal read access caught by the entry
 
 * 0x0: respond an error if *ERR_CFG.rs* is 0x0. 
 * 0x1: do not respond an error. User to define the behavior, e.g., respond a success with an implementation-dependent value to the initiator.
 
-|{set:cellbgcolor:#FFFFFF}sewe   |9:9    |WARL   |0    a|{set:cellbgcolor:#FFFFFF} Suppress the (bus) error on an illegal write access caught by the entry
+|{set:cellbgcolor:#FFFFFF}sewe   |9:9    |WARL   |IMP    a|{set:cellbgcolor:#FFFFFF} Suppress the (bus) error on an illegal write access caught by the entry
 
 * 0x0: respond an error if *ERR_CFG.rs* is 0x0. 
 * 0x1: do not respond an error. User to define the behavior, e.g., respond a success if response is needed
 
-|{set:cellbgcolor:#FFFFFF}sexe   |10:10    |WARL   |0    a| Suppress the (bus) error on an illegal instruction fetch caught by the entry
+|{set:cellbgcolor:#FFFFFF}sexe   |10:10    |WARL   |IMP    a| Suppress the (bus) error on an illegal instruction fetch caught by the entry
 
 * 0x0: respond an error if *ERR_CFG.rs* is 0x0.
 * 0x1: do not respond an error. User to define the behavior, e.g., respond a success with an implementation-dependent value to the initiator.
