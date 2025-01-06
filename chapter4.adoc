@@ -23,17 +23,6 @@ In some cases, Step 1 and Step 3 may be skipped as long as no transaction check 
 
 NOTE: While stalling transactions have taken place in Step 1, the IOPMP delays checking the stalled transactions until the IOPMP resumes the stalled transactions. For example, the IOPMP may wait the stalled transactions and/or respond retry messages to transaction requestors for the stalled transactions.
 
-[#SECTION_4_2_1]
-==== Faulting stalled transactions
-Faulting stalled transactions can be allowed. To allow faulting over stalling when the IOPMP has no capacity to handle more stalls, one should set *ERR_CFG.stall_violation_en* to 1 before Step 1. If any transaction is faulted due to the stalled transactions, the error information shall be logged in *ERR_REQINFO*, where *ERR_REQINFO.etype* = 0x07 (error due to stalled transactions). The procedure for faulting checking transactions is identical to Steps 1-3 mentioned above, except that, besides stalling and delaying the transactions, transactions can be faulted and cannot be resumed if the IOPMP can't handle more stalled transactions.
-
-[NOTE]
-====
-In certain implementations, rather than stalling the related transactions, the system may opt to fault the checking transactions during an IOPMP atomic update. Faulting transactions can be advantageous if the system lacks sufficient buffer capacity to record and store all transactions during the IOPMP programming process.
-
-This function also can prevent the risk of deadlock in some systems. If an implementation or a system doesn't have sufficient buffer capacity for handling all stalled transactions during programming, the stalled transactions may backpressure from receiver port of the IOPMP and then occur hang on the port due to its implementation limitation. Therefore, the hang on the port potentially causes a deadlock in the system since transactions for programming IOPMP during Step 2 and Step 3 have the possibility to hang indirectly in the circumstance. 
-====
-
 === Stall Transactions
 For Step 1, it's possible to postpone all transactions until all updates are finished. However, this could cause unrelated transactions to experience unnecessary delays. This might not be tolerable for devices that require low latency, like a display controller that periodically retrieves a frame from its video buffer. This section explains the mechanism that only stalls specific transactions to prevent the aforementioned scenario and ensure the atomicity requirement. All the features mentioned below are optional.
 
@@ -55,8 +44,18 @@ NOTE: Although rrid_stall is related to SRCMD table, but should be captured only
 NOTE: When writing *MDSTALL*, the specification only defines the transactions with RRID=_i_ must wait for all rrid_stall[_i_]=1. It doesn't request the rest of the transactions to stall or not. It only asks that all transactions be resumed when writing *MDSTALL* with a zero.
 
 === Cherry Pick
-
 If *MDSTALL* doesn't stall all the desired transactions, there is an optional method to pick the transaction with specific RRIDs. The *RRIDSCP* register comprises two fields: a 2-bit *RRIDSCP.op* and a field for *RRIDSCP.rrid*. By setting *RRIDSCP.op*=1, the rrid_stall[_i_] is activated for __i__=*RRIDSCP.rrid*. Conversely, by setting *RRIDSCP.op*=2, the rrid_stall[_i_] is deactivated for _i_=*RRIDSCP.rrid*. This register is used to fine-tune the result of writing *MDSTALL*. The value of *RRIDSCP.op*=0 is to query the rrid_stall indirectly, and the value of 3 is reserved.
+
+=== Faulting stalled transactions
+Faulting stalled transactions can be allowed. To allow faulting over stalling when the IOPMP has no capacity to handle more stalls, one should set *ERR_CFG.stall_violation_en* to 1 before Step 1. If any transaction is faulted due to the stalled transactions, the error information shall be logged in *ERR_REQINFO*, where *ERR_REQINFO.etype* = 0x07 (error due to stalled transactions). The procedure for faulting checking transactions is identical to Steps 1-3 mentioned above, except that, besides stalling and delaying the transactions, transactions can be faulted and cannot be resumed if the IOPMP can't handle more stalled transactions.
+
+[NOTE]
+====
+In certain implementations, rather than stalling the related transactions, the system may opt to fault the checking transactions during an IOPMP atomic update. Faulting transactions can be advantageous if the system lacks sufficient buffer capacity to record and store all transactions during the IOPMP programming process.
+
+This function also can prevent the risk of deadlock in some systems. If an implementation or a system doesn't have sufficient buffer capacity for handling all stalled transactions during programming, the stalled transactions may backpressure from receiver port of the IOPMP and then occur hang on the port due to its implementation limitation. Therefore, the hang on the port potentially causes a deadlock in the system since transactions for programming IOPMP during Step 2 and Step 3 have the possibility to hang indirectly in the circumstance. 
+====
+
 
 === Resume Stall
 
