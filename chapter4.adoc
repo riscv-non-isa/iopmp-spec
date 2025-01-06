@@ -46,6 +46,7 @@ NOTE: When writing *MDSTALL*, the specification only defines the transactions wi
 === Cherry Pick
 If *MDSTALL* doesn't stall all the desired transactions, there is an optional method to pick the transaction with specific RRIDs. The *RRIDSCP* register comprises two fields: a 2-bit *RRIDSCP.op* and a field for *RRIDSCP.rrid*. By setting *RRIDSCP.op*=1, the rrid_stall[_i_] is activated for __i__=*RRIDSCP.rrid*. Conversely, by setting *RRIDSCP.op*=2, the rrid_stall[_i_] is deactivated for _i_=*RRIDSCP.rrid*. This register is used to fine-tune the result of writing *MDSTALL*. The value of *RRIDSCP.op*=0 is to query the rrid_stall indirectly, and the value of 3 is reserved.
 
+[#FAULTING_STALLED_TRANSACTIONS]
 === Faulting stalled transactions
 Faulting stalled transactions can be allowed. To allow faulting over stalling when the IOPMP has no capacity to handle more stalls, one should set *ERR_CFG.stall_violation_en* to 1 before Step 1. If any transaction is faulted due to the stalled transactions, the error information shall be logged in *ERR_REQINFO*, where *ERR_REQINFO.etype* = 0x07 (error due to stalled transactions). The procedure for faulting checking transactions is identical to Steps 1-3 mentioned above, except that, besides stalling and delaying the transactions, transactions can be faulted and cannot be resumed if the IOPMP can't handle more stalled transactions.
 
