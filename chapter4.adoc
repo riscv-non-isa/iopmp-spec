@@ -10,7 +10,7 @@ The term here "stable" refers to meeting the atomicity requirement. This implies
 === Programming Steps
 The general approach to the atomicity requirement has three major steps, conceptually described as follows:
 
-** Step 1: Stall related transactions. Before proceeding with any updates, delay checking the transactions that may be impacted. 
+** Step 1: Stall related transactions. Before proceeding with any updates, delay checking the transactions that may be impacted.
 ** Step 2: Update IOPMP's settings.
 ** Step 3: Resume stalled transactions. 
 
@@ -20,6 +20,8 @@ For step 1, it's important to verify if the necessary stalling transactions have
 ====
 In some cases, Step 1 and Step 3 may be skipped as long as no transaction check can interrupt Step 2. Updating MDs associated with a specific RRID to other MDs is an example.
 ====
+
+NOTE: While stalling transactions have taken place in Step 1, the IOPMP delays checking the stalled transactions until the IOPMP resumes the stalled transactions. For example, the IOPMP may wait the stalled transactions and/or respond retry messages to transaction requestors for the stalled transactions.
 
 === Stall Transactions
 For Step 1, it's possible to postpone all transactions until all updates are finished. However, this could cause unrelated transactions to experience unnecessary delays. This might not be tolerable for devices that require low latency, like a display controller that periodically retrieves a frame from its video buffer. This section explains the mechanism that only stalls specific transactions to prevent the aforementioned scenario and ensure the atomicity requirement. All the features mentioned below are optional.
@@ -31,7 +33,7 @@ A conceptual internal signal rrid_stall has the same number of bits as the RRIDs
 [.text-center]
 `rrid_stall[_s_] <= MDSTALL.exempt ^ ( Reduction_OR (SRCMD(_s_).md & stall_by_md));`
 
-As to SRCMD table Format 2, *SRCMD(_s_).md[_m_]* in the above equation is: ‘0’ for all an umimplemented memory domain _m_ and ‘1’ for an implemented memory domain _m_ because every RRID associates all implemented MDs.
+As to SRCMD table Format 2, *SRCMD(_s_).md[_m_]* in the above equation is: ‘0’ for all umimplemented memory domain _m_ and ‘1’ for an implemented memory domain _m_ because every RRID associates all implemented MDs.
 
 For any unimplemented memory domain, the corresponding bit in *MDSTALL.md* or *MDSTALLH.mdh* should be wired to 0.
 
@@ -42,8 +44,19 @@ NOTE: Although rrid_stall is related to SRCMD table, but should be captured only
 NOTE: When writing *MDSTALL*, the specification only defines the transactions with RRID=_i_ must wait for all rrid_stall[_i_]=1. It doesn't request the rest of the transactions to stall or not. It only asks that all transactions be resumed when writing *MDSTALL* with a zero.
 
 === Cherry Pick
-
 If *MDSTALL* doesn't stall all the desired transactions, there is an optional method to pick the transaction with specific RRIDs. The *RRIDSCP* register comprises two fields: a 2-bit *RRIDSCP.op* and a field for *RRIDSCP.rrid*. By setting *RRIDSCP.op*=1, the rrid_stall[_i_] is activated for __i__=*RRIDSCP.rrid*. Conversely, by setting *RRIDSCP.op*=2, the rrid_stall[_i_] is deactivated for _i_=*RRIDSCP.rrid*. This register is used to fine-tune the result of writing *MDSTALL*. The value of *RRIDSCP.op*=0 is to query the rrid_stall indirectly, and the value of 3 is reserved.
+
+[#FAULTING_STALLED_TRANSACTIONS]
+=== Faulting stalled transactions
+Faulting stalled transactions can be allowed. To allow faulting over stalling when the IOPMP has no capacity to handle more stalls, one should set *ERR_CFG.stall_violation_en* to 1 before Step 1. If any transaction is faulted due to the stalled transactions, the error information shall be logged in *ERR_REQINFO*, where *ERR_REQINFO.etype* = 0x07 (error due to stalled transactions). The procedure for faulting checking transactions is identical to Steps 1-3 mentioned above, except that, besides stalling and delaying the transactions, transactions can be faulted and cannot be resumed if the IOPMP can't handle more stalled transactions.
+
+[NOTE]
+====
+In certain implementations, rather than stalling the related transactions, the system may opt to fault the checking transactions during an IOPMP atomic update. Faulting transactions can be advantageous if the system lacks sufficient buffer capacity to record and store all transactions during the IOPMP programming process.
+
+This function also can prevent the risk of deadlock in some systems. If an implementation or a system doesn't have sufficient buffer capacity for handling all stalled transactions during programming, the stalled transactions may backpressure from receiver port of the IOPMP and then occur hang on the port due to its implementation limitation. Therefore, the hang on the port potentially causes a deadlock in the system since transactions for programming IOPMP during Step 2 and Step 3 have the possibility to hang indirectly in the circumstance. 
+====
+
 
 === Resume Stall
 
@@ -59,7 +72,7 @@ In Step 1 of programming IOPMP, *MDSTALL* can be written at most once and before
 After writing any non-zero value to *MDSTALL*, *MDSTALL.is_stalled* must be asserted within some time, no matter whether any RRID is stalled. The software polling the status bit doesn't need to consider whether any RRID will be stalled. On the other hand, after writing zero to *MDSTALLH* (if any) and then *MDSTALL*, *MDSTALL.is_stalled* must be de-asserted within some time.
 ====
 
-Based on the aforementioned, complete steps to program an IOPMP are suggested.
+Based on the aforementioned, complete steps to program an IOPMP should be followed.
 
 ** Step 1.1: write MDSTALL once // exactly once
 ** Step 1.2: write RRIDSCP zero or more times
@@ -73,6 +86,7 @@ Some steps may be skipped according to the actual implementation.
 
 To query if all transactions associated with a specific RRID are stalled, do the following. First, write 0 to *RRIDSCP.op* and the RRID you want to query to *RRIDSCP.rrid*. Then, read back *RRIDSCP*. The readback of *RRIDSCP.stat* = 1 means that transactions with the queried RRID have stalled, that is, the corresponding bit in rrid_stall is 1. If the value is 2, it means they are not stalled. A value of 3 indicates an unimplemented or unselectable RRID in *RRIDSCP.rrid*. *RRIDSCP.stat* is in the same location as *RRIDSCP.op* on a write. *RRIDSCP.rrid* should keep the last written legal RRID and *RRIDSCP.stat* reflects the current state of this RRID. This method is considered an indirect way to read rrid_stall.
 
+
 === Implementation Options
 All registers described in this chapter are optional. Moreover, these features could be partially implemented. In *MDSTALL.md* and *MDSTALLH.mdh*, not every bit should be implemented even though the corresponding MD is implemented. An unimplemented bit means unselectable and should be wired to zero. To test which bits are implemented, one can write all 1's to *MDSTALL.md* and *MDSTALLH.mdh* and then read them back. An implemented bit returns 1.
 
@@ -80,8 +94,10 @@ If an IOPMP implementation has fewer than 32 memory domains, *MDSTALLH* should b
 
 NOTE: An example of partial implementation of *MDSTALL.md*/*MDSTALLH.mdh* is a system with a display controller, which is a latency-sensitive device. On updating the IOPMP, the transactions initiated from the display controller should not be stalled. Thus, one can always use *MDSTALL.exempt*=1 and *MDSTALL.md[_j_]*=1, where MD _j_ is the memory domain for the frame buffer that the display controller keeps accessing. Thus, the system only needs to implement *MDSTALL.md[_j_]*.
 
-If whole *MDSTALL* is not implemented, *MDSTALL* and *MDSTALLH* should always return zero.
+If whole *MDSTALL* is not implemented, *MDSTALL*, *MDSTALLH* and *ERR_CFG.stall_violation_en* should always return zero.
 
 If *RRIDSCP* is not implemented, it always returns zero. One can test if it is implemented by writing a zero and then reading it back. Any IOPMP implementing *RRIDSCP* should not return a zero in *RRIDSCP.stat* in this case.
 
 It is unnecessary to allow every implemented RRID to be selectable by *RRIDSCP.rrid*. If an unimplemented or unselectable RRID is written into *RRIDSCP.rrid*, it returns *RRIDSCP.stat* = 3.
+
+*ERR_CFG.stall_violation_en* is a WARL field so it can be programmable or fixed.
