@@ -110,7 +110,7 @@ Entries indexed by _i_~0~, _i_~1~, …​, _i~N~_ match all bytes of the illegal
 *ERR_CFG.ie* && ( !*ENTRY_CFG(_i_~0~).sire* || !*ENTRY_CFG(_i_~1~).sire* || ... || !*ENTRY_CFG(_i~N~_).sire* )
 * Illegal write access/AMO (0x02): +
 *ERR_CFG.ie* && ( !*ENTRY_CFG(_i_~0~).siwe* || !*ENTRY_CFG(_i_~1~).siwe* || ... || !*ENTRY_CFG(_i~N~_).siwe* )
-* Instruction fetch transaction (0x03): +
+* Illegal instruction fetch (0x03): +
 *ERR_CFG.ie* && ( !*ENTRY_CFG(_i_~0~).sixe* || !*ENTRY_CFG(_i_~1~).sixe* || ... || !*ENTRY_CFG(_i~N~_).sixe* )
 
 
