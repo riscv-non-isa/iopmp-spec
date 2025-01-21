@@ -282,7 +282,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 
 - 0x00 = reserved
 - 0x01 = read access
-- 0x02 = write access
+- 0x02 = write acces/AMO
 - 0x03 = instruction fetch
 
 |{set:cellbgcolor:#FFFFFF} msi_werr  |3:3   |R      |0          | It's asserted when the write access to trigger an IOPMP-originated MSI has failed. When it's not available, it should be ZERO.
@@ -293,7 +293,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 
 - 0x00 = no error
 - 0x01 = illegal read access
-- 0x02 = illegal write access
+- 0x02 = illegal write access/AMO
 - 0x03 = illegal instruction fetch
 - 0x04 = partial hit on a priority rule
 - 0x05 = not hit any rule
