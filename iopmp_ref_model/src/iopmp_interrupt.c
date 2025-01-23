@@ -30,7 +30,7 @@ void generate_interrupt(uint8_t *intrpt) {
         if (!intrpt_suppress) {
             *intrpt = !msi_enabled;
             #if (MSI_EN)
-                if (msi_enabled) {
+                if (msi_enabled && !g_reg_file.err_info.msi_werr) {
                     // Construct MSI address and data for enabled MSI.
                     // {MSI_ADDRH[64:34], MSI_ADDR[33:2], 2'b00}
                     uint64_t msi_addr = CONCAT32(g_reg_file.err_msiaddrh.raw,g_reg_file.err_msiaddr.raw) << 2;
@@ -39,9 +39,8 @@ void generate_interrupt(uint8_t *intrpt) {
                     uint8_t status = write_memory((char *)&msi_data, msi_addr, MSI_DATA_BYTE);
 
                     // Handle bus errors during MSI write
-                    if (status & BUS_ERROR) {
-                        // TODO: Add specific error-handling logic here
-                        return;
+                    if (status == BUS_ERROR) {
+                        g_reg_file.err_info.msi_werr = 1;
                     }
                 }
             #endif

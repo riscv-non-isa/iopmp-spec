@@ -1,9 +1,9 @@
 /***************************************************************************
 // Author: Gull Ahmed (gull.ahmed@10xengineers.ai)
 // Date: October 21, 2024
-// Description: 
+// Description:
 // This header file defines macros, and function prototypes
-// for the Input/Output Physical Memory Protection (IOPMP) Test file. 
+// for the Input/Output Physical Memory Protection (IOPMP) Test file.
 ***************************************************************************/
 #include <stdio.h>
 #include <stdint.h>
@@ -49,6 +49,7 @@ extern int8_t *memory;
 extern uint64_t bus_error;
 
 int create_memory(uint8_t mem_gb);
+uint8_t read_memory(uint64_t addr, uint8_t size, char *data);
 void configure_srcmd_n(uint8_t srcmd_reg, uint16_t srcmd_idx, reg_intf_dw data, uint8_t num_bytes);
 void configure_mdcfg_n(uint8_t md_idx, reg_intf_dw data, uint8_t num_bytes);
 void configure_entry_n(uint8_t entry_reg, uint64_t entry_idx, reg_intf_dw data, uint8_t num_bytes);
@@ -75,13 +76,15 @@ int error_record_chk(uint8_t err_type, uint8_t perm, uint64_t addr, bool err_rcd
 #define CHECK_IOPMP_TRANS(RSP_STATUS, ERR_TYPE)                                                         \
     FAIL_IF((iopmp_trans_rsp.rrid != iopmp_trans_req.rrid));                                            \
     FAIL_IF((iopmp_trans_rsp.status != (RSP_STATUS)));                                                  \
-    err_req_info_temp.raw = read_register(0x0064, 4);                                                   \
+    err_info_temp.raw = read_register(0x0064, 4);                                                       \
     if (iopmp_trans_rsp.status != IOPMP_SUCCESS) {                                                      \
-        FAIL_IF((err_req_info_temp.v != 1));                                                            \
-        FAIL_IF((err_req_info_temp.ttype != iopmp_trans_req.perm));                                     \
-        FAIL_IF((err_req_info_temp.etype != (ERR_TYPE)));                                               \
+        FAIL_IF((err_info_temp.v != 1));                                                                \
+        FAIL_IF((err_info_temp.ttype != iopmp_trans_req.perm));                                         \
+        FAIL_IF((err_info_temp.etype != (ERR_TYPE)));                                                   \
         FAIL_IF((read_register(0x0068, 4) != (uint32_t)((iopmp_trans_req.addr >> 2) & 0xFFFFFFFF)));    \
         FAIL_IF((read_register(0x006C, 4) != (uint32_t)((iopmp_trans_req.addr >> 34) & 0xFFFFFFFF)));   \
+        if (bus_error == 1) { FAIL_IF((err_info_temp.msi_werr != 0)); }                                 \
+        else { FAIL_IF((err_info_temp.msi_werr != 1)); }                                                \
     } else {                                                                                            \
-        FAIL_IF((err_req_info_temp.v != 0));                                                            \
+        FAIL_IF((err_info_temp.v != 0));                                                                \
     }

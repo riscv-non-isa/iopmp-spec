@@ -25,13 +25,13 @@
   * @param intrpt Pointer to an interrupt flag, which is set if an error is captured.
  **/
 void errorCapture(perm_type_e trans_type, uint8_t error_type, uint16_t rrid, uint16_t entry_id, uint64_t err_addr, uint8_t *intrpt) {
-    int err_reqinfo_v = g_reg_file.err_reqinfo.v;
+    int err_reqinfo_v = g_reg_file.err_info.v;
     // If no error has been logged and interrupt and error both are not suppressed, capture error details
-    if (!g_reg_file.err_reqinfo.v && (!error_suppress | !intrpt_suppress)) {
-        g_reg_file.err_reqinfo.v     = 1;               // Mark error as captured
+    if (!g_reg_file.err_info.v && (!error_suppress | !intrpt_suppress)) {
+        g_reg_file.err_info.v     = 1;               // Mark error as captured
         // Set error status and transaction details
-        g_reg_file.err_reqinfo.ttype = trans_type;      // Transaction type (read/write)
-        g_reg_file.err_reqinfo.etype = error_type;      // Specific error type
+        g_reg_file.err_info.ttype = trans_type;      // Transaction type (read/write)
+        g_reg_file.err_info.etype = error_type;      // Specific error type
 
         // Capture lower and upper parts of error address
         g_reg_file.err_reqaddr.addr   = (uint32_t)((err_addr >> 2) & UINT32_MAX);         // Error address [33:2]
@@ -47,10 +47,10 @@ void errorCapture(perm_type_e trans_type, uint8_t error_type, uint16_t rrid, uin
         err_svs.sv[rrid].svw |= (err_svs.sv[rrid].svw + 1);  // Increment violation count
     }
 
-    // Check for any subsequent violation and set err_reqinfo.svc
+    // Check for any subsequent violation and set err_info.svc
     for (int i = 0; i < IOPMP_RRID_NUM; i++) {
         if (err_svs.sv[i].svw) {
-            g_reg_file.err_reqinfo.svc = 1;
+            g_reg_file.err_info.svc = 1;
             break;
         }
     }

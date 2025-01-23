@@ -29,8 +29,10 @@
 #define IMP_ERROR_REQID         1
 #define IMP_MDLCK               1
 #define MSI_EN                  1
+#define STALL_BUF_DEPTH         32
+#define SRC_ENFORCEMENT_EN      0
 
-#define ENTRY_OFFSET            0x8000
+#define ENTRY_OFFSET            0x2000
 
 #define REG_INTF_BUS_WIDTH      4
 

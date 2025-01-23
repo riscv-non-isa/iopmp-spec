@@ -32,7 +32,7 @@
 #define MDCFGLCK_OFFSET       0x48
 #define ENTRYLCK_OFFSET       0x4C
 #define ERR_OFFSET            0x60
-#define ERR_REQINFO_OFFSET    0x64
+#define ERR_INFO_OFFSET       0x64
 #define ERR_REQADDR_OFFSET    0x68
 #define ERR_REQADDRH_OFFSET   0x6C
 #define ERR_REQID_OFFSET      0x70
@@ -305,7 +305,8 @@ typedef union {
                                            // • 0x0: respond an implementation-dependent error, such as a bus error
                                            // • 0x1: respond a success with a pre-defined value to the requestor instead of an error
         uint32_t msi_en  : 1;              // It indicates whether the IOPMP triggers MSI
-        uint32_t rsv1    : 4;              // reserved for future use
+        uint32_t stall_violation_en  : 1;  // It indicates whether the IOPMP faults stalled transactions
+        uint32_t rsv1    : 3;              // reserved for future use
         uint32_t msidata : 11;             // The data to trigger MSI
 
         uint32_t rsv2    : 13;             // reserved for future use
@@ -313,7 +314,7 @@ typedef union {
     uint32_t raw;
 } err_cfg_t;
 
-// ERR_REQINFO captures more detailed error infomation.
+// ERR_INFO captures more detailed error information.
 typedef union {
     struct {
         uint32_t v     : 1;                 // Indicate if the illegal capture recorder register has a
@@ -325,7 +326,7 @@ typedef union {
                                             // 0x02 = write access
                                             // 0x03 = instruction fetch
 
-        uint32_t rsv1  : 1;                 // reserved for future use
+        uint32_t msi_werr  : 1;             // It’s asserted when IOPMP-originated MSI has failed.
 
         uint32_t etype : 3;                 // Indicates the type of violation
                                             // 0x00 = no error
@@ -340,10 +341,10 @@ typedef union {
         uint32_t svc   : 1;                 // Indicate there is a subsequent violation caught in ERR_MFR.
                                             // Implemented only for HWCFG0.mfr_en=1,
 
-        uint32_t rsv2  : 24;                // reserved for future use
+        uint32_t rsv   : 24;                // reserved for future use
     };
     uint32_t raw;
-} err_reqinfo_t;
+} err_info_t;
 
 // ERR_REQADDR indicate the errored request address.
 typedef union {
@@ -658,7 +659,7 @@ typedef union {
         entrylck_t       entrylck;
         uint32_t         reserved2[4];
         err_cfg_t        err_cfg;
-        err_reqinfo_t    err_reqinfo;
+        err_info_t       err_info;
         err_reqaddr_t    err_reqaddr;
         err_reqaddrh_t   err_reqaddrh;
         err_reqid_t      err_reqid;

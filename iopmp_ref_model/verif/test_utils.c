@@ -41,7 +41,7 @@ uint8_t read_memory(uint64_t addr, uint8_t size, char *data) {
 
     // Perform memory read
     memcpy(data, &memory[addr], size);
-    return 0; // Read successfult
+    return 0; // Read successful
 }
 
 /**
@@ -123,17 +123,17 @@ void receiver_port(uint16_t rrid, uint64_t addr, uint32_t length, uint32_t size,
   * @param err_rcd Set if error should be recorded
  **/
 int error_record_chk(uint8_t err_type, uint8_t req_perm, uint64_t req_addr, bool err_rcd){
-    err_reqinfo_t err_req_info_temp;
-    err_req_info_temp.raw = read_register(0x0064, 4);
+    err_info_t err_info_temp;
+    err_info_temp.raw = read_register(0x0064, 4);
     if (err_rcd){
-        FAIL_IF((err_req_info_temp.v != 1));                                                            
-        FAIL_IF((err_req_info_temp.ttype != req_perm));                                     
-        FAIL_IF((err_req_info_temp.etype != (err_type)));                                               
+        FAIL_IF((err_info_temp.v != 1));                                                            
+        FAIL_IF((err_info_temp.ttype != req_perm));                                     
+        FAIL_IF((err_info_temp.etype != (err_type)));                                               
         FAIL_IF((read_register(0x0068, 4) != (uint32_t)((req_addr >> 2) & 0xFFFFFFFF)));    
         FAIL_IF((read_register(0x006C, 4) != (uint32_t)((req_addr >> 34) & 0xFFFFFFFF)));
     }
     else {
-        FAIL_IF((err_req_info_temp.v == 1)); 
+        FAIL_IF((err_info_temp.v == 1)); 
     }                                                   
     
     return 0;                                                            

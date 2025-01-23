@@ -30,7 +30,7 @@
 #define IOPMP_NA4   2  // Naturally aligned 4-byte regions
 #define IOPMP_NAPOT 3  // Naturally aligned power of two regions
 
-#define BUS_ERROR     0x3
+#define BUS_ERROR     0xC
 #define MSI_DATA_BYTE 0x4
 #define MAX_SVS       0xFFFF
 
@@ -52,16 +52,17 @@
 #define MASK_BIT_POS(BIT_POS) ((1U << BIT_POS) - 1)
 #define GET_BIT(VAL, BIT_NUM) ((VAL >> BIT_NUM) & 1)
 
+
 // Global Variables: Definitions for IOPMP global variables
 extern iopmp_regs_t g_reg_file;        // Global register file for IOPMP
 extern iopmp_entries_t iopmp_entries;  // IOPMP entry table
 extern err_mfrs_t err_svs;             // Error status vector
 extern int intrpt_suppress;            // Set when interrupt is suppressed
 extern int error_suppress;             // Set when error is suppressed
-extern int rrid_stall[IOPMP_RRID_NUM];      // Stall status array for requester IDs
+extern int rrid_stall[IOPMP_RRID_NUM]; // Stall status array for requester IDs
+extern int stall_cntr;                 // Counts stalled transactions
 
 extern uint8_t write_memory(char *data, uint64_t addr, uint32_t size);
-extern uint8_t read_memory(uint64_t addr, uint8_t size, char *data);
 
 // Function Declarations: Core IOPMP operations
 int iopmpAddrRange(uint64_t *startAddr, uint64_t *endAddr, uint64_t prev_iopmpaddr, uint64_t iopmpaddr, entry_cfg_t iopmpcfg);
