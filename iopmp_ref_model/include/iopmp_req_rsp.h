@@ -46,6 +46,7 @@ typedef enum {
     PARTIAL_HIT_ON_PRIORITY= 0x04,  // Partial hit on a priority entry
     NOT_HIT_ANY_RULE       = 0x05,  // No rule matched the transaction
     UNKNOWN_RRID           = 0x06,  // Unknown requester ID in transaction
+    STALLED_TRANSACTION    = 0x07,  // Error due to a stalled transaction
     ENTRY_MATCH            = 0x10,  // Entry matched in access control
     ENTRY_NOTMATCH         = 0x11   // No matching entry found
 } iopmpMatchStatus_t;

@@ -15,6 +15,7 @@ iopmp_entries_t iopmp_entries;
 err_mfrs_t      err_svs;
 int             intrpt_suppress;
 int             error_suppress;
+int             stall_cntr;
 
 /**
   * @brief Processes the IOPMP transaction request, traversing the SRCMD and MDCFG tables
@@ -43,16 +44,18 @@ iopmp_trans_rsp_t iopmp_validate_access(iopmp_trans_req_t trans_req, uint8_t *in
     #endif
 
     iopmpMatchStatus_t iopmpMatchStatus;
+    int nonPrioErrorSup    = 0;
+    int nonPrioIntrSup     = 0;
+    int firstIllegalAccess = 1;
     #if (ERROR_CAPTURE_EN)
         iopmpMatchStatus_t nonPrioRuleStatus;
         int nontPrioRuleNum = 0;
-        int nonPrioErrorSup = 0;
         nonPrioRuleStatus = NOT_HIT_ANY_RULE;
     #endif
 
     // Check for valid RRID; if invalid, capture error and return
     if (trans_req.rrid >= IOPMP_RRID_NUM) {
-        // Initially, checkf for global error suppression
+        // Initially, check for global error suppression
         error_suppress = g_reg_file.err_cfg.rs;
         #if (ERROR_CAPTURE_EN)
             errorCapture(trans_req.perm, UNKNOWN_RRID, trans_req.rrid, 0, trans_req.addr, intrpt);
@@ -65,15 +68,32 @@ iopmp_trans_rsp_t iopmp_validate_access(iopmp_trans_req_t trans_req, uint8_t *in
 
     if (g_reg_file.mdstall.is_stalled) {
         if (rrid_stall[trans_req.rrid]) {
-            iopmp_trans_rsp.rrid_stalled = 1;
-            return iopmp_trans_rsp;
+            if (stall_cntr != STALL_BUF_DEPTH){
+                iopmp_trans_rsp.rrid_stalled = 1;
+                stall_cntr++;
+                return iopmp_trans_rsp;
+            }
+            else if (g_reg_file.err_cfg.stall_violation_en) {
+                error_suppress = g_reg_file.err_cfg.rs;
+                #if (ERROR_CAPTURE_EN)
+                    errorCapture(trans_req.perm, STALLED_TRANSACTION, trans_req.rrid, 0, trans_req.addr, intrpt);
+                #endif
+                if (error_suppress) { iopmp_trans_rsp.status = IOPMP_SUCCESS; iopmp_trans_rsp.user = USER; }
+                return iopmp_trans_rsp;
+            }
         }
     }
+    
 
     // Read SRCMD table based on `rrid`
     #if (SRCMD_FMT == 0)
-        srcmd_en  = g_reg_file.srcmd_table[trans_req.rrid].srcmd_en;
-        srcmd_enh = g_reg_file.srcmd_table[trans_req.rrid].srcmd_enh;
+        #if (SRC_ENFORCEMENT_EN == 1)
+            srcmd_en  = g_reg_file.srcmd_table[0].srcmd_en;
+            srcmd_enh = g_reg_file.srcmd_table[0].srcmd_enh;
+        #else
+            srcmd_en  = g_reg_file.srcmd_table[trans_req.rrid].srcmd_en;
+            srcmd_enh = g_reg_file.srcmd_table[trans_req.rrid].srcmd_enh;
+        #endif
     #endif
 
     // Determine MDCFG table range for entries
@@ -81,8 +101,8 @@ iopmp_trans_rsp_t iopmp_validate_access(iopmp_trans_req_t trans_req, uint8_t *in
         int start_md_num = 0;
         int end_md_num   = IOPMP_MD_NUM;
     #else
-        int start_md_num = trans_req.rrid;
-        int end_md_num   = trans_req.rrid + 1;
+        int start_md_num = SRC_ENFORCEMENT_EN ? 0 : trans_req.rrid;
+        int end_md_num   = SRC_ENFORCEMENT_EN ? 1 : trans_req.rrid + 1;
     #endif
 
     // Traverse each MD entry and perform address/permission checks
@@ -114,9 +134,13 @@ iopmp_trans_rsp_t iopmp_validate_access(iopmp_trans_req_t trans_req, uint8_t *in
             } else if (iopmpMatchStatus != ENTRY_NOTMATCH) {
                 if (!is_priority_entry) {
                     #if (ERROR_CAPTURE_EN)
-                        nonPrioRuleStatus = iopmpMatchStatus;
-                        nonPrioErrorSup   = error_suppress;
-                        nontPrioRuleNum   = cur_entry;
+                        nonPrioErrorSup    |= error_suppress;
+                        nonPrioIntrSup     |= intrpt_suppress;
+                        if (firstIllegalAccess) {
+                            nonPrioRuleStatus  = iopmpMatchStatus;
+                            nontPrioRuleNum    = cur_entry;
+                            firstIllegalAccess = 0;
+                        }
                     #endif
                     continue;
                 }
@@ -133,7 +157,7 @@ iopmp_trans_rsp_t iopmp_validate_access(iopmp_trans_req_t trans_req, uint8_t *in
 
     // If No rule hits, enable error suppression based on global error suppression bit
     if (nonPrioRuleStatus == NOT_HIT_ANY_RULE) { error_suppress = g_reg_file.err_cfg.rs; }
-    else { error_suppress = nonPrioErrorSup; }
+    else { error_suppress = nonPrioErrorSup; intrpt_suppress = nonPrioIntrSup; }
 
     #if (ERROR_CAPTURE_EN)
         errorCapture(trans_req.perm, nonPrioRuleStatus, trans_req.rrid, nontPrioRuleNum, trans_req.addr, intrpt);

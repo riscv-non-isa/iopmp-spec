@@ -1,6 +1,6 @@
 # IOPMP Reference Model Documentation
 
-The **Input/Output Physical Memory Protection (IOPMP)** is a hardware component designed to control and validate accesses issued from bus initiators. It checks the validity of these accesses in real-time. The **IOPMP Reference Model** is developed in compliance with the **RISC-V IOPMP Specification Version 0.9.2-RC2 (November 2024)**. This model is currently in the development phase and will be updated with future specification revisions.
+The **Input/Output Physical Memory Protection (IOPMP)** is a hardware component designed to control and validate accesses issued from bus initiators. It checks the validity of these accesses in real-time. The **IOPMP Reference Model** is developed in compliance with the **RISC-V IOPMP Specification Version 0.9.2-RC3 (January 2025)**. This model  will be updated with future specification revisions.
 
 ## IOPMP Model Overview
 
@@ -19,9 +19,7 @@ The IOPMP Reference Model includes several distinct configurations, each offerin
 | **Unnamed Model 4** | 2                   | 2             | Same as **Unnamed Model 3**, but the value of *k* is programmable. |
 
 ## Supported Features
-
-The **IOPMP Reference Model** incorporates all features as outlined in the **RISC-V IOPMP Specification Version 0.9.2-RC2 (November 2024)**. Key features include:
-
+The **IOPMP Reference Model** incorporates all IOPMP Models and each model can be configured based upon SRCMD_FMT and MDCFG_FMT flags at compilation time. All features outlined in the **RISC-V IOPMP Specification Version 0.9.2-RC3 (January 2025)**. Key feature configuration parameters include:
 | **Feature**  | **Possible Values** | **Description**                                                                                                                                                                                                                    |
 | ------------------ | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | TOR_EN             | 0/1                       | Indicates if Top-Of-Range (TOR) addressing mode is supported.<br />**0**: TOR not supported. <br />**1**: TOR supported                                                                                                      |
@@ -46,7 +44,9 @@ The **IOPMP Reference Model** incorporates all features as outlined in the **RIS
 | IMP_ERROR_REQID    | 0/1                       | Indicates if `ERR_REQID` is implemented. <br />**0**: Feature not supported. <br />**1**: Errored RRID and Entry num is recorded.                                                                                          |
 | IMP_MDLCK          | 0/1                       | Indicates if the Memory Domain Lock (MDLCK) feature is implemented.<br />**0**: Feature is not implemented<br />**1**: Memory domains can be locked.                                                                         |
 | REG_INTF_BUS_WIDTH | 4/8                       | Specifies the width (in bytes) of the register interface bus.<br />**4**: 4-byte width. <br />**8**: 8-byte width.                                                                                                           |
-| MSI_EN             | 0/1                       | Indicates if Messaged-Signal-Interrupts are supported.<br />**0:** MSI is not supported.<br />**1:** MSI can be generated.                                                                                                |
+| MSI_EN             | 0/1                       | Indicates if Messaged-Signal-Interrupts are supported.<br />**0:** MSI is not supported.<br />**1:** MSI can be generated.                                                                                                           |
+| SRC_ENFORCEMENT_EN             | 0/1                       | Indicates if Source Enforcement is enabled.<br />**0:** Source Enforcement is not enabled.<br />**1:** Source Enforcement is enabled.                                                                                                |
+
 
 ## Reference Model Functions
 
