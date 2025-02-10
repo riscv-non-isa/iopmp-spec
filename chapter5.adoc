@@ -7,11 +7,12 @@ If an optional register is not implemented, the behavior is implementation-depen
 |===
 |OFFSET |Register |Description
 
-.20+|0x0000  2+|{set:cellbgcolor:#D3D3D3} INFO
+.21+|0x0000  2+|{set:cellbgcolor:#D3D3D3} INFO
 |{set:cellbgcolor:#FFFFFF} VERSION |Indicates the specification and the IP vendor.
 |{set:cellbgcolor:#FFFFFF} IMPLEMENTATION | Indicates the implementation version.
 |{set:cellbgcolor:#FFFFFF} HWCFG0~2 |Indicate the configurations of current IOPMP instance.
 |{set:cellbgcolor:#FFFFFF} ENTRYOFFSET |Indicates the internal address offsets of each table.
+|{set:cellbgcolor:#FFFFFF} HWCFG_USER | (Optional) User-defined configurations of current IOPMP instance.
 
 2+|{set:cellbgcolor:#D3D3D3} Programming Protection
 |{set:cellbgcolor:#FFFFFF} MDSTALL/MDSTALLH .2+.^| (Optional) Stall and resume the transaction checks when programming the IOPMP.
@@ -151,6 +152,17 @@ h|Field                         |Bits   |R/W    |Default    |Description
 h|Field                         |Bits   |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}offset|31:0   |R      |IMP        |Indicate the offset address of the IOPMP array from the base of an IOPMP instance, a.k.a. the address of *VERSION*. Note: the offset is a signed number. That is, the IOPMP array can be placed in front of *VERSION*.  
 |===
+
+*HWCFG_USER* is an optional register to provide users to define their own configurations.
+
+[cols="<2,<1,<1,<1,<6"]
+|===
+5+h|HWCFG_USER{set:cellbgcolor:#D3D3D3}
+5+h|0x002C
+h|Field                         |Bits   |R/W    |Default    |Description
+|{set:cellbgcolor:#FFFFFF}user  |31:0   |IMP    |IMP        | (Optional) user-defined registers
+|===
+
 
 === *Programming Protection Registers*
 
