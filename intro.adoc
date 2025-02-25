@@ -8,7 +8,7 @@ IOPMP is considered a hardware component in a bus fabric. But why is a pure-soft
 
 [caption="Figure {counter:image}: ", reftext="Figure {image}"]
 [title="Figure 1: Example integrations of IOPMP(s) in a system. Figure (a) shows a system deploying two IOPMPs (destination-enforcement). The IOPMPs take three inputs: RRID, the transaction type (read/write), and the request range (address/len). Figure (b) shows a system deploying two IOPMPs (source-enforcement). In this deployment, the RRID can be ignored."]
-image::iopmp_system_position.png[]
+image::images/iopmp_system_position.png[]
 
 Another hardware component in a bus matrix, the Input-Output Memory Management Unit (IOMMU), is used to translate a virtual address in a device to a physical address in the bus matrix by one or more stages of page tables. It could be operated in a trusted or untrusted environment and typically is a tool of a hypervisor or an OS. It provides excellent flexibility and reduces external memory fragmentation. However, it may not be an ideal tool for security software running in M-mode because it needs relatively large memory and relatively complicated software compared to a typical security monitor. Besides, the tables are usually stored in the DRAM, which is outside the chip and needs extra protection. For simple systems, this burden may not be affordable. IOPMP, however, consumes much less memory and stores rules inside the chip. Both of them have their own useful areas of application, so IOMMU and IOPMP could coexist and collaborate. IOPMP can be used as a tool for the secure monitor by checking access from devices controlled by other software, while IOMMU can be used by software with richer resources.
 
