@@ -61,15 +61,15 @@ For the sake of convenience of discussion, some highly used combinations of *HWC
 
 [caption="Figure {counter:image}: ", reftext="Figure {image}"]
 [title="an example block diagram of the rapid-4 model. The flow is the same as in <<iopmp-block-diagram>>, except the MDCFG table is simplified to a constant mapping illustrated in the dashed box. In this example, every MD has exactly four entries."]
-image::iopmp_unit_block_diagram_rapid_4.png[]
+image::images/iopmp_unit_block_diagram_rapid_4.png[]
 
 [caption="Figure {counter:image}: ", reftext="Figure {image}"]
 [title="an example block diagram of the compact-4 model."]
-image::iopmp_unit_block_diagram_compact_4.png[]
+image::images/iopmp_unit_block_diagram_compact_4.png[]
 
 [caption="Figure {counter:image}: ", reftext="Figure {image}"]
 [title="an example block diagram of the model implements SRCMD table format 2 and MDCFG table format 1 with HWCFG0.md_entry_num is 0. In this example, every MD has exactly single entry, i.e., the entry index is equal to the MD index."]
-image::iopmp_unit_block_diagram_srcmd_fmt2.png[]
+image::images/iopmp_unit_block_diagram_srcmd_fmt2.png[]
 
 [#SECTION_3_5]
 === Configuration Protection
