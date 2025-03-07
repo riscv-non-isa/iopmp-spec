@@ -1,7 +1,7 @@
 [[Concepts]]
 == Terminology and Concepts
 
-This document refers to the term “secure monitor” as the software responsible for managing security-related tasks, including the programming of IOPMPs. The secure monitor is not restricted to operating on a single CPU or hart; instead, it has the flexibility to be distributed across multiple CPUs.
+This document refers to the term “secure monitor” as the software responsible for managing security-related tasks, including the programming of IOPMPs. The secure monitor is not restricted to operating on a single CPU or hart; instead, it may be distributed across multiple CPUs.
 
 .Glossary and Acronyms
 [cols="<1,<3",stripes=even]
@@ -29,7 +29,7 @@ h|Term h|Description
 |===
 
 === Request-Role-ID and Transaction
-Request Role ID, RRID for short, is a unique ID to identify a system-defined security context. For example, a unique RRID can be a transaction requestor or a group of transaction requestors with the same permission. When a requestor wants to access a piece of memory, it issues a transaction. A transaction should be tagged with an RRID to identify the issuing requestor. We will discuss about the exception in the next section. Tagging requestors with RRID could be implementation-dependent. The number of bits of an RRID is implementation-dependent as well. If different channels or modes of a requestor could be granted different access permissions, they can have its own RRID.
+Request Role ID, RRID for short, is a unique ID to identify a system-defined security context. For example, a unique RRID can be a transaction requestor or a group of transaction requestors with the same permission. Depending on the IOPMP integration, transactions may be tagged with an RRID to identify the requestor. Tagging requestors with RRID is implementation-dependent. The number of bits of an RRID is implementation-dependent as well. If different channels or modes of a requestor could be granted different access permissions, they can have their own RRID.
 
 === Source-Enforcement
 If all transactions going through the IOPMP are issued by the same transaction requestor or a set of transaction requestors with the same permission, the RRID can be ignored on the transaction requestor side and the above transactions. In the case, we denote the IOPMP performs source enforcement, IOPMP-SE for short.
@@ -38,7 +38,7 @@ If all transactions going through the IOPMP are issued by the same transaction r
 An IOPMP has at least an requestor port, at least a receiver port and one control port. A receiver port is where a transaction goes into the IOPMP, and a requestor port is where a transaction leaves it if the transaction passes all the checks. The control port is used to program the IOPMP.
 
 === Memory Domain
-An RRID is an abstract representation of a transaction requestor. It encompasses one or more transaction requestors that are granted identical permissions. A Memory Domain, MD for short, is an abstract representation of a transaction destination that groups a set of memory regions for a specific purpose. MDs are indexed from zero. For example, a network interface controller, NIC, may have three memory regions: an RX region, a TX region, and a region of control registers. We could group them into one MD. If a processor can fully control the NIC, it can be associated with the MD. An RRID associated with a MD doesn’t mean having full permissions on all memory regions of the MD. The permission of each region is defined in the corresponding IOPMP entry. Additionally, there is an extension to adhere the permission to the MD that will be introduced in the <<#APPENDIX_A3, Appendix A3>>.
+An RRID is an abstract representation of a transaction requestor. It encompasses one or more transaction requestors that are granted identical permissions. A Memory Domain, MD for short, is an abstract representation of a transaction destination that groups a set of memory regions for a specific purpose. MDs are indexed from zero. For example, a network interface controller, NIC, may have three memory regions: an RX region, a TX region, and a region of control registers. We could group them into one MD. If a processor can fully control the NIC, it can be associated with the MD. An RRID associated with a MD may not have full permissions on all memory regions of the MD. The permission of each region is defined in the corresponding IOPMP entry. Additionally, there is an extension to adhere the permission to the MD that will be introduced in the <<#APPENDIX_A3, Appendix A3>>.
 
 It’s important to note that, generally speaking, a single RRID can be associated with multiple Memory Domains (MDs), and vice versa. However, certain configurations may impose restrictions on this flexibility, which will be discussed in the following chapter.
 
@@ -60,7 +60,7 @@ When an RRID is associated with a Memory Domain, it is also inherently associate
 
 [#SECTION_2_6]
 === Priority and Matching Logic
-There are two read-only bits, *HWCFG0.no_w* and *HWCFG0.no_x*, used to decide whether the IOPMP denies a write transaction and an instruction fetch, respectively. An IOPMP always fails a write transaction when *HWCFG0.no_w* is 1, and fails instruction fetch transaction when *HWCFG0.no_x* is 1. The error type is "not hit any rule" (0x05).
+There are two read-only bits, *HWCFG0.no_w* and *HWCFG0.no_x*, used to decide whether the IOPMP denies any write transaction and any instruction fetch, respectively. An IOPMP always fails a write transaction when *HWCFG0.no_w* is 1, and fails instruction fetch transaction when *HWCFG0.no_x* is 1. The error type is "not hit any rule" (0x05).
 
 When a transaction arrives at an IOPMP, the IOPMP first checks whether the RRID carried by the transaction is legal. If the RRID is equal to or greater than *HWCFG1.rrid_num*, the transaction is illegal with error type = "Unknown RRID" (0x06)". An implementation can also decide whether an RRID is legal even though it < *rrid_num*. 
 
@@ -68,7 +68,12 @@ IOPMP entries exhibit partial prioritization. Entries with indices smaller than 
 
 NOTE: The specification incorporates both priority and non-priority entries due to considerations of security, latency, and area. Priority entries, which are locked, safeguard the most sensitive data, even in the event of secure software being compromised. However, implementing a large number of these priority entries results in higher latency and increased area usage. On the other hand, non-priority entries are treated equally and can be cached in smaller numbers. This approach reduces the amortized latency, power consumption, and area when the locality is sufficiently high. Thus, the mix of entry types in the specification allows for a balance between security and performance.
 
-The entry with the highest priority that (1) matches any byte of the incoming transaction and (2) is associated with the RRID carried by the transaction determines whether the transaction is legal. If the matching entry is priority entry, the matching entry must match all bytes of a transaction, or the transaction is illegal with error type = "partial hit on a priority rule" (0x04), irrespective of its permission. An entry has own permission and permission from Memory Domain to grant a transaction permission. If a priority entry is matched but doesn't grant transaction permission to operate, the transaction is illegal with error type = "illegal read access" (0x01) for read access transaction, "illegal write access/AMO" (0x02) for write access/atomic memory operation (AMO) transaction, or "illegal instruction fetch" (0x03) for instruction fetch transaction.
+The entry with the highest priority that 
+
+* matches any byte of the incoming transaction; and 
+* is associated with the RRID carried by the transaction determines whether the transaction is legal.
+
+If the matching entry is priority entry, the matching entry must match all bytes of a transaction, or the transaction is illegal with error type = "partial hit on a priority rule" (0x04), irrespective of its permission. An entry has own permission and permission from Memory Domain to grant a transaction permission. If a priority entry is matched but doesn't grant transaction permission to operate, the transaction is illegal with error type = "illegal read access" (0x01) for read access transaction, "illegal write access/AMO" (0x02) for write access/atomic memory operation (AMO) transaction, or "illegal instruction fetch" (0x03) for instruction fetch transaction.
 
 NOTE: To grant an AMO transaction permission, entries and/or Memory Domains must have read access permission and write access permission.
 
@@ -90,13 +95,13 @@ image::images/iopmp_unit_block_diagram.png[]
 === Error Reactions
 Upon detecting an illegal transaction, the IOPMP could initiate three of the following actions: 
 
-. Trigger an interrupt to notify the system of the violation.
+* Trigger an interrupt to notify the system of the violation.
 
-. Return bus error (or a decode error) or not with an implementation-defined value. 
+* Return bus error (or a decode error) or not with an implementation-defined value. 
 
-. Log the error details in IOPMP error record registers.
+* Log the error details in IOPMP error record registers.
 
-The interrupt enabling on an IOPMP violation can be configured globally via *ERR_CFG* register or optionally locally through the *ENTRY_CFG* register for each entry. The *ERR_CFG.ie* bit serves as the global interrupt enable configuration bit. *HWCFG0.peis* is 1 if an implementation supports *sire*, *siwe*, or *sixe*. Every entry _i_ has three optional interrupt suppression bits in register *ENTRY_CFG(_i_)*, *sire*, *siwe*, and *sixe* to suppress interrupt triggering due to illegal reads, illegal writes and illegal instruction fetches on the corresponding entry, respectively. Such local interrupt control mechanism can be beneficial in scenarios such as configuring guard regions for speculative access handling. The interrupt pending indication is equivalent to the error valid indication, both are flagged through the *ERR_INFO.v* bit. An IOPMP interrupt will be triggered when a transaction is illegal and the interrupt is not suppressed. An IOPMP triggers interrupt by global interrupt enable configuration bit *ie* and suppression bits (*sire*, *siwe*, or *sixe*) in entries if a transaction only violates permissions on entries and *peis* is 1. On the other hand, if a transaction doesn't only violate permissions on entries, an IOPMP triggers interrupt only by global interrupt enable configuration bit *ie*. The permissions include permission bits in entries (*ENTRY_CFG(_i_).r/w/x*) and permission bits from SRCMD table (please refer <<#SECTION_3_2, SRCMD Table Formats>> for the details) to corresponding entries. The relation of interrupt control with interrupt suppression bits for an illegal transaction can be more precisely described as follows:
+The interrupt enabling on an IOPMP violation can be configured globally via *ERR_CFG* register or optionally locally through the *ENTRY_CFG* register for each entry. The *ERR_CFG.ie* bit serves as the global interrupt enable configuration bit. Every entry _i_ has three optional interrupt suppression bits in register *ENTRY_CFG(_i_)*, *sire*, *siwe*, and *sixe* to suppress interrupt triggering due to illegal reads, illegal writes and illegal instruction fetches on the corresponding entry, respectively. *HWCFG0.peis* is 1 if an implementation supports *sire*, *siwe*, or *sixe*.  Such local interrupt control mechanism can be beneficial in scenarios such as configuring guard regions for speculative access handling. The interrupt pending indication is equivalent to the error valid indication, both are flagged through the *ERR_INFO.v* bit. An IOPMP interrupt will be triggered when a transaction is illegal and the interrupt is not suppressed. An IOPMP triggers interrupt by global interrupt enable configuration bit *ie* and suppression bits (*sire*, *siwe*, or *sixe*) in entries if a transaction only violates permissions on entries and *peis* is 1. On the other hand, if a transaction doesn't only violate permissions on entries, an IOPMP triggers interrupt only by global interrupt enable configuration bit *ie*. The permissions include permission bits in entries (*ENTRY_CFG(_i_).r/w/x*) and permission bits from SRCMD table (please refer <<#SECTION_3_2, SRCMD Table Formats>> for the details) to corresponding entries. The relation of interrupt control with interrupt suppression bits for an illegal transaction can be more precisely described as follows:
 
 An entry indexed by _i_ has the highest priority and matches all bytes of the illegal transaction, and error type of the illegal transaction is: 
 
@@ -143,7 +148,12 @@ Entries indexed by _i_~0~, _i_~1~, …​, _i~N~_ match all bytes of the illegal
 * Illegal instruction fetch (0x03): +
 !*ERR_CFG.rs* && ( !*ENTRY_CFG(_i_~0~).sexe* || !*ENTRY_CFG(_i_~1~).sexe* || ... || !*ENTRY_CFG(_i~N~_).sexe* )
 
-The error capture record maintains the specifics of the first illegal access detected, except if the following two conditions are held: (1) any interrupt-suppress bit regarding the access is set, and (2) no bus error is returned. New error capture only occurs when there is no currently pending error, namely *ERR_INFO.v* is ‘0’. If a pending error exists (*v* is ‘1’), the record will not be updated, even if a new illegal access is detected. In other words, *v*  indicates whether the content of the capture record is valid and should be intentionally cleared in order to capture subsequent illegal accesses. One can write 1 to the bit to clear it. The error capture record is optional. If it is not implemented, *v* should be wired to zero. One can implement the error capture record but not *ERR_REQID.eid*. In this case, *eid* should be wired to 0xffff.
+The error capture record maintains the specifics of the first illegal access detected, except if the following two conditions are held:
+
+* any interrupt-suppress bit regarding the access is set; and
+* no bus error is returned.
+
+New error capture only occurs when there is no currently pending error, namely *ERR_INFO.v* is ‘0’. If a pending error exists (*v* is ‘1’), the record will not be updated, even if a new illegal access is detected. In other words, *v*  indicates whether the content of the capture record is valid and should be intentionally cleared in order to capture subsequent illegal accesses. One can write 1 to the bit to clear it. The error capture record is optional. If it is not implemented, *v* should be wired to zero. One can implement the error capture record but not *ERR_REQID.eid*. In this case, *eid* should be wired to 0xffff.
 
 If a transaction violates IOPMP rules on multiple non-priority entries which don't suppress interrupt or bus error response, the *ERR_REQID.eid* should be one of the entries.
 
