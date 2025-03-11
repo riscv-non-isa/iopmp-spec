@@ -4,9 +4,9 @@ The spec offers several IOPMP configurations to accommodate varied platforms. Us
 
 [#SECTION_3_1]
 === SRCMD Table and MDCFG Table
-When a IOPMP receives a transaction with RRID _s_, IOPMP first lookups SRCMD table to find out all the memory domains associated to requestor _s_ and the corresponding permissions. An IOPMP instance can support up to 65,535 requestors, the actual number of requestor can be implementation-defined and is indicated in *HWCFG1* register. The SRCMD table defines the mapping from a transaction requestor to its associated MDs and corresponding permissions if having. The mapping can be in one of three formats specified in *HWCFG0.srcmd_fmt* and described in <<#SECTION_3_2, SRCMD Table Formats>>. Besides, the SPS extension can limit the permission associated with RRID described in <<#APPENDIX_A3, Appendix 3>>.
+When a IOPMP receives a transaction with RRID _s_, IOPMP first lookups SRCMD table to find out all the memory domains associated to requestor _s_ and the corresponding permissions. An IOPMP instance can support up to 65,535 requestors, the actual number of requestor can be implementation-defined and is indicated in *HWCFG1* register. The SRCMD table defines the mapping from a transaction requestor to its associated MDs and corresponding permissions if having. The mapping can be in one of three formats specified in a read only field *HWCFG0.srcmd_fmt* and described in <<#SECTION_3_2, SRCMD Table Formats>>. Besides, the SPS extension can limit the permission associated with RRID described in <<#APPENDIX_A3, Appendix 3>>.
 
-When the associated memory domains are retrieved, an IOPMP finds the entries. The MDCFG defines which memory domain every entry belongs to. An entry can belong to at most one memory domain, but a memory domain can own zero or more entries. MDCFG can be in one of three formats, specified in *HWCFG0.mdcfg_fmt* and described in <<#SECTION_3_3, MDCFG Table Formats>>.
+When the associated memory domains are retrieved, an IOPMP finds the entries. The MDCFG defines which memory domain every entry belongs to. An entry can belong to at most one memory domain, but a memory domain can own zero or more entries. MDCFG can be in one of three formats, specified in a read only field *HWCFG0.mdcfg_fmt* and described in <<#SECTION_3_3, MDCFG Table Formats>>.
 
 After retrieving all related entries, an IOPMP checks the transaction according to them.
 
@@ -20,7 +20,7 @@ In Format 0, the SRCMD table is an array and indexed by RRID. Every entry in the
 
 For easier description, in the following, we denote *SRCMD(_s_)* a 64-bit register representing the concatenation of *SRCMD_ENH(_s_)* for the higher word and *SRCMD_EN(_s_)* for the lower word. Field *SRCMD(_s_).md* is the concatenation of *SRCMD_ENH(_s_).mdh* and *SRCMD_EN(_s_).md*, and bit *SRCMD(_s_).l* is bit *SRCMD_EN(_s_).l*.
 
-Field *SRCMD(_s_).md* is a bitmapped field with up to 63 bits and is implemented from the lowest bit. Bit *md[_j_]* in *SRCMD(_s_)* indicates if MD _j_ is associated with RRID _s_. For unimplemented memory domains, the corresponding bits should be read-only zero. An IOPMP supports up to 63 memory domains. For a system requiring more memory domains than 63, please refer to <<#APPENDIX_A2, Appendix A2>>.
+Field *SRCMD(_s_).md* is a bitmapped field with up to 63 bits and is implemented from the lowest bit. Bit *md[_j_]* in *SRCMD(_s_)* indicates if MD _j_ is associated with RRID _s_. For unimplemented memory domains, the corresponding bits should be hardwired read-only zero. An IOPMP supports up to 63 memory domains. For a system requiring more memory domains than 63, please refer to <<#APPENDIX_A2, Appendix A2>>.
 
 [#SECTION_3_2_2]
 ==== SRCMD Table Format 1
@@ -38,7 +38,7 @@ The MDCFG table is used to map a memory domain to its own entries. It can be vie
 
 [#SECTION_3_3_1]
 ==== MDCFG Table Format 0
-In the format, every memory domain _m_ has a register, *MDCFG(_m_)*. Field *MDCFG(_m_).t* indicates the top index of IOPMP entry belonging to the memory domain _m_. An entry with index _j_ belongs to MD _m_ if *MDCFG(_m_-1).t* &#8804; _j_ < *MDCFG(_m_).t*, where _m_ > 0. MD 0 owns the IOPMP entries with index _j_ < *MDCFG(0).t*. *MDCFG(_m_+1).t* should be programmed larger than or equal to *MDCFG(_m_).t*. The IOPMP behavior of improperly programming them is implementation-dependent as long as 
+In the format, every memory domain _m_ has a register, *MDCFG(_m_)*. Field *MDCFG(_m_).t* indicates the top index of IOPMP entry belonging to the memory domain _m_. An entry with index _j_ belongs to MD _m_ if *MDCFG(_m_-1).t* &#8804; _j_ < *MDCFG(_m_).t*, where _m_ > 0. MD 0 owns the IOPMP entries with index _j_ < *MDCFG(0).t*. *MDCFG(_m_+1).t* should be programmed greater than or equal to *MDCFG(_m_).t*. The IOPMP behavior of improperly programming them is implementation-dependent as long as 
 
 * an entry must belong to at most one memory domain; and
 * the index of an entry in a lower-indexed memory domain should be lower than that in a higher-indexed memory domain.
@@ -107,7 +107,7 @@ If a MD is locked, while its preceding MD is not locked, it could lead to the po
 
 [#SECTION_3_5_3]
 ==== Entry Protection
-IOPMP entry protection is also related to the other IOPMP entries belonging to the same memory domain. For a MD, locked entries should be placed in the higher priority. Otherwise, when the secure monitor is compromised, one unlocked entry in higher priority can overwrite all the other locked or non-locked entries in lower priority.  A register *ENTRYLCK* is define to indicate the number of nonprogrammable entries. *ENTRYLCK* register has two fields: *ENTRYLCK.l* and *ENTRYLCK.f*. Any IOPMP entry with index _i_ &#8804; *ENTRYLCK.f* is not programmable. *ENTRYLCK.f* is initialized to 0 and can be increased only when written. Besides, *ENTRYLCK.l* is the lock to *ENTRYLCK.f* and itself. If *ENTRYLCK* is hardwired, *ENTRYLCK.l* should be wired to 1.
+IOPMP entry protection is also related to the other IOPMP entries belonging to the same memory domain. For a MD, locked entries should be placed in the higher priority. Otherwise, when the secure monitor is compromised, one unlocked entry in higher priority can overwrite all the other locked or non-locked entries in lower priority.  A register *ENTRYLCK* is define to indicate the number of nonprogrammable entries. *ENTRYLCK* register has two fields: *ENTRYLCK.l* and *ENTRYLCK.f*. Any IOPMP entry with index _i_ &#8804; *ENTRYLCK.f* is not programmable. If *ENTRYLCK.f* is initialized to 0 and can be increased only when written. Besides, *ENTRYLCK.l* is the lock to *ENTRYLCK.f* and itself. If *ENTRYLCK* is hardwired, *ENTRYLCK.l* should be wired to 1.
 
 
 [#SECTION_3_6]
