@@ -45,7 +45,7 @@ In the format, every memory domain _m_ has a register, *MDCFG(_m_)*. Field *MDCF
 
 [NOTE]
 ====
-For programmers, to ensure the portability, *MDCFG(_m_).t* should be increased monotonically for _m_ during the runtime, that is, *MDCFG(_m_).t* &#8804; *MDCFG(_m_+1).t* for any legal _m_. Programming or initializing MDCFGs may temporarily cause improper settings; however, these registers are typically not changed at a high frequency, and one could stall the IOPMP while programming them. Thus, the specification doesn't impose too many requirements on the case.
+A proper setting of MDCFGs must maintain *MDCFG(_m_).t* &#8804; *MDCFG(_m_+1).t* for any legal _m_; otherwise, it is an improper setting. For portability, programmers should ensure *MDCFG(_m_).t* increased monotonically for _m_ during the runtime. If a process of programming or initializing MDCFGs could transiently cause an improper setting, one should use the procedure introduced in <<#SECTION_4,  Programming IOPMPs>> to avoid security issues. Even though the procedure may introduce extra steps, these registers are not subject to change at a high frequency to hurt overall performance. Thus, the specification requires programmers to maintain a proper setting instead of requiring specific hardware behaviors on improper settings.
 ====
 
 [#SECTION_3_3_2]
