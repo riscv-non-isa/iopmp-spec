@@ -1,7 +1,7 @@
 [#APPENDIX_A2]
 [Appendix_A2]
 == A2: Run Out Memory Domains
-In this specification, the support is capped at 63 memory domains. However, this chapter provides pertinent recommendations for situations that necessitate a larger number of memory domains.
+In this specification, the support is capped at 63 memory domains. However, this chapter provides recommendations for situations that necessitate a larger number of memory domains.
 
 
 *A2.1 Parallel IOPMP*

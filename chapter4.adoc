@@ -5,7 +5,7 @@ At times, it can be difficult or even impossible to configure all IOPMP settings
 It can be difficult for the security software to guarantee that no transactions are in progress from all related initiators. A false alarm could result in significant performance issues. This chapter describes an optional method for updating IOPMP's settings without intervening transaction initiators.
 
 === Atomicity Requirement
-The term here "stable" refers to meeting the atomicity requirement. This implies that when updating an IOPMP, all transactions from input ports must be checked either before any changes or after completing all changes. Essentially, using partial settings in an IOPMP should be avoided. The succeeding sections will describe the mechanism to satisfy this requirement.
+The term here "stable" refers to meeting the atomicity requirement. This implies that when updating an IOPMP, all transactions from receiver ports must be checked either before any changes or after completing all changes. Essentially, using partial settings in an IOPMP should be avoided. The succeeding sections will describe the mechanism to satisfy this requirement.
 
 === Programming Steps
 The general approach to the atomicity requirement has three major steps, conceptually described as follows:
@@ -33,7 +33,7 @@ A conceptual internal signal rrid_stall has the same number of bits as the RRIDs
 [.text-center]
 `rrid_stall[_s_] <= MDSTALL.exempt ^ ( Reduction_OR (SRCMD(_s_).md & stall_by_md));`
 
-As to SRCMD table Format 2, *SRCMD(_s_).md[_m_]* in the above equation is: ‘0’ for all umimplemented memory domain _m_ and ‘1’ for an implemented memory domain _m_ because every RRID associates all implemented MDs.
+As to SRCMD table Format 2, *SRCMD(_s_).md[_m_]* in the above equation is: ‘0’ for all unimplemented memory domain _m_ and ‘1’ for an implemented memory domain _m_ because every RRID associates all implemented MDs.
 
 For any unimplemented memory domain, the corresponding bit in *MDSTALL.md* or *MDSTALLH.mdh* should be wired to 0.
 
