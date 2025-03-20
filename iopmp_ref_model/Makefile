@@ -4,15 +4,15 @@ SRC_DIR  := src
 VERIF    := verif
 TEST_DIR := $(VERIF)/tests
 LIB_DIR  := lib
-cov = 
-COVFLAGS = 
+cov =
+COVFLAGS =
 ifeq ($(cov), 1)
 COVFLAGS += -fprofile-arcs -ftest-coverage -lgcov --coverage
 endif
 
 # Compiler and flags
 CC := gcc
-CFLAGS := -Wall -Werror $(COVFLAGS) -I./include -Iverif/
+CFLAGS := -Wall -Werror $(COVFLAGS) -I./include -Iverif/ -fPIC
 LDFLAGS := -lm
 
 # Common source files
@@ -62,10 +62,16 @@ build: $(BIN_DIR) $(LIB_DIR)
 				$(CC) $(CFLAGS) -DSRCMD_FMT=$$srcmd_fmt -DMDCFG_FMT=$$mdcfg_fmt -c $$src -o $$obj_file; \
 				obj_files="$$obj_files $$obj_file"; \
 			done; \
-			ar rcD $(LIB_DIR)/$$model.a $$obj_files > /dev/null 2>&1; \
-			ranlib $(LIB_DIR)/$$model.a; \
-			$(CC) $(CFLAGS) -DSRCMD_FMT=$$srcmd_fmt -DMDCFG_FMT=$$mdcfg_fmt \
-				$(TEST_DIR)/$$source -L$(LIB_DIR) -l:$$model.a -o $(BIN_DIR)/$$model $(LDFLAGS); \
+			if [ -n "$(sharedLib)" ]; then \
+				$(CC) $$obj_files -shared -o $(LIB_DIR)/$$model.so; \
+				$(CC) $(CFLAGS) -DSRCMD_FMT=$$srcmd_fmt -DMDCFG_FMT=$$mdcfg_fmt \
+					$(TEST_DIR)/$$source -L$(LIB_DIR) -l:$$model.so -o $(BIN_DIR)/$$model $(LDFLAGS); \
+			else \
+				ar rcs $(LIB_DIR)/$$model.a $$obj_files > /dev/null 2>&1; \
+				ranlib $(LIB_DIR)/$$model.a; \
+				$(CC) $(CFLAGS) -DSRCMD_FMT=$$srcmd_fmt -DMDCFG_FMT=$$mdcfg_fmt \
+					$(TEST_DIR)/$$source -L$(LIB_DIR) -l:$$model.a -o $(BIN_DIR)/$$model $(LDFLAGS); \
+			fi; \
 			echo "Library and executable for $$model built successfully."; \
 			rm -f $$obj_files; \
 		done; \
@@ -85,10 +91,16 @@ build: $(BIN_DIR) $(LIB_DIR)
 			$(CC) $(CFLAGS) -DSRCMD_FMT=$$srcmd_fmt -DMDCFG_FMT=$$mdcfg_fmt -c $$src -o $$obj_file; \
 			obj_files="$$obj_files $$obj_file"; \
 		done; \
-		ar rcD $(LIB_DIR)/$(model).a $$obj_files > /dev/null 2>&1; \
-		ranlib $(LIB_DIR)/$(model).a; \
-		$(CC) $(CFLAGS) -DSRCMD_FMT=$$srcmd_fmt -DMDCFG_FMT=$$mdcfg_fmt \
+		if [ -n "$(sharedLib)" ]; then \
+			$(CC) $$obj_files -shared -o $(LIB_DIR)/$$model.so; \
+			$(CC) $(CFLAGS) -DSRCMD_FMT=$$srcmd_fmt -DMDCFG_FMT=$$mdcfg_fmt \
+				$(TEST_DIR)/$$source -L$(LIB_DIR) -l:$$model.so -o $(BIN_DIR)/$$model $(LDFLAGS); \
+		else \
+			ar rcs $(LIB_DIR)/$$model.a $$obj_files > /dev/null 2>&1; \
+			ranlib $(LIB_DIR)/$$model.a; \
+			$(CC) $(CFLAGS) -DSRCMD_FMT=$$srcmd_fmt -DMDCFG_FMT=$$mdcfg_fmt \
 				$(TEST_DIR)/$$source -L$(LIB_DIR) -l:$$model.a -o $(BIN_DIR)/$$model $(LDFLAGS); \
+		fi; \
 		echo "Library and executable for $(model) built successfully."; \
 		rm -f $$obj_files; \
 	fi
@@ -105,6 +117,39 @@ run:
 			echo "Binary $$binary not found. Did you build it?"; \
 		fi; \
 	done
+
+# Display usage information
+.PHONY: help
+
+help:
+	@echo "Usage: make [TARGET] [VARIABLE=value]"
+	@echo ""
+	@echo "Targets:"
+	@echo "  all           Build all models and run their binaries"
+	@echo "  build         Compile all models or a specific model"
+	@echo "                Use 'model=<model_name>' to specify a model"
+	@echo "  run           Run all compiled binaries"
+	@echo "                Ensure the models are built before running"
+	@echo "  clean         Remove all compiled binaries, libraries, and coverage files"
+	@echo "  help          Display this usage information"
+	@echo ""
+	@echo "Variables:"
+	@echo "  model=<model_name>    Build a specific model instead of all models"
+	@echo "                        Example: make build model=full_model"
+	@echo "  sharedLib=1           Build shared libraries instead of static ones"
+	@echo "  cov=1                 Enable code coverage during compilation"
+	@echo ""
+	@echo "Available Models:"
+	@echo "  full_model            SRCMD_FMT = 0, MDCFG_FMT = 0"
+	@echo "  rapid_k_model         SRCMD_FMT = 0, MDCFG_FMT = 1"
+	@echo "  dynamic_k_model       SRCMD_FMT = 0, MDCFG_FMT = 2"
+	@echo "  isolation_model       SRCMD_FMT = 1, MDCFG_FMT = 0"
+	@echo "  compact_k_model       SRCMD_FMT = 1, MDCFG_FMT = 1"
+	@echo "  unnamed_model_1       SRCMD_FMT = 1, MDCFG_FMT = 2"
+	@echo "  unnamed_model_2       SRCMD_FMT = 2, MDCFG_FMT = 0"
+	@echo "  unnamed_model_3       SRCMD_FMT = 2, MDCFG_FMT = 1"
+	@echo "  unnamed_model_4       SRCMD_FMT = 2, MDCFG_FMT = 2"
+	@echo ""
 
 # Clean the binary and library directories
 clean:

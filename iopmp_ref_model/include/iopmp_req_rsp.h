@@ -24,7 +24,7 @@ typedef enum {
 } perm_type_e;
 
 // Structure for IOPMP transaction requests
-typedef struct {
+typedef struct __attribute__((__packed__)) {
     uint16_t    rrid;      // Requester ID
     uint64_t    addr;      // Target address for the transaction
     uint32_t    length;    // Length of the transaction
@@ -46,12 +46,13 @@ typedef enum {
     PARTIAL_HIT_ON_PRIORITY= 0x04,  // Partial hit on a priority entry
     NOT_HIT_ANY_RULE       = 0x05,  // No rule matched the transaction
     UNKNOWN_RRID           = 0x06,  // Unknown requester ID in transaction
+    STALLED_TRANSACTION    = 0x07,  // Error due to a stalled transaction
     ENTRY_MATCH            = 0x10,  // Entry matched in access control
     ENTRY_NOTMATCH         = 0x11   // No matching entry found
 } iopmpMatchStatus_t;
 
 // Structure for IOPMP transaction responses
-typedef struct {
+typedef struct __attribute__((__packed__)) {
     uint32_t rrid;          // Requester ID
     uint8_t  user;          // User mode indicator
     uint8_t  rrid_stalled;  // Requester ID stall status

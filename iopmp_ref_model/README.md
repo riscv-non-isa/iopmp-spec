@@ -1,6 +1,6 @@
 # IOPMP Reference Model Documentation
 
-The **Input/Output Physical Memory Protection (IOPMP)** is a hardware component designed to control and validate accesses issued from bus initiators. It checks the validity of these accesses in real-time. The **IOPMP Reference Model** is developed in compliance with the **RISC-V IOPMP Specification Version 0.9.2-RC2 (November 2024)**. This model is currently in the development phase and will be updated with future specification revisions.
+The **Input/Output Physical Memory Protection (IOPMP)** is a hardware component designed to control and validate accesses issued from bus initiators. It checks the validity of these accesses in real-time. The **IOPMP Reference Model** is developed in compliance with the **RISC-V IOPMP Specification Version 0.7, Feb, 2025**. This model  will be updated with future specification revisions.
 
 ## IOPMP Model Overview
 
@@ -19,9 +19,7 @@ The IOPMP Reference Model includes several distinct configurations, each offerin
 | **Unnamed Model 4** | 2                   | 2             | Same as **Unnamed Model 3**, but the value of *k* is programmable. |
 
 ## Supported Features
-
-The **IOPMP Reference Model** incorporates all features as outlined in the **RISC-V IOPMP Specification Version 0.9.2-RC2 (November 2024)**. Key features include:
-
+The **IOPMP Reference Model** incorporates all IOPMP Models and each model can be configured based upon SRCMD_FMT and MDCFG_FMT flags at compilation time. All features outlined in the **RISC-V IOPMP Specification Version 0.7, Feb, 2025**. Key feature configuration parameters include:
 | **Feature**  | **Possible Values** | **Description**                                                                                                                                                                                                                    |
 | ------------------ | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | TOR_EN             | 0/1                       | Indicates if Top-Of-Range (TOR) addressing mode is supported.<br />**0**: TOR not supported. <br />**1**: TOR supported                                                                                                      |
@@ -46,13 +44,16 @@ The **IOPMP Reference Model** incorporates all features as outlined in the **RIS
 | IMP_ERROR_REQID    | 0/1                       | Indicates if `ERR_REQID` is implemented. <br />**0**: Feature not supported. <br />**1**: Errored RRID and Entry num is recorded.                                                                                          |
 | IMP_MDLCK          | 0/1                       | Indicates if the Memory Domain Lock (MDLCK) feature is implemented.<br />**0**: Feature is not implemented<br />**1**: Memory domains can be locked.                                                                         |
 | REG_INTF_BUS_WIDTH | 4/8                       | Specifies the width (in bytes) of the register interface bus.<br />**4**: 4-byte width. <br />**8**: 8-byte width.                                                                                                           |
-| MSI_EN             | 0/1                       | Indicates if Messaged-Signal-Interrupts are supported.<br />**0:** MSI is not supported.<br />**1:** MSI can be generated.                                                                                                |
+| MSI_EN             | 0/1                       | Indicates if Messaged-Signal-Interrupts are supported.<br />**0:** MSI is not supported.<br />**1:** MSI can be generated.                                                                                                           |
+| SRC_ENFORCEMENT_EN             | 0/1                       | Indicates if Source Enforcement is enabled.<br />**0:** Source Enforcement is not enabled.<br />**1:** Source Enforcement is enabled.                                                                                                           |
+| IMP_RRIDSCP             | 0/1                       | Indicates if RRIDSCP register is implemented.<br />**0:** RRIDSCP register is not implemented.<br />**1:** RRIDSCP register is implemented.                                                                                                 |
+
 
 ## Reference Model Functions
 
 These functions are designed for use within a testbench to input stimuli and obtain responses from the respective models:
 
-1. **`int reset_iopmp()`**  
+1. **`int reset_iopmp(void)`**  
    Resets the IOPMP registers to their default values. The function returns 0 if the reference model is successfully initialized.
 
 2. **`void write_register(uint16_t offset, reg_intf_dw data, uint8_t num_bytes)`**  
@@ -64,10 +65,10 @@ These functions are designed for use within a testbench to input stimuli and obt
 4. **`int create_memory(uint8_t mem_gb)`**  
    Allocates memory of the specified size in gigabytes. mem_gb is used for the size of the memory to allocate in gigabytes. It returns 0 if the memory allocation was successful, -1 otherwise.
 
-5. **`uint8_t read_memory(uint64_t addr, uint8_t size, char *data)`**  
+5. **`uint8_t read_memory(uint64_t addr, uint8_t size, uint64_t *data)`**  
    Read data from a specific memory address. The param addr is the memory address from where the data should be read. The param size is the size of the data in bytes. The pram data is the pointer to the data for read. It returns 0 if the read was successful, BUS_ERROR if the address corresponds to a bus error.
 
-6. **`uint8_t write_memory(char *data, uint64_t addr, uint32_t size)`**  
+6. **`uint8_t write_memory(uint64_t *data, uint64_t addr, uint32_t size)`**  
    This function writes data to a specific memory address, the param data indicates Pointer to the data to write, the param addr is the memory address where the data should be written and param size will be the size of the data in bytes. it returns 0 if the write was successful, BUS_ERROR if the address corresponds to a bus error.
 
 7. **`void configure_srcmd_n(uint8_t srcmd_reg, uint16_t srcmd_idx, reg_intf_dw data, uint8_t num_bytes)`**  

@@ -2,19 +2,19 @@
 // Author: Gull Ahmed (gull.ahmed@10xengineers.ai)
 //         Yazan Hussnain (yazan.hussain@10xengineers.ai)
 // Date: October 21, 2024
-// Description: 
+// Description:
 // This file implements the IOPMP (I/O Physical Memory Protection)
 // functions to read/write and reset the MMAP Registers.
 //
 // The main functions in this file include:
-// - reset_iopmp: Resets the I/O Physical Memory Protection (IOPMP) 
+// - reset_iopmp: Resets the I/O Physical Memory Protection (IOPMP)
 //   configuration registers to default values.
-// - is_access_valid: Checks if the access to a given offset and number 
+// - is_access_valid: Checks if the access to a given offset and number
 //   of bytes is valid.
 // - read_register: Reads a register based on the given offset and byte size.
-// - rrid_stall_update: Updates the stall status for each RRID based on 
+// - rrid_stall_update: Updates the stall status for each RRID based on
 //   memory domain stall conditions.
-// - write_register: Writes data to a memory-mapped register identified 
+// - write_register: Writes data to a memory-mapped register identified
 //   by the specified offset.
 ***************************************************************************/
 
@@ -80,7 +80,12 @@ int reset_iopmp() {
 
     g_reg_file.hwcfg0.md_num           = IOPMP_MD_NUM;
     g_reg_file.hwcfg0.addrh_en         = IOPMP_ADDRH_EN;
-    g_reg_file.hwcfg0.enable           = IOPMP_ENABLE;
+
+#if (MDCFG_FMT == 0)
+    g_reg_file.hwcfg0.enable           = 1;
+#else
+    g_reg_file.hwcfg0.enable           = 0;
+#endif
 
     g_reg_file.hwcfg1.rrid_num         = IOPMP_RRID_NUM;
     g_reg_file.hwcfg1.entry_num        = IOPMP_ENTRY_NUM;
@@ -97,7 +102,11 @@ int reset_iopmp() {
 #if (IOPMP_STALL_EN)
     g_reg_file.mdstall.raw             = 0;
     g_reg_file.mdstallh.raw            = 0;
+#if (IMP_RRIDSCP)
     g_reg_file.rridscp.raw             = 0;
+#else
+    g_reg_file.reserved10              = 0;
+#endif
 #else
     for (size_t i = 0; i < sizeof(g_reg_file.reserved7) / sizeof(g_reg_file.reserved7[0]); i++) {
         g_reg_file.reserved7[i] = 0;
@@ -122,7 +131,7 @@ int reset_iopmp() {
 
     g_reg_file.entrylck.raw            = 0;
     g_reg_file.err_cfg.raw             = 0;
-    g_reg_file.err_reqinfo.raw         = 0;
+    g_reg_file.err_info.raw            = 0;
     g_reg_file.err_reqaddr.raw         = 0;
     g_reg_file.err_reqaddrh.raw        = 0;
     g_reg_file.err_reqid.rrid          = 0;
@@ -183,8 +192,8 @@ int reset_iopmp() {
         g_reg_file.srcmd_table[i].srcmd_perm.raw  = 0;
         g_reg_file.srcmd_table[i].srcmd_permh.raw = 0;
         for (int j = 0; j < 6; j++) {
-            g_reg_file.srcmd_table[i].rsvd[j]       = 0;
-            g_reg_file.srcmd_table[i].rsvd[j]       = 0;
+            g_reg_file.srcmd_table[i].rsvd[j]     = 0;
+            g_reg_file.srcmd_table[i].rsvd[j]     = 0;
         }
     }
 #endif
@@ -199,7 +208,7 @@ int reset_iopmp() {
         iopmp_entries.entry_table[i].entry_cfg.raw      = 0;
         iopmp_entries.entry_table[i].entry_user_cfg.raw = 0;
     }
-    for (int i = 0; i < IOPMP_RRID_NUM; i++) {
+    for (int i = 0; i < (IOPMP_RRID_NUM/16); i++) {
         err_svs.sv[i].raw = 0;
     }
     for (int i = 0; i < IOPMP_RRID_NUM; i++) {
@@ -207,6 +216,8 @@ int reset_iopmp() {
     }
     intrpt_suppress = 0;
     error_suppress  = 0;
+    stall_cntr      = 0;
+
     return 0; // Success
 }
 
@@ -265,9 +276,9 @@ reg_intf_dw read_register(uint16_t offset, uint8_t num_bytes) {
         int start_index = g_reg_file.err_mfr.svi;
 
         // Loop over the RRIDs to find any error state.
-        for (int i = 0; i < IOPMP_RRID_NUM; i++) {
+        for (int i = 0; i < (IOPMP_RRID_NUM/16); i++) {
             // Calculate the current index, with wrap-around using modulo.
-            int current_index = (start_index + i) % IOPMP_RRID_NUM;
+            int current_index = (start_index + i) % (IOPMP_RRID_NUM/16);
 
             // If an error is found (svw is non-zero), update the error status.
             if (err_svs.sv[current_index].svw) {
@@ -344,7 +355,7 @@ void rrid_stall_update(uint8_t exempt) {
  * @param offset The offset of the register to be written.
  * @param data It contains the data that need to be written.
  * @param num_bytes The number of bytes to write (either 4 or 8 bytes).
- *  
+ *
  */
 void write_register(uint16_t offset, reg_intf_dw data, uint8_t num_bytes) {
 
@@ -370,7 +381,7 @@ void write_register(uint16_t offset, reg_intf_dw data, uint8_t num_bytes) {
 
 // Conditional block for error capture
 #if (ERROR_CAPTURE_EN)
-    err_reqinfo_t err_reqinfo_temp = { .raw = upr_data4 };
+    err_info_t err_info_temp = { .raw = upr_data4 };
 #endif
 
 // Conditional block for msi addr
@@ -408,10 +419,12 @@ void write_register(uint16_t offset, reg_intf_dw data, uint8_t num_bytes) {
 #if (IOPMP_STALL_EN)
     mdstall_t  mdstall_temp  = { .raw = lwr_data4 & ((IOPMP_MD_NUM >= 32) ? UINT32_MAX : (1ULL << (IOPMP_MD_NUM + 1)) - 1) };
     mdstallh_t mdstallh_temp = { .raw = (IOPMP_MD_NUM < 32) ? 0 : upr_data4 & ((1ULL << (IOPMP_MD_NUM - 32)) - 1) };
-    rridscp_t  rridscp_temp  = { .raw = lwr_data4 };
-    rridscp_temp.op     = (lwr_data4 >> 30) & MASK_BIT_POS(2);
-    mdstall_temp.md     = (lwr_data4 >> 1) & ((IOPMP_MD_NUM >= 32) ? UINT32_MAX : (1ULL << IOPMP_MD_NUM) - 1);
-    mdstall_temp.exempt = GET_BIT(lwr_data4, 0);
+    #if (IMP_RRIDSCP)
+        rridscp_t  rridscp_temp  = { .raw = lwr_data4 };
+        rridscp_temp.op          = (lwr_data4 >> 30) & MASK_BIT_POS(2);
+    #endif
+    mdstall_temp.md          = (lwr_data4 >> 1) & ((IOPMP_MD_NUM >= 32) ? UINT32_MAX : (1ULL << IOPMP_MD_NUM) - 1);
+    mdstall_temp.exempt      = GET_BIT(lwr_data4, 0);
 #endif
 
 // IOPMP MFR configuration
@@ -433,10 +446,12 @@ void write_register(uint16_t offset, reg_intf_dw data, uint8_t num_bytes) {
     case HWCFG0_OFFSET:
         g_reg_file.hwcfg0.prient_prog      &= ~hwcfg0_temp.prient_prog;
         g_reg_file.hwcfg0.rrid_transl_prog &= ~hwcfg0_temp.rrid_transl_prog;
-        g_reg_file.hwcfg0.enable           |= hwcfg0_temp.enable;
         #if (MDCFG_FMT == 2)
-            g_reg_file.hwcfg0.md_entry_num = hwcfg0_temp.md_entry_num;
+            if (!g_reg_file.hwcfg0.enable) {
+                g_reg_file.hwcfg0.md_entry_num = hwcfg0_temp.md_entry_num;
+            }
         #endif
+        g_reg_file.hwcfg0.enable           |= hwcfg0_temp.enable;
         break;
 
     case HWCFG1_OFFSET:
@@ -461,13 +476,15 @@ void write_register(uint16_t offset, reg_intf_dw data, uint8_t num_bytes) {
         g_reg_file.mdstall.exempt = mdstall_temp.exempt;
         g_reg_file.mdstall.md     = mdstall_temp.md;
         rrid_stall_update (g_reg_file.mdstall.exempt);
-        g_reg_file.mdstall.is_stalled = (g_reg_file.mdstall.raw != 0) ? 1 : 0;
+        g_reg_file.mdstall.is_stalled = ((g_reg_file.mdstall.raw != 0) || (g_reg_file.mdstallh.raw != 0)) ? 1 : 0;
+        if (!g_reg_file.mdstall.is_stalled) { stall_cntr = 0; }
         if (num_bytes == 4) break;
 
     case MDSTALLH_OFFSET:
         g_reg_file.mdstallh.mdh = mdstallh_temp.mdh;
         break;
 
+#if (IMP_RRIDSCP)
     case RRISCP_OFFSET:
         g_reg_file.rridscp.rsv  = 0;
         g_reg_file.rridscp.op   = rridscp_temp.op;
@@ -482,20 +499,23 @@ void write_register(uint16_t offset, reg_intf_dw data, uint8_t num_bytes) {
         if (g_reg_file.rridscp.op == 0) {
             g_reg_file.rridscp.stat = 2 - rrid_stall[g_reg_file.rridscp.rrid];
         }
+        else if (g_reg_file.rridscp.op == 1) { rrid_stall[rridscp_temp.rrid] = 1; }
+        else if (g_reg_file.rridscp.op == 2) { rrid_stall[rridscp_temp.rrid] = 0; }
         break;
+#endif
 #endif
 
 #if (SRCMD_FMT != 1) & (IMP_MDLCK)
     case MDLCK_OFFSET:
         if (!g_reg_file.mdlck.l) {
             g_reg_file.mdlck.l   |= mdlck_temp.l;
-            g_reg_file.mdlck.md   = mdlck_temp.md;
+            g_reg_file.mdlck.md  |= mdlck_temp.md;
         }
         if (num_bytes) break;
 
     case MDLCKH_OFFSET:
         if (!g_reg_file.mdlck.l) {
-            g_reg_file.mdlckh.mdh = mdlckh_temp.mdh;
+            g_reg_file.mdlckh.mdh |= mdlckh_temp.mdh;
         }
         break;
 #endif
@@ -505,7 +525,7 @@ void write_register(uint16_t offset, reg_intf_dw data, uint8_t num_bytes) {
         if (!g_reg_file.mdcfglck.l) {
             g_reg_file.mdcfglck.l   |= mdcfglck_temp.l;
             if (mdcfglck_temp.f > g_reg_file.mdcfglck.f) {
-                g_reg_file.mdcfglck.f   = mdcfglck_temp.f;
+                g_reg_file.mdcfglck.f = mdcfglck_temp.f;
             }
             g_reg_file.mdcfglck.rsv = 0;
         }
@@ -514,7 +534,7 @@ void write_register(uint16_t offset, reg_intf_dw data, uint8_t num_bytes) {
 
     case ENTRYLCK_OFFSET:
         if (!g_reg_file.entrylck.l) {
-            g_reg_file.entrylck.l   |= entrylck_temp.l;
+            g_reg_file.entrylck.l  |= entrylck_temp.l;
             if (entrylck_temp.f > g_reg_file.entrylck.f) {
             g_reg_file.entrylck.f   = entrylck_temp.f;
             }
@@ -525,21 +545,22 @@ void write_register(uint16_t offset, reg_intf_dw data, uint8_t num_bytes) {
 
     case ERR_OFFSET:
         if (!g_reg_file.err_cfg.l) {
-            g_reg_file.err_cfg.l       |= err_cfg_temp.l;
-            g_reg_file.err_cfg.ie       = err_cfg_temp.ie;
-            g_reg_file.err_cfg.rs       = err_cfg_temp.rs;
-            g_reg_file.err_cfg.msi_en   = err_cfg_temp.msi_en & MSI_EN;
-            g_reg_file.err_cfg.msidata  = err_cfg_temp.msidata;
-            g_reg_file.err_cfg.rsv1     = 0;
-            g_reg_file.err_cfg.rsv2     = 0;
+            g_reg_file.err_cfg.l                 |= err_cfg_temp.l;
+            g_reg_file.err_cfg.ie                 = err_cfg_temp.ie;
+            g_reg_file.err_cfg.rs                 = err_cfg_temp.rs;
+            g_reg_file.err_cfg.msi_en             = err_cfg_temp.msi_en & MSI_EN;
+            g_reg_file.err_cfg.stall_violation_en = err_cfg_temp.stall_violation_en;
+            g_reg_file.err_cfg.msidata            = err_cfg_temp.msidata;
+            g_reg_file.err_cfg.rsv1               = 0;
+            g_reg_file.err_cfg.rsv2               = 0;
         }
         break;
 
 #if (ERROR_CAPTURE_EN)
-    case ERR_REQINFO_OFFSET:
-        g_reg_file.err_reqinfo.v    &= ~err_reqinfo_temp.v;
-        g_reg_file.err_reqinfo.rsv1 = 0;
-        g_reg_file.err_reqinfo.rsv2 = 0;
+    case ERR_INFO_OFFSET:
+        g_reg_file.err_info.v        &= ~err_info_temp.v;
+        g_reg_file.err_info.msi_werr &= ~err_info_temp.msi_werr;
+        g_reg_file.err_info.rsv       = 0;
         break;
 
     case ERR_REQADDR_OFFSET:
@@ -560,12 +581,14 @@ void write_register(uint16_t offset, reg_intf_dw data, uint8_t num_bytes) {
 
 #if (MSI_EN)
     case ERR_MSIADDR_OFFSET:
-        g_reg_file.err_msiaddr.raw = err_msiaddr_temp.raw;
+        g_reg_file.err_msiaddr.raw = (!g_reg_file.err_cfg.l) ? err_msiaddr_temp.raw : 
+                                                               g_reg_file.err_msiaddr.raw;
         break;
 
     case ERR_MSIADDRH_OFFSET:
         #if (IOPMP_ADDRH_EN)
-            g_reg_file.err_msiaddrh.raw = err_msiaddrh_temp.raw;
+            g_reg_file.err_msiaddrh.raw = (!g_reg_file.err_cfg.l) ? err_msiaddrh_temp.raw : 
+                                                                    g_reg_file.err_msiaddrh.raw;
         #endif
         break;
 #endif
@@ -587,7 +610,7 @@ void write_register(uint16_t offset, reg_intf_dw data, uint8_t num_bytes) {
 #if (MDCFG_FMT == 0)
     if ((((offset-MDCFG_TABLE_BASE_OFFSET)/4) >= g_reg_file.mdcfglck.f) & IS_IN_RANGE(offset, MDCFG_TABLE_BASE_OFFSET, (MDCFG_TABLE_BASE_OFFSET + (IOPMP_MD_NUM*4)))){
         if (mdcfg_temp.t < IOPMP_ENTRY_NUM) {
-            g_reg_file.mdcfg[(offset-MDCFG_TABLE_BASE_OFFSET)/4].t   = mdcfg_temp.t;
+            g_reg_file.mdcfg[(offset-MDCFG_TABLE_BASE_OFFSET)/4].t = mdcfg_temp.t;
         }
         g_reg_file.mdcfg[(offset-MDCFG_TABLE_BASE_OFFSET)/4].rsv = 0;
     }
@@ -601,11 +624,11 @@ void write_register(uint16_t offset, reg_intf_dw data, uint8_t num_bytes) {
     // Pre-compute access range and lock status based on format type
     #if (SRCMD_FMT == 0)
         srcmd_tlb_access = IS_IN_RANGE(offset, SRCMD_TABLE_BASE_OFFSET, SRCMD_TABLE_BASE_OFFSET + (IOPMP_RRID_NUM * SRCMD_REG_STRIDE) + 28);
-        is_srcmd_locked = g_reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_en.l;
+        is_srcmd_locked  = g_reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_en.l;
 
     #elif (SRCMD_FMT == 2)
         srcmd_tlb_access = IS_IN_RANGE(offset, SRCMD_TABLE_BASE_OFFSET, SRCMD_TABLE_BASE_OFFSET + (IOPMP_MD_NUM * SRCMD_REG_STRIDE) + 8);
-        int table_index = SRCMD_TABLE_INDEX(offset);
+        int table_index  = SRCMD_TABLE_INDEX(offset);
 
         if (table_index < 31) {
             is_srcmd_locked = (g_reg_file.mdlck.md >> table_index) & 1;
