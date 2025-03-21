@@ -2,22 +2,22 @@
 :numbered:
 [#SECTION_4]
 == Programming IOPMPs
-At times, it can be difficult or even impossible to configure all IOPMP settings when the system starts, especially before I/O agents are active or connected to the system. As a result, it is necessary to update IOPMP settings during runtime. This may occur when a device is enabled, disabled, added, removed, or when the accessible area of a device changes. When updating, it is important to avoid putting IOPMP in a transient metastable state due to incomplete settings. However, updating IOPMP settings often involves a series of control accesses, and if a transaction check occurs during the update, it can potentially create a vulnerability. 
+At times, it can be difficult or even impossible to configure all IOPMP settings when the system starts, especially before I/O agents are active or connected to the system. As a result, it is necessary to update IOPMP settings during runtime. This may occur when a device is enabled, disabled, added, removed, or when the accessible area of a device changes. When updating, it is important to avoid putting IOPMP incomplete settings transiently. However, updating IOPMP settings often involves a series of control accesses, and if a transaction check occurs during the update, it can potentially create a vulnerability. 
 It can be difficult for the security software to guarantee that no transactions are in progress from all related initiators. A false alarm could result in significant performance issues. This chapter describes an optional method for updating IOPMP's settings without intervening transaction initiators.
 
 [#SECTION_4_1]
 === Atomicity Requirement
-The term here "stable" refers to meeting the atomicity requirement. This implies that when updating an IOPMP, all transactions from receiver ports must be checked either before any changes or after completing all changes. Essentially, using partial settings in an IOPMP should be avoided. The succeeding sections will describe the mechanism to satisfy this requirement.
+Atomicity Requirement is that when updating an IOPMP, all transactions from receiver ports must be checked either before any changes or after completing all changes. Essentially, using partial settings in an IOPMP should be avoided. The succeeding sections will describe the mechanism to satisfy this requirement.
 
 [#SECTION_4_2]
 === Programming Steps
 The general approach to the atomicity requirement has three major steps, conceptually described as follows:
 
-** Step 1: Stall related transactions. Before proceeding with any updates, delay checking the transactions that may be impacted.
+** Step 1: Enable stall feature to stall specific transactions.
 ** Step 2: Update IOPMP's settings.
-** Step 3: Resume stalled transactions. 
+** Step 3: Disable stall feature to resume the stalled transactions. 
 
-For step 1, it's important to verify if the necessary stalling transactions have taken place since they might not be instantaneous in certain implementations. Following this, execute the IOPMP update as step 2, and finally, resume all stalled transactions in step 3.
+Stalling transactions means an IOPMP pauses the transactions to postpone checking permissions for those transactions. For step 1, it's important to verify if the necessary stalling transactions have taken place since they might not be instantaneous in certain implementations. Following this, execute the IOPMP update as step 2, and finally, resume all stalled transactions in step 3.
 
 [NOTE]
 ====
@@ -30,31 +30,44 @@ NOTE: While stalling transactions have taken place in Step 1, the IOPMP delays c
 === Stall Transactions
 For Step 1, it's possible to postpone all transactions until all updates are finished. However, this could cause unrelated transactions to experience unnecessary delays. This might not be tolerable for devices that require low latency, like a display controller that periodically retrieves a frame from its video buffer. This section explains the mechanism that only stalls specific transactions to prevent the aforementioned scenario and ensure the atomicity requirement. All the features mentioned below are optional.
 
-Since the stalls occur when updating is in progress, determining whether a transaction's check should wait cannot be based on any IOPMP's configuration about to change. Therefore, the only information that can be relied upon for this decision is the RRID carried by the transaction. To simplify the following description, we use a conceptual signal called rrid_stall[_s_] to indicate whether the transaction with RRID=_s_ must wait. Please note that it may not be an actual signal in practice and is not accessible directly for software.
+Since the stalls occur during updates, determining whether checking the stalled transactions' permission should wait cannot be based on any IOPMP's configuration about to change. Therefore, the only reliable information for this decision is the RRID carried by the transaction. To simplify the following descriptions, we use _rrid_stall_ to represent an abstract bit array, where _rrid_stall_[_s_] = 1 indicates that transactions with RRID _s_ must be stalled. An IOPMP requests stalls based on values of _rrid_stall_. Please note that it may not be an actual bit array in practice and is not accessible directly for software.
 
-A conceptual internal signal rrid_stall has the same number of bits as the RRIDs in the IOPMP. rrid_stall is generated by the bit *MDSTALL.exempt*.   stall_by_md is the concatenation of *MDSTALL.mdh* and *MDSTALL.md*, that is, stall_by_md[30:0] is *MDSTALL.md[31:1]* and stall_by_md[62:31] is *MDSTALLH.mdh[31:0]* if any. When *MDSTALL.exempt* is zero, any non-zero value in stall_by_md[_s_] will cause transactions with RRID=_s_ to be stalled for all RRID _s_ associated with MD _m_. On the contrary, on *MDSTALL.exempt*=1, checks of all transactions must wait except those with RRID=_s_ associated with any MD _m_  and stall_by_md[_m_] = 1. This relation can be more precisely described as follows:
+Register *MDSTALL* and *MDSTALLH* control _rrid_stall_ by selecting MDs and controls stall condition. *MDSTALL.md* and *MDSTALLH.mdh* indicate MDs that are selected for stalling. We use _stall_by_md_ to represent the concatenation of *MDSTALL.mdh* and *MDSTALL.md*. That is, _stall_by_md_[30:0] is *MDSTALL.md[30:0]*, and _stall_by_md_[62:31] is *MDSTALLH.mdh[31:0]* if any. An MD _m_ is selected when _stall_by_md_[_m_] = 1. *MDSTALL.exempt* controls stall condition. An IOPMP updates _rrid_stall_ when *MDSTALL.exempt* is written. When *MDSTALL.exempt* is written to 0, transactions with RRID _s_ must be stalled for all RRID _s_ associated with any selected MD. Conversely, when *MDSTALL.exempt* is written to 1, all transactions must be stalled except those transactions with RRID _s_ associated with any selected MD. This relation can be more precisely described as follows:
 
 [.text-center]
-`rrid_stall[_s_] <= MDSTALL.exempt ^ ( Reduction_OR (SRCMD(_s_).md & stall_by_md));`
+`_rrid_stall_[_s_] <= MDSTALL.exempt ^ ( Reduction_OR (SRCMD(_s_).md & _stall_by_md_));`
 
-As to SRCMD table Format 2, *SRCMD(_s_).md[_m_]* in the above equation is: ‘0’ for all unimplemented memory domain _m_ and ‘1’ for an implemented memory domain _m_ because every RRID associates all implemented MDs.
+Where:
 
-For any unimplemented memory domain, the corresponding bit in *MDSTALL.md* or *MDSTALLH.mdh* should be wired to 0.
+* ^ is bitwise logical exclusive OR operator, 
+* & is bitwise logical AND operator, and
+* Reduction_OR() is a function that applies bitwise logical OR across all input values.
 
-rrid_stall should be captured only when *MDSTALL.exempt* is written, that is, when *MDSTALL* is written. When *MDSTALLH* is written, the only action is to hold the value.
+As to <<#SECTION_3_2_3, SRCMD table Format 2>>, *SRCMD(_s_).md[_m_]* in the above equation is: ‘0’ for all unimplemented MD _m_ and ‘1’ for an implemented MD _m_ because every RRID associates all implemented MDs.
 
-NOTE: Although rrid_stall is related to SRCMD table, but should be captured only when *MDSTALL.exempt* is written. The behavior of writing *MDSTALL* is used to capture a momentary snapshot of the table because the table may not be stable during the updating. 
+For any unimplemented MD, the corresponding bit in *MDSTALL.md* or *MDSTALLH.mdh* should be wired to 0.
 
-NOTE: When writing *MDSTALL*, the specification only defines the transactions with RRID=_i_ must wait for all rrid_stall[_i_]=1. It doesn't request the rest of the transactions to stall or not. It only asks that all transactions be resumed when writing *MDSTALL* with a zero.
+_rrid_stall_ should be updated only when *MDSTALL.exempt* is written, that is, when *MDSTALL* is written. When *MDSTALLH* is written, the only action is to hold the value.
+
+NOTE: Although _rrid_stall_ is related to SRCMD table, but should be updated only when *MDSTALL.exempt* is written. The behavior of writing *MDSTALL* is used to capture a momentary snapshot of the table because the table may temporarily become invalid during the updating. 
+
+NOTE: When writing *MDSTALL*, the specification only defines the transactions with RRID=_s_ must be stalled for all _rrid_stall_[_s_] = 1. It doesn't request the rest of the transactions to stall or not. It only asks that all transactions be resumed when writing *MDSTALL* with a zero.
 
 [#SECTION_4_4]
 === Cherry Pick
-If *MDSTALL* doesn't stall all the desired transactions, there is an optional method to pick the transaction with specific RRIDs. The *RRIDSCP* register comprises two fields: a 2-bit *RRIDSCP.op* and a field for *RRIDSCP.rrid*. By setting *RRIDSCP.op*=1, the rrid_stall[_i_] is activated for __i__=*RRIDSCP.rrid*. Conversely, by setting *RRIDSCP.op*=2, the rrid_stall[_i_] is deactivated for _i_=*RRIDSCP.rrid*. This register is used to fine-tune the result of writing *MDSTALL*. The value of *RRIDSCP.op*=0 is to query the rrid_stall indirectly, and the value of 3 is reserved.
+Writing *RRIDSCP* register is an optional method after writing *MDSTALL* in Step 1 of <<#SECTION_4_2, Programming Steps>> to pick the transaction with specific RRIDs if *MDSTALL*/*MDSTALLH* doesn't stall all the desired transactions.
+
+[NOTE]
+====
+*MDSTALL*/*MDSTALLH* only stall the RRIDs based on their original values in the SRCMD table, not their updated values. Therefore, stall behaviors may not fully meet expectations if certain RRIDs are associated with different MDs after programming steps are completed.
+====
+
+The *RRIDSCP* register comprises two fields: a 2-bit *RRIDSCP.op* and a field for *RRIDSCP.rrid*. By setting *RRIDSCP.op* = 1, the _rrid_stall_[_s_] is activated for _s_ = *RRIDSCP.rrid*. Conversely, by setting *RRIDSCP.op* = 2, the _rrid_stall_[_s_] is deactivated for _s_ = *RRIDSCP.rrid*. This register is used to fine-tune the result of writing *MDSTALL*/*MDSTALLH*. The value of *RRIDSCP.op* = 0 is to query the _rrid_stall_ indirectly, and the value of 3 is reserved.
 
 [#SECTION_4_5]
 [#FAULTING_STALLED_TRANSACTIONS]
 === Faulting stalled transactions
-Faulting stalled transactions can be allowed. To allow faulting over stalling when the IOPMP has no capacity to handle more stalls, one should set *ERR_CFG.stall_violation_en* to 1 before Step 1. If any transaction is faulted due to the stalled transactions, the error information shall be logged in *ERR_REQINFO*, where *ERR_REQINFO.etype* = 0x07 (error due to stalled transactions). The procedure for faulting checking transactions is identical to Steps 1-3 mentioned above, except that, besides stalling and delaying the transactions, transactions can be faulted and cannot be resumed if the IOPMP can't handle more stalled transactions.
+Faulting stalled transactions can be allowed. To allow faulting over stalling when an IOPMP cannot accommodate more stalled transactions, such as when the receiver port lacks a buffer for transaction storage, set *ERR_CFG.stall_violation_en* to 1 before Step 1 of <<#SECTION_4_2, Programming Steps>>. If any transaction is faulted due to the stalled transactions, the error information shall be logged in *ERR_REQINFO*, where *ERR_REQINFO.etype* = 0x07 (error due to stalled transactions). The procedure for faulting checking transactions is identical to Steps 1-3 of <<#SECTION_4_2, Programming Steps>>, except that, besides stalling and delaying the transactions, transactions can be faulted and cannot be resumed if the IOPMP can't handle more stalled transactions.
 
 [NOTE]
 ====
@@ -66,32 +79,34 @@ This function also can prevent the risk of deadlock in some systems. If an imple
 [#SECTION_4_6]
 === Resume Stall
 
-In order to resume all stalled transactions, the IOPMP can be prompted by writing 0 to *MDSTALL*. This corresponds to Step 3 of the "Programming Steps" section.  After *MDSTALL* is written by zero, an IOPMP should de-assert *MDSTALL.is_stalled* within some time, at which point all transactions have been resumed.
+In order to resume all stalled transactions, the IOPMP can be prompted by writing 0 to *MDSTALL*. This corresponds to Step 3 of <<#SECTION_4_2, Programming Steps>>.  After *MDSTALL* is written by zero, an IOPMP should de-assert *MDSTALL.is_stalled* within some time, at which point all transactions have been resumed.
 
 [#SECTION_4_7]
 === The Order to Stall
-In Step 1 of programming IOPMP, *MDSTALL* can be written at most once and before any *RRIDSCP* is written. After a resume, writing a non-zero value to *MDSTALL* multiple times leads to an undefined situation.
+In Step 1 of <<#SECTION_4_2, Programming Steps>>, *MDSTALL* can be written at most once and before any *RRIDSCP* is written. After a resume, writing a non-zero value to *MDSTALL* multiple times leads to stall feature having an undefined behavior.
 
-*RRIDSCP* can be written multiple times or not at all. To determine whether all requested stalls take effect, one can read back the bit *MDSTALL.is_stalled*, which is in the same location as *MDSTALL.exempt* on a write. *MDSTALL.is_stalled*=1 indicates all requested stalls taking effect after the last writing *MDSTALL* (included) plus any following writing *RRIDSCP*.
+*RRIDSCP* can be written multiple times or not at all.
+
+An IOPMP requests stalls after *MDSTALL* and *RRIDSCP* are written. The requested stalls may not take effect at same time. To determine whether all requested stalls take effect, one can read back the bit *MDSTALL.is_stalled*, which is in the same location as *MDSTALL.exempt* on a write. *is_stalled* = 1 indicates all requested stalls taking effect. A new write to *RRIDSCP* may temporarily reset *is_stalled* to 0 if it was previously set to 1, until all requested stalls take effect.
 
 [NOTE]
 ====
-After writing any non-zero value to *MDSTALL*, *MDSTALL.is_stalled* must be asserted within some time, no matter whether any RRID is stalled. The software polling the status bit doesn't need to consider whether any RRID will be stalled. On the other hand, after writing zero to *MDSTALLH* (if any) and then *MDSTALL*, *MDSTALL.is_stalled* must be de-asserted within some time.
+After writing any non-zero value to *MDSTALL*, *MDSTALL.is_stalled* must be asserted, regardless of whether any RRID is stalled. A delay in the assertion is permissible. The software polling the status bit doesn't need to consider whether any RRID will be stalled. On the other hand, after writing zero to *MDSTALLH* (if any) and then *MDSTALL*, *MDSTALL.is_stalled* must be de-asserted. A delay in the de-assertion is permissible.
 ====
 
-Based on the aforementioned, complete steps to program an IOPMP should be followed.
+Based on <<#SECTION_4_2, Programming Steps>>, complete steps to program an IOPMP should be followed.
 
-** Step 1.1: write MDSTALL once // exactly once
-** Step 1.2: write RRIDSCP zero or more times
-** Step 1.3:  poll until MDSTALL.is_stalled == 1 // to ensure all stalls takes effect
-** Step 2: update IOPMP's configuration
-** Step 3.1: write MDSTALL=0 // resume all transactions
-** Step 3.2: poll until MDSTALL.is_stalled == 0  // optional, to ensure all resumes take effect. 
+** Step 1.1: write *MDSTALL* once // exactly once
+** Step 1.2: write *RRIDSCP* zero or more times
+** Step 1.3: poll until *MDSTALL.is_stalled* == 1 // to ensure all stalls takes effect
+** Step 2: update IOPMP's settings
+** Step 3.1: write *MDSTALL* = 0 // resume all transactions
+** Step 3.2: poll until *MDSTALL.is_stalled* == 0  // optional, to ensure all resumes take effect. 
 
 Some steps may be skipped according to the actual implementation.
 
 
-To query if all transactions associated with a specific RRID are stalled, do the following. First, write 0 to *RRIDSCP.op* and the RRID you want to query to *RRIDSCP.rrid*. Then, read back *RRIDSCP*. The readback of *RRIDSCP.stat* = 1 means that transactions with the queried RRID have stalled, that is, the corresponding bit in rrid_stall is 1. If the value is 2, it means they are not stalled. A value of 3 indicates an unimplemented or unselectable RRID in *RRIDSCP.rrid*. *RRIDSCP.stat* is in the same location as *RRIDSCP.op* on a write. *RRIDSCP.rrid* should keep the last written legal RRID and *RRIDSCP.stat* reflects the current state of this RRID. This method is considered an indirect way to read rrid_stall.
+To query if all transactions associated with a specific RRID are stalled, do the following. First, write 0 to *RRIDSCP.op* and the RRID you want to query to *RRIDSCP.rrid*. Then, read back *RRIDSCP*. The readback of *RRIDSCP.stat* = 1 means that transactions with the queried RRID have stalled, that is, the corresponding bit in _rrid_stall_ is 1. If the value is 2, it means they are not stalled. A value of 3 indicates an unimplemented or unselectable RRID in *RRIDSCP.rrid*. *RRIDSCP.stat* is in the same location as *RRIDSCP.op* on a write. *RRIDSCP.rrid* should keep the last written legal RRID and *RRIDSCP.stat* reflects the current state of this RRID. This method is considered an indirect way to read _rrid_stall_.
 
 [#SECTION_4_8]
 === Implementation Options
