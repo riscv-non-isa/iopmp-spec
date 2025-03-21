@@ -2,29 +2,29 @@
 :numbered:
 [#SECTION_4]
 == Programming IOPMPs
-At times, it can be difficult or even impossible to configure all IOPMP settings when the system starts, especially before I/O agents are active or connected to the system. As a result, it is necessary to update IOPMP settings during runtime. This may occur when a device is enabled, disabled, added, removed, or when the accessible area of a device changes. When updating, it is important to avoid putting IOPMP incomplete settings transiently. However, updating IOPMP settings often involves a series of control accesses, and if a transaction check occurs during the update, it can potentially create a vulnerability. 
-It can be difficult for the security software to guarantee that no transactions are in progress from all related initiators. A false alarm could result in significant performance issues. This chapter describes an optional method for updating IOPMP's settings without intervening transaction initiators.
+At times, it can be difficult or even impossible to configure all IOPMP settings when the system starts, especially before I/O agents are active or connected to the system. As a result, it is necessary to update IOPMP settings during runtime. This may occur when a device is enabled, disabled, added, removed, or when the accessible area of a device changes. When updating, it is important to avoid checking transactions in an incomplete setting. However, updating IOPMP settings often involves a series of control accesses, and if a transaction check occurs during the update, it can potentially create a vulnerability. 
+It could be a heavy burden for the security software to guarantee that no transactions are in progress from all related initiators. This chapter describes an optional method for updating IOPMP's settings that avoids checking transactions in an incomplete setting and burdening the security software.
 
 [#SECTION_4_1]
 === Atomicity Requirement
-Atomicity Requirement is that when updating an IOPMP, all transactions from receiver ports must be checked either before any changes or after completing all changes. Essentially, using partial settings in an IOPMP should be avoided. The succeeding sections will describe the mechanism to satisfy this requirement.
+The Atomicity Requirement is that when updating an IOPMP, all transactions from receiver ports must be checked either before any changes are made or after all changes are completed. Essentially, checking a transaction in a partial setting should be avoided. The succeeding sections will describe the mechanism that helps the security software satisfy this requirement.
 
 [#SECTION_4_2]
 === Programming Steps
-The general approach to the atomicity requirement has three major steps, conceptually described as follows:
+The general approach for a security software to the atomicity requirement has three major steps, conceptually described as follows:
 
-** Step 1: Enable stall feature to stall specific transactions.
+** Step 1: Stall the related transactions that the following updates may impact.
 ** Step 2: Update IOPMP's settings.
-** Step 3: Disable stall feature to resume the stalled transactions. 
+** Step 3: Resume the transactions stalled in Step 1.
 
-Stalling transactions means an IOPMP pauses the transactions to postpone checking permissions for those transactions. For step 1, it's important to verify if the necessary stalling transactions have taken place since they might not be instantaneous in certain implementations. Following this, execute the IOPMP update as step 2, and finally, resume all stalled transactions in step 3.
+Stalling a transaction means the IOPMP stops checking its permission until it is resumed. In the meantime, the transaction should wait. For step 1, it might be necessary to verify if the stalling has occurred since some implementations could not immediately stall the desired transactions from receiver ports. Following this, execute the IOPMP updates as step 2, and finally, resume all stalled transactions in step 3.
 
 [NOTE]
 ====
-In some cases, Step 1 and Step 3 may be skipped as long as no transaction check can interrupt Step 2. Updating MDs associated with a specific RRID to other MDs is an example.
+In some cases, Step 1 and Step 3 may be skipped as long as no transaction check is performed within Step 2. Writing the SRCMD of an RRID is an example because it involves a single write.
 ====
 
-NOTE: While stalling transactions have taken place in Step 1, the IOPMP delays checking the stalled transactions until the IOPMP resumes the stalled transactions. For example, the IOPMP may wait the stalled transactions and/or respond retry messages to transaction requestors for the stalled transactions.
+NOTE: Stalling a transaction could be implemented in the following ways but not limited to: (1) IOPMP may enqueue the transactions to stall but not be checked, (2) ask the transaction initiator to retry the transaction by a retry message, and (3) enqueue first and ask to retry if the queue is full.
 
 [#SECTION_4_3]
 === Stall Transactions
