@@ -79,28 +79,28 @@ This function also can prevent the risk of deadlock in some systems. If an imple
 [#SECTION_4_6]
 === Resume Stall
 
-In order to resume all stalled transactions, the IOPMP can be prompted by writing 0 to *MDSTALL*. This corresponds to Step 3 of <<#SECTION_4_2, Programming Steps>>.  After *MDSTALL* is written by zero, an IOPMP should de-assert *MDSTALL.is_affected* within some time, at which point all transactions have been resumed.
+In order to resume all stalled transactions, the IOPMP can be prompted by writing 0 to *MDSTALL*. This corresponds to Step 3 of <<#SECTION_4_2, Programming Steps>>.  After *MDSTALL* is written by zero, an IOPMP should clear *MDSTALL.is_busy* within some time, at which point all transactions have been resumed.
 
 [#SECTION_4_7]
 === The Order to Stall
 In Step 1 of <<#SECTION_4_2, Programming Steps>>, *MDSTALL* can be written at most once and before a resume. Writing a non-zero value to *MDSTALL* multiple times after a resume leads to RRIDs' stall states being undefined.
 
-After *MDSTALL* and all *RRIDSCP* are written, the action to stall desired transactions may not take effect immediately in some implementations in which the subsequent setting updates (Step 2) could affect the transactions still under checking. To determine whether the action takes effect, one can read back and check the bit *MDSTALL.is_affected*, which is in the same location as *MDSTALL.exempt* on a write. *is_affected* = 1 indicates it taking effect; otherwise, it doesn't. A new write to *RRIDSCP* may temporarily switch *is_affected* to 0 and then switch to 1 at some time.
-*is_affected* can be wired to 1 if any *MDSTALL* and *RRIDSCP* writing won't cause a race condition of the transactions still under checking and the subsequent setting updates.
+After *MDSTALL* and all *RRIDSCP* are written, the action to stall desired transactions may not take effect immediately in some implementations in which the subsequent setting updates (Step 2) could affect the transactions still under checking. To determine whether the action takes effect, one can read back and check the bit *MDSTALL.is_busy*, which is in the same location as *MDSTALL.exempt* on a write. *is_busy* = 0 indicates it has taken effect; otherwise, it has not. A new writing *RRIDSCP* may temporarily switch *is_busy* to 1 and then switch to 0 at some time.
+*is_busy* can be wired to 0 if any *MDSTALL* and *RRIDSCP* writing won't cause a race condition of the transactions still under checking and the subsequent setting updates.
 
 [NOTE]
 ====
-After writing any value to *MDSTALL*, *MDSTALL.is_affected* must be asserted (1), regardless of whether any RRID is stalled. A delay in the assertion is permissible. The software polling the status bit doesn't need to consider whether any RRID will be stalled.
+After writing any value to *MDSTALL*, *MDSTALL.is_busy* must be clear at some time, regardless of whether any RRID is stalled. The software polling the status bit doesn't need to consider whether any RRID will be stalled.
 ====
 
 Based on <<#SECTION_4_2, Programming Steps>>, complete steps to program an IOPMP should be followed.
 
 ** Step 1.1: write *MDSTALL* once // exactly once
 ** Step 1.2: write *RRIDSCP* zero or more times
-** Step 1.3: poll until *MDSTALL.is_affected* == 1 // to ensure all stalls takes effect
+** Step 1.3: poll until *MDSTALL.is_busy* == 0 // to ensure all stalls takes effect if necessary for the implementation
 ** Step 2: update IOPMP's settings
 ** Step 3.1: write *MDSTALL* = 0 // resume all transactions
-** Step 3.2: poll until *MDSTALL.is_affected* == 1  // optional, to ensure all resumes take effect. 
+** Step 3.2: poll until *MDSTALL.is_busy* == 0  // optional, to ensure all resumes take effect. 
 
 Some steps may be skipped according to the actual implementation.
 
