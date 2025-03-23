@@ -174,8 +174,7 @@ h|Field                         |Bits   |R/W    |Default    |Description
 5+h|0x0030
 h|Field                         |Bits   |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}exempt|0:0    |W      |N/A          | Stall transactions with exempt selected MDs, or Stall selected MDs.
-|is_affected                     |0:0    |R      |0          | 1 indicates writing the *MDSTALL* and all *RRIDSCP* taken effect; otherwise, not.
-After the last writing *MDSTALLH* (if any) and then *MDSTALL* by zero, 0 indicates that all transactions have been resumed;  otherwise, 1.
+|is_busy                     |0:0    |R      |0          | 0 indicates  the previous writing *MDSTALL* and *RRIDSCP* have taken effect; otherwise, not.
 |md                             |31:1   |WARL      |0          |Writing *md[__m__]*=1 selects MD _m_; reading *md[__m__]* = 1 means MD __m__ selected.
 |===
 
