@@ -79,34 +79,30 @@ This function also can prevent the risk of deadlock in some systems. If an imple
 [#SECTION_4_6]
 === Resume Stall
 
-In order to resume all stalled transactions, the IOPMP can be prompted by writing 0 to *MDSTALL*. This corresponds to Step 3 of <<#SECTION_4_2, Programming Steps>>.  After *MDSTALL* is written by zero, an IOPMP should de-assert *MDSTALL.is_stalled* within some time, at which point all transactions have been resumed.
+In order to resume all stalled transactions, the IOPMP can be prompted by writing 0 to *MDSTALL*. This corresponds to Step 3 of <<#SECTION_4_2, Programming Steps>>.  After *MDSTALL* is written by zero, an IOPMP should de-assert *MDSTALL.is_affected* within some time, at which point all transactions have been resumed.
 
 [#SECTION_4_7]
 === The Order to Stall
-In Step 1 of <<#SECTION_4_2, Programming Steps>>, *MDSTALL* can be written at most once and before any *RRIDSCP* is written. After a resume, writing a non-zero value to *MDSTALL* multiple times leads to stall feature having an undefined behavior.
+In Step 1 of <<#SECTION_4_2, Programming Steps>>, *MDSTALL* can be written at most once and before a resume. Writing a non-zero value to *MDSTALL* multiple times after a resume leads to RRIDs' stall states being undefined.
 
-*RRIDSCP* can be written multiple times or not at all.
-
-An IOPMP requests stalls after *MDSTALL* and *RRIDSCP* are written. The requested stalls may not take effect at same time. To determine whether all requested stalls take effect, one can read back the bit *MDSTALL.is_stalled*, which is in the same location as *MDSTALL.exempt* on a write. *is_stalled* = 1 indicates all requested stalls taking effect. A new write to *RRIDSCP* may temporarily reset *is_stalled* to 0 if it was previously set to 1, until all requested stalls take effect.
+After *MDSTALL* and all *RRIDSCP* are written, the action to stall desired transactions may not take effect immediately in some implementations in which the subsequent setting updates (Step 2) could affect the transactions still under checking. To determine whether the action takes effect, one can read back and check the bit *MDSTALL.is_affected*, which is in the same location as *MDSTALL.exempt* on a write. *is_affected* = 1 indicates it taking effect; otherwise, it doesn't. A new write to *RRIDSCP* may temporarily switch *is_affected* to 0 and then switch to 1 at some time.
+*is_affected* can be wired to 1 if any *MDSTALL* and *RRIDSCP* writing won't cause a race condition of the transactions still under checking and the subsequent setting updates.
 
 [NOTE]
 ====
-After writing any non-zero value to *MDSTALL*, *MDSTALL.is_stalled* must be asserted, regardless of whether any RRID is stalled. A delay in the assertion is permissible. The software polling the status bit doesn't need to consider whether any RRID will be stalled. On the other hand, after writing zero to *MDSTALLH* (if any) and then *MDSTALL*, *MDSTALL.is_stalled* must be de-asserted. A delay in the de-assertion is permissible.
+After writing any value to *MDSTALL*, *MDSTALL.is_affected* must be asserted (1), regardless of whether any RRID is stalled. A delay in the assertion is permissible. The software polling the status bit doesn't need to consider whether any RRID will be stalled.
 ====
 
 Based on <<#SECTION_4_2, Programming Steps>>, complete steps to program an IOPMP should be followed.
 
 ** Step 1.1: write *MDSTALL* once // exactly once
 ** Step 1.2: write *RRIDSCP* zero or more times
-** Step 1.3: poll until *MDSTALL.is_stalled* == 1 // to ensure all stalls takes effect
+** Step 1.3: poll until *MDSTALL.is_affected* == 1 // to ensure all stalls takes effect
 ** Step 2: update IOPMP's settings
 ** Step 3.1: write *MDSTALL* = 0 // resume all transactions
-** Step 3.2: poll until *MDSTALL.is_stalled* == 0  // optional, to ensure all resumes take effect. 
+** Step 3.2: poll until *MDSTALL.is_affected* == 1  // optional, to ensure all resumes take effect. 
 
 Some steps may be skipped according to the actual implementation.
-
-
-To query if all transactions associated with a specific RRID are stalled, do the following. First, write 0 to *RRIDSCP.op* and the RRID you want to query to *RRIDSCP.rrid*. Then, read back *RRIDSCP*. The readback of *RRIDSCP.stat* = 1 means that transactions with the queried RRID have stalled, that is, the corresponding bit in _rrid_stall_ is 1. If the value is 2, it means they are not stalled. A value of 3 indicates an unimplemented or unselectable RRID in *RRIDSCP.rrid*. *RRIDSCP.stat* is in the same location as *RRIDSCP.op* on a write. *RRIDSCP.rrid* should keep the last written legal RRID and *RRIDSCP.stat* reflects the current state of this RRID. This method is considered an indirect way to read _rrid_stall_.
 
 [#SECTION_4_8]
 === Implementation Options
