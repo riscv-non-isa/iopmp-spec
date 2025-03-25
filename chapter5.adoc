@@ -38,8 +38,8 @@ If an optional register is not implemented, the behavior is implementation-depen
 .6+|0x1000    2+|{set:cellbgcolor:#D3D3D3} SRCMD Table, _s_ = 0...*HWCFG1.rrid_num*-1, only available when *HWCFG0.srcmd_fmt* = 0.
 |{set:cellbgcolor:#FFFFFF}SRCMD_EN(_s_)/SRCMD_ENH(_s_)    |The bitmapped MD enabling register of the requestor _s_ that *SRCMD_EN(_s_)[_m_]* indicates if the requestor is associated with MD _m_ and *SRCMD_ENH(_s_)[_m_]* indicates if the requestor is associated with MD (_m_+31).
 
-|SRCMD_R(_s_)/SRCMD_RH(_s_)|(Optional) bitmapped MD read eanble register, _s_ corresponding to number of requestors, it indicates requestor _s_  read permission on MDs.
-|SRCMD_W(_s_)/SRCMD_WH(_s_)|(Optional) bitmapped MD write eanble register, _s_ corresponding to number of requestors, it indicates requestor _s_  write permission on MDs.
+|SRCMD_R(_s_)/SRCMD_RH(_s_)|(Optional) bitmapped MD read enable register, _s_ corresponding to number of requestors, it indicates requestor _s_  read permission on MDs.
+|SRCMD_W(_s_)/SRCMD_WH(_s_)|(Optional) bitmapped MD write enable register, _s_ corresponding to number of requestors, it indicates requestor _s_  write permission on MDs.
 2+|{set:cellbgcolor:#D3D3D3} SRCMD Table, _m_ =0...*HWCFG0.md_num*-1, only available when *HWCFG0.srcmd_fmt* = 2. 
 |{set:cellbgcolor:#FFFFFF}SRCMD_PERM(_m_)/SRCMD_PERMH(_m_)
 |The bitmapped permission register of the MD _m_. Bit 2*_s_ of *SRCMD_PERM(_m_).perm* holds the read permission for RRID _s_, and bit 2*_s_+1 of *perm* holds the write permission for RRID _s_, where _s_ &#8804;15. Similarly, bit 2*(_s_-16) of *SRCMD_PERMH(_m_).permh* holds the read permission for RRID _s_, and bit 2*(_s_-16)+1 of *permh* holds the write permission for RRID _s_, where _s_&#8805;16. 
@@ -173,8 +173,17 @@ h|Field                         |Bits   |R/W    |Default    |Description
 5+h|MDSTALL{set:cellbgcolor:#D3D3D3}
 5+h|0x0030
 h|Field                         |Bits   |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}exempt|0:0    |W      |N/A          | Stall transactions with exempt selected MDs, or Stall selected MDs.
-|is_busy                     |0:0    |R      |0          | 0 indicates  the previous writing *MDSTALL* and *RRIDSCP* have taken effect; otherwise, not.
+|{set:cellbgcolor:#FFFFFF}exempt|0:0    |W      |N/A       a| 
+Stall transactions from selected RRIDs
+
+* 0: the RRIDs are associated with a selected MD
+* 1: the RRIDs are not associated with any selected MD
+
+Please refer <<#SECTION_4_3, Stall transactions>> for detailed operations
+|is_busy                     |0:0    |R      |0          a| Indicates the status of previous writing *MDSTALL* and *RRIDSCP*
+
+* 0: the write has taken effect or no previous write
+* 1: the write has not taken effect
 |md                             |31:1   |WARL      |0          |Writing *md[__m__]*=1 selects MD _m_; reading *md[__m__]* = 1 means MD __m__ selected.
 |===
 
