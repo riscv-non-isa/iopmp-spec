@@ -22,7 +22,7 @@ Every *SRCMD_EN(_s_)* has 1-bit field *l* for SRCMD Table protection. The bit is
 
 For a system requiring more memory domains than 63, please refer to <<#APPENDIX_A2, Appendix A2. Run Out Memory Domains>>.
 
-If SPS extension is supported, an entry has addtional registers. These registers are described in <<#APPENDIX_A3, Appendix A3. Secondary Permission Setting>>.
+If SPS extension is supported, an entry has additional registers. These registers are described in <<#APPENDIX_A3, Appendix A3. Secondary Permission Setting>>.
 
 [#SECTION_3_2_2]
 ==== SRCMD Table Format 1
