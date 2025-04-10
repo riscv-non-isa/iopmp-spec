@@ -115,7 +115,7 @@ Format 1 and 2 do not implement the register *MDCFGLCK*.
 
 [NOTE]
 ====
-If *MDCFG(_m_)* is locked for MD _m_, while *MDCFG(_m_-1)* is not locked, it could lead to the potential addition or removal of unexpected IOPMP entries within the MD _m_. This can occur by manipulating *MDCFG(_m_-1).t*. Thus, the specification requires that *MDCFG(_m_)* is locked for MD _m_, all its preceding MDCFG Table entries should be locked.
+If *MDCFG(_m_)* is locked for MD _m_, while *MDCFG(_m_-1)* is not locked, it could lead to the potential addition or removal of unexpected IOPMP entries within the MD _m_. This can occur by manipulating *MDCFG(_m_-1).t*. Thus, the specification requires that *MDCFG(_m_)* is locked for MD _m_, all its preceding MDCFG Table entries (*MDCFG(0)* to *MDCFG(_m_-1)*) should be locked.
 ====
 
 [#SECTION_3_5_3]
