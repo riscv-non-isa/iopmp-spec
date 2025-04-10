@@ -2,11 +2,13 @@
 [Appendix_A3]
 == A3: Secondary Permission Setting
 
-IOPMP/SPS (Secondary Permission Setting) is an extension to support different transaction requestors to share memory domain while allowing each requestor to have different read, write and instruction permission to a single memory domain. IOPMP/SPS is only supported when the SRCMD table is in the format 0, a.k.a. *HWCFG0.srcmd_fmt*=0. *HWCFG0.sps_en*=1 indicates IOPMP/SPS extention is implemented.
+IOPMP/SPS (Secondary Permission Setting) is an extension to support different transaction requestors to share memory domain while allowing each requestor to have different read, write and instruction permission to a single memory domain. IOPMP/SPS is only supported when the SRCMD Table is in the format 0, a.k.a. *HWCFG0.srcmd_fmt*=0. *HWCFG0.sps_en*=1 indicates IOPMP/SPS extention is implemented.
 
-If IOPMP/SPS extension is implemented, each SRCMD table entry shall additionally define read and write permission registers: *SRCMD_R(_s_)* and *SRCMD_W(_s_)*, and *SRCMD_RH(_s_)* and *SRCMD_WH(_s_)* if applicable. Register *SRCMD_R(_s_)* and *SRCMD_W(_s_)* each has a single fields, *SRCMD_R(_s_).md* and *SRCMD_W(_s_).md* respectively representing the read and write permission for each memory domain for reguestor _s_. Setting lock to *SRCMD_EN(_s_).l* also locks *SRCMD_R(_s_)*, *SRCMD_RH(_s_)*, *SRCMD_W(_s_)*, and *SRCMD_WH(_s_)*.
+If IOPMP/SPS extension is implemented, each SRCMD Table entry shall additionally define read and write permission registers: *SRCMD_R(_s_)* and *SRCMD_W(_s_)*, and *SRCMD_RH(_s_)* and *SRCMD_WH(_s_)* if applicable. Register *SRCMD_R(_s_)* and *SRCMD_W(_s_)* each has a single fields, *SRCMD_R(_s_).md* and *SRCMD_W(_s_).md* respectively representing the read and write permission for each memory domain for reguestor _s_.
 
-IOPMP/SPS has two sets of permission settings: one from IOPMP entry and the other from *SRCMD_R*/*SRCMD_W*. IOPMP/SPS shall check read and write permission on both the SRCMD table and entries, a transaction fail the IOPMP/SPS check if it violates either of the permission settings. That is, it can shrink the permissions defined on an entry according to requestors.
+IOPMP/SPS shares same locks of *SRCMD_EN(_s_)* and *SRCMD_ENH(_s_)*. Setting lock to *SRCMD_EN(_s_).l* locks *SRCMD_R(_s_)*, *SRCMD_RH(_s_)*, *SRCMD_W(_s_)*, and *SRCMD_WH(_s_)*. *MDLCK.md[_m_]* locks *SRCMD_R(_s_).md[_m_]* and *SRCMD_W(_s_).md[_m_]* for all existing RRID _s_. *MDLCKH.mdh[_m_]* also locks *SRCMD_RH(_s_).mdh[_m_]* and *SRCMD_WH(_s_).mdh[_m_]* for all existing RRID _s_. *SRCMD_R*, *SRCMD_RH*, *SRCMD_W*, and *SRCMD_WH* can have prelocked bits fully or partially based on presets of *MDLCK.md*, *MDLCK.mdh* and *SRCMD_EN.l*.
+
+IOPMP/SPS has two sets of permission settings: one from IOPMP entry and the other from *SRCMD_R*/*SRCMD_W*. IOPMP/SPS shall check read and write permission on both the SRCMD Table and entries, a transaction fail the IOPMP/SPS check if it violates either of the permission settings. That is, it can shrink the permissions defined on an entry according to requestors.
 
 The instruction fetch permission on IOPMP/SPS is considered the same as the read permission.
 
