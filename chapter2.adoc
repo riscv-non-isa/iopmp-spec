@@ -4,10 +4,10 @@
 This document refers to the term “secure monitor” as the software responsible for managing security-related tasks, including the programming of IOPMPs. The secure monitor is not restricted to operating on a single CPU or hart; instead, it may be distributed across multiple CPUs.
 
 .Glossary and Acronyms
-[cols="<1,<3",stripes=even]
+[%autowidth, cols="<1,<3", options="header"]
 |===
-h|Term h|Description
-|{set:cellbgcolor:#FFFFFF}AMO| atomic memory operation
+|Term |Description
+|AMO| atomic memory operation
 |DC| don't care
 |ID| identifier
 |IMP|implementation-dependent
