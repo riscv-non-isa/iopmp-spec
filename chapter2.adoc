@@ -203,9 +203,9 @@ For an illegal transaction matching multiple non-priority entries, if the interr
 The following table shows the control types (global or local) for each error type if the per-entry control bits are implemented (*HWCFG0.peis* = 1 and/or *HWCFG0.pees* = 1):
 
 .Error types and corresponding control bits
-[cols="<1,<2,<5,<3"]
+[%autowidth, cols="<1,<2,<5,<3", options="header"]
 |===
-3+h| Error type  h| Control bits
+3+| Error type  | Control bits
    |0x00        2+| No error                          | N/A
    |0x01        2+| Illegal read access               | Global^1.^ and local^2.^
    |0x02        2+| Illegal write access/AMO          | Global and local
