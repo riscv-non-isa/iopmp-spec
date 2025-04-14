@@ -151,7 +151,7 @@ Upon detecting an illegal transaction, the IOPMP could initiate three of the fol
 * Log the error details in IOPMP error record registers.
 
 IOPMP can trigger an interrupt on an access violation. *ERR_CFG* register configures the interrupt globally, while every entry has local fields to configure interrupt behavior locally. The *ERR_CFG.ie* bit serves as the global interrupt enable configuration bit. Every entry _i_ has three optional interrupt suppression bits in register *ENTRY_CFG(_i_)*, *sire*, *siwe*, and *sixe* to suppress interrupt triggering due to illegal reads, illegal writes, and illegal instruction fetches, respectively. 
-*HWCFG0.peis* is 1 if an implementation supports *sire*, *siwe*, or *sixe*. The interrupt pending indication is equivalent to the error valid indication; both are flagged through the *ERR_INFO.v* bit. On an illegal transaction with error type = "illegal read access" (0x01), "illegal write access/AMO" (0x02), or "illegal instruction fetch" (0x03), an interrupt is triggered if the global interrupt is enabled (*ie*) and not suppressed (*sire*, *siwe*, or *sixe*) by all matching entries. For *peis* is 0, *sire*, *siwe*, and *sixe* should be wired to 0. On an illegal transaction with other types, an IOPMP triggers an interrupt only when *ie*=1. Considering the entry  _i_ matches an illegal transaction, the condition for the interrupt for each type of illegal access can be described as follows: 
+*HWCFG0.peis* is 1 if an implementation supports *sire*, *siwe*, or *sixe*. The interrupt pending indication is equivalent to the error valid indication; both are flagged through the *ERR_INFO.v* bit. On an illegal transaction with error type = "illegal read access" (0x01), "illegal write access/AMO" (0x02), or "illegal instruction fetch" (0x03), an interrupt is triggered if the global interrupt is enabled (*ie*) and not suppressed (*sire*, *siwe*, or *sixe*) by all matching entries. For *peis* is 0, *sire*, *siwe*, and *sixe* should be wired to 0. On an illegal transaction with other types, an IOPMP triggers an interrupt only when *ie*=1. Considering Entry _i_ matches an illegal transaction, the condition for the interrupt for each type of illegal access can be described as follows: 
 
 * Illegal read access (0x01): +
 *ERR_CFG.ie* && !*ENTRY_CFG(_i_).sire* 
@@ -173,9 +173,7 @@ NOTE: The local interrupt control mechanism can be beneficial in scenarios such 
 
 Transactions that violate the IOPMP rule will by default yield a bus error. Additionally, the bus error response behavior on an IOPMP violation can be optionally configured globally via *ERR_CFG* register or locally through each *ENTRY_CFG* register. The IOPMP will signal the bus to the presence of a violation but will suppress the bus error if *ERR_CFG.rs* is implemented and set to 1 on a violation.  User-defined suppression behavior allows, for example, a read response of 0x0.  Likewise, the bus error response on an illegal write or instruction fetch. 
 
-In the same way, the bus error response behavior can be set up globally and individually for each IOPMP entry. *ERR_CFG.rs* globally suppresses returning a bus error on illegal access. When global suppression is disabled, individual per-entry suppression is possible using *sere*, *sewe*, and *sexe* for illegal read, illegal write, and illegal instruction fetch, respectively. *HWCFG0.pees* is 1 if an IOPMP implements *sere*, *sewe*, and *sexe*. An IOPMP will respond with a bus error when a transaction is illegal and the bus error is not suppressed. Bus error response behavior of an IOPMP is controlled by global bus error response suppression configuration bit *rs* and suppression bits (*sere*, *sewe*, or *sexe*) in entries if a transaction only violates permissions on entries and *pees* is 1. On the other hand, if a transaction doesn't only violate permissions on entries, bus error response behavior of an IOPMP is controlled only by bus error response suppression configuration bit *rs*. The permissions include permission bits in entries (*ENTRY_CFG(_i_).r/w/x*) and permission bits from SRCMD Table (please refer <<#SECTION_3_2, SRCMD Table Formats>> for the details) to corresponding entries. The relation of bus error response suppression control with suppression bits in entries for an illegal transaction can be more precisely described as follows:
-
-An entry indexed by _i_ has the highest priority and matches all bytes of the illegal transaction, and error type of the illegal transaction is: 
+In the same way, the bus error response behavior can be set up globally and individually for each IOPMP entry. *ERR_CFG.rs* globally suppresses returning a bus error on illegal access. When global suppression is disabled, individual per-entry suppression is possible using *sere*, *sewe*, and *sexe* for illegal read, illegal write, and illegal instruction fetch, respectively. *HWCFG0.pees* is 1 if an IOPMP implements *sere*, *sewe*, and *sexe*. An IOPMP will respond with a bus error when a transaction is illegal and the bus error is not suppressed. Bus error response behavior of an IOPMP is controlled by global bus error response suppression configuration bit *rs* and suppression bits (*sere*, *sewe*, or *sexe*) in entries if a transaction only violates permissions on entries and *pees* is 1. On the other hand, if a transaction doesn't only violate permissions on entries, bus error response behavior of an IOPMP is controlled only by bus error response suppression configuration bit *rs*. The permissions include permission bits in entries (*ENTRY_CFG(_i_).r/w/x*) and permission bits from SRCMD Table (please refer <<#SECTION_3_2, SRCMD Table Formats>> for the details) to corresponding entries. Considering Entry  _i_ matches an illegal transaction, the condition for a bus error response for each access type can be described as follows:  
 
 * Illegal read access (0x01): +
 !*ERR_CFG.rs* && !*ENTRY_CFG(_i_).sere* 
@@ -184,9 +182,7 @@ An entry indexed by _i_ has the highest priority and matches all bytes of the il
 * Illegal instruction fetch (0x03): +
 !*ERR_CFG.rs* && !*ENTRY_CFG(_i_).sexe*
 
-For some cases with multiple matched non-priority entries, the more detailed relation is:
-
-Entries indexed by _i_~0~, _i_~1~, …​, _i~N~_ match all bytes of the illegal transaction, and error type of the illegal transaction is: 
+For the cases with multiple matched non-priority entries indexed by _i_~0~, _i_~1~, …​, _i~N~_ , the condition is:
 
 * Illegal read access (0x01): + 
 !*ERR_CFG.rs* && ( !*ENTRY_CFG(_i_~0~).sere* || !*ENTRY_CFG(_i_~1~).sere* || ... || !*ENTRY_CFG(_i~N~_).sere* )
@@ -195,16 +191,16 @@ Entries indexed by _i_~0~, _i_~1~, …​, _i~N~_ match all bytes of the illegal
 * Illegal instruction fetch (0x03): +
 !*ERR_CFG.rs* && ( !*ENTRY_CFG(_i_~0~).sexe* || !*ENTRY_CFG(_i_~1~).sexe* || ... || !*ENTRY_CFG(_i~N~_).sexe* )
 
-The error capture record maintains the specifics of the first illegal access detected, except if the following two conditions are held:
+The error capture record maintains the specifics of the first illegal access detected, except for the condition:
 
-* any interrupt-suppress bit regarding the access is set; and
+* no interrupt regarding the access is triggered, and
 * no bus error is returned.
 
-New error capture only occurs when there is no currently pending error, namely *ERR_INFO.v* is ‘0’. If a pending error exists (*v* is ‘1’), the record will not be updated, even if a new illegal access is detected. In other words, *v*  indicates whether the content of the capture record is valid and should be intentionally cleared in order to capture subsequent illegal accesses. One can write 1 to the bit to clear it. The error capture record is optional. If it is not implemented, *v* should be wired to zero. One can implement the error capture record but doesn't implement errored entry index record (*ERR_REQID.eid*). In this case, *eid* should be wired to 0xffff.
+An error capture only occurs when there is no pending error, that is, *ERR_INFO.v* = ‘0’. If a pending error exists (*v* = ‘1’), the record will not be updated, even if a new illegal access is detected. In other words, *v*  indicates whether the content of the capture record is valid and should be intentionally cleared in order to capture subsequent illegal accesses. One can write 1 to the bit to clear it. The error capture record is optional. If it is not implemented, *v* should be wired to zero. One can implement the error capture record, but doesn't implement the error entry index record (*ERR_REQID.eid*). In this case, *eid* should be wired to 0xffff.
 
-If a transaction violates IOPMP rules on multiple non-priority entries which don't suppress interrupt or bus error response, the *ERR_REQID.eid* should be one of the entries.
+For an illegal transaction matching multiple non-priority entries, if the interrupt is triggered or the bus error response is returned, *ERR_REQID.eid* stores the index of any of them.
 
-The following table shows (1) the error types, and (2) related control bits about interrupt triggering and bus error response if the IOPMP supports local control bits (*HWCFG0.peis* is 1 and/or *HWCFG0.pees* is 1):
+The following table shows the control types (global or local) for each error type if the per-entry control bits are implemented (*HWCFG0.peis* = 1 and/or *HWCFG0.pees* = 1):
 
 .Error types and corresponding control bits
 [cols="<1,<2,<5,<3"]
