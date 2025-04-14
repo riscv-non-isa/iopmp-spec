@@ -4,7 +4,7 @@ The spec offers several IOPMP configurations to accommodate varied platforms. Us
 
 [#SECTION_3_1]
 === SRCMD Table and MDCFG Table
-When a IOPMP receives a transaction with RRID _s_, IOPMP first lookups SRCMD table to find out all the memory domains associated to requestor _s_ and the corresponding permissions. An IOPMP instance can support up to 65,535 requestors, the actual number of requestor can be implementation-defined and is indicated in *HWCFG1* register. The SRCMD table defines the mapping from a transaction requestor to its associated MDs and corresponding permissions if having. The mapping can be in one of three formats specified in a read only field *HWCFG0.srcmd_fmt* and described in <<#SECTION_3_2, SRCMD Table Formats>>. Besides, the SPS extension can limit the permission associated with RRID described in <<#APPENDIX_A3, Appendix 3>>.
+When a IOPMP receives a transaction with RRID _s_, IOPMP first lookups SRCMD Table to find out all the memory domains associated to requestor _s_ and the corresponding permissions. An IOPMP instance can support up to 65,535 requestors, the actual number of requestor can be implementation-defined and is indicated in *HWCFG1* register. The SRCMD Table defines the mapping from a transaction requestor to its associated MDs and corresponding permissions if having. The mapping can be in one of three formats specified in a read only field *HWCFG0.srcmd_fmt* and described in <<#SECTION_3_2, SRCMD Table Formats>>. Besides, the SPS extension can limit the permission associated with RRID described in <<#APPENDIX_A3, Appendix A3>>.
 
 When the associated memory domains are retrieved, an IOPMP finds the entries. The MDCFG defines which memory domain every entry belongs to. An entry can belong to at most one memory domain, but a memory domain can own zero or more entries. MDCFG can be in one of three formats, specified in a read only field *HWCFG0.mdcfg_fmt* and described in <<#SECTION_3_3, MDCFG Table Formats>>.
 
@@ -16,19 +16,21 @@ Format 0 and 2 of the SRCMD Table use a bit map to associate every RRID with mem
 
 [#SECTION_3_2_1]
 ==== SRCMD Table Format 0
-In Format 0, the SRCMD table is an array and indexed by RRID. Every entry in the array is a set of registers. The register *SRCMD_EN(_s_)* must be implemented for the existing RRID _s_. If SPS extension described in <<#APPENDIX_A3, Appendix A3>> is supported, *SRCMD_R(_s_)* and *SRCMD_W(_s_)* are implemented. Every bit in the 31-bit field *SRCMD_EN(_s_).md* indicates a memory domain. If the number of MDs is more than 31, the register *SRCMD_ENH(_s_)* and the field *SRCMD_ENH(_s_).mdh* can be implemented to support up to 63 memory domains. SPS also includes the registers *SRCMD_RH(_s_)* and *SRCMD_WH(_s_)*, and the fields *SRCMD_RH(_s_).mdh* and *SRCMD_WH(_s_).mdh*. The bit *SRCMD_EN(_s_).l* is used to lock the set of registers indexed by RRID _s_.
+In Format 0, the SRCMD Table is an array and indexed by RRID. Every entry in the array is a set of registers. The register *SRCMD_EN(_s_)* must be implemented for the existing RRID _s_. Every bit in the 31-bit field *SRCMD_EN(_s_).md* indicates a memory domain. Bit _j_ in *SRCMD_EN(_s_).md* indicates if MD _j_ is associated with RRID _s_. If the number of MDs is more than 31, the register *SRCMD_ENH(_s_)* and its 32-bit field *SRCMD_ENH(_s_).mdh* can be implemented to support up to 63 memory domains. Bit _j_ in *SRCMD_ENH(_s_).mdh* indicates if MD (_j_ + 31) is associated with RRID _s_. For unimplemented memory domains, the corresponding bits should be hardwired read-only zero.
 
-For easier description, in the following, we denote *SRCMD(_s_)* a 64-bit register representing the concatenation of *SRCMD_ENH(_s_)* for the higher word and *SRCMD_EN(_s_)* for the lower word. Field *SRCMD(_s_).md* is the concatenation of *SRCMD_ENH(_s_).mdh* and *SRCMD_EN(_s_).md*, and bit *SRCMD(_s_).l* is bit *SRCMD_EN(_s_).l*.
+Every *SRCMD_EN(_s_)* has 1-bit field *l* for SRCMD Table protection. The bit is described in <<#SECTION_3_5_1, SRCMD Table Protection>>.
 
-Field *SRCMD(_s_).md* is a bitmapped field with up to 63 bits and is implemented from the lowest bit. Bit *md[_j_]* in *SRCMD(_s_)* indicates if MD _j_ is associated with RRID _s_. For unimplemented memory domains, the corresponding bits should be hardwired read-only zero. An IOPMP supports up to 63 memory domains. For a system requiring more memory domains than 63, please refer to <<#APPENDIX_A2, Appendix A2>>.
+For a system requiring more memory domains than 63, please refer to <<#APPENDIX_A2, Appendix A2. Run Out Memory Domains>>.
+
+If SPS extension is supported, an entry has additional registers. These registers are described in <<#APPENDIX_A3, Appendix A3. Secondary Permission Setting>>.
 
 [#SECTION_3_2_2]
 ==== SRCMD Table Format 1
-The bitmap implementation of Format 1 facilitates the sharing of regions between RRIDs. It is specifically tailored for scenarios where there are minimal to no shared regions. In this format, each RRID is exactly associated with a single MD, eliminating the necessity for SRCMD table lookups. Each RRID _i_ is directly associated with MD _i_, resulting in advantages in terms of area, latency, and system complexity. However, duplication of entries occurs when shared regions are required, representing a potential drawback. In the format, the SRCMD table and *MDLCK(H)* registers are not implemented, and the SPS extension is not supported.
+The bitmap implementation of Format 1 specifically tailored for scenarios where there are minimal to no shared regions. In this format, each RRID is exactly associated with a single MD, eliminating the necessity for SRCMD Table lookups. Each RRID _i_ is directly associated with MD _i_, resulting in advantages in terms of area, latency, and system complexity. However, duplicated entry settings when a scenario requires shared regions, representing a potential drawback. In the format, the SPS extension is not supported.
 
 [#SECTION_3_2_3]
 ==== SRCMD Table Format 2
-This format also has a physical SRCMD table of an array, like Format 0, but the array is indexed by the memory domain index.  For MD _m_, *SRCMD_PERM(_m_)* and *SRCMD_PERMH(_m_)* are implemented at the same addresses as *SRCMD_EN(_s_)* and *SRCMD_ENH(_s_)*. That is, there is no *SRCMD_EN(H)* in the format and every RRID implicitly associates all implemented memory domains. That is, the format outputs the permission for every MD according to an RRID. Thus, there is no SPS extension, *SRCMD_R(H)* and *SRCMD_W(H)*.
+This format also has a physical SRCMD Table of an array, like Format 0, but the array is indexed by the memory domain index.  For MD _m_, *SRCMD_PERM(_m_)* and *SRCMD_PERMH(_m_)* are implemented at the same addresses as *SRCMD_EN(_s_)* and *SRCMD_ENH(_s_)*. That is, there is no *SRCMD_EN(H)* in the format and every RRID implicitly associates all implemented memory domains. That is, the format outputs the permission for every MD according to an RRID. Thus, this format doesn't support SPS extension.
 
 *SRCMD_PERM(_m_).r[_s_]* indicates the read permission and instruction fetch permission of RRID _s_ belongs to the memory domain _m_. *SRCMD_PERM(_m_).w[_s_]* indicates write permission of RRID _s_ belongs to the memory domain _m_. *SRCMD_PERM(_m_).r* and *SRCMD_PERM(_m_).w* are adjacent. That is, *SRCMD_PERM(_m_).r[_s_]* and *SRCMD_PERM(_m_).w[_s_]* are located at the bits (_s_ * 2) and  (_s_ * 2 + 1), respectively. For RRID indexed higher than 15, *SRCMD_PERMH(_m_)* is used. IOPMP looks at permissions in  *SRCMD_PERM(H)* and *ENTRY_CFG.r/w/x*.  As long as one of them grants the transaction under checking, it is legal. If one wants to use only *SRCMD_PERM(H)*, all *ENTRY_CFG.r/w/x* can be wired to zero.
 
@@ -38,7 +40,13 @@ The MDCFG table is used to map a memory domain to its own entries. It can be vie
 
 [#SECTION_3_3_1]
 ==== MDCFG Table Format 0
-In the format, every memory domain _m_ has a register, *MDCFG(_m_)*. Field *MDCFG(_m_).t* indicates the top index of IOPMP entry belonging to the memory domain _m_. An entry with index _j_ belongs to MD _m_ if *MDCFG(_m_-1).t* &#8804; _j_ < *MDCFG(_m_).t*, where _m_ > 0. MD 0 owns the IOPMP entries with index _j_ < *MDCFG(0).t*. *MDCFG(_m_+1).t* should be programmed greater than or equal to *MDCFG(_m_).t*. The IOPMP behavior of improperly programming them is implementation-dependent as long as 
+In the format, every memory domain _m_ has a register, *MDCFG(_m_)*. Field *MDCFG(_m_).t* encodes the range of IOPMP entry belonging to the memory domain _m_. That is,
+
+* an entry with index _j_ belongs to MD _m_ if *MDCFG(_m_-1).t* &#8804; _j_ < *MDCFG(_m_).t*, where _m_ > 0;
+* an entry with index _j_ belongs to MD 0 if _j_ < *MDCFG(0).t*; and
+* *MDCFG(_m_+1).t* should be programmed greater than or equal to *MDCFG(_m_).t*; otherwise, MDCFG Table is improperly programmed. 
+
+The MDCFG Table behavior of improperly programming them is implementation-dependent as long as 
 
 * an entry must belong to at most one memory domain; and
 * the index of an entry in a lower-indexed memory domain should be lower than that in a higher-indexed memory domain.
@@ -50,7 +58,12 @@ A proper setting of MDCFGs must maintain *MDCFG(_m_).t* &#8804; *MDCFG(_m_+1).t*
 
 [#SECTION_3_3_2]
 ==== MDCFG Table Format 1
-There is no physical MDCFG table in the format. Each memory domain has exactly _k_ entries, where _k_ is implementation-dependent and non-programmable. The value of the read-only field *HWCFG0.md_entry_num* is the _k_ value minus 1. The register *MDCFGLCK* should not be implemented.
+There is no physical MDCFG Table in the format. Each memory domain has exactly _k_ entries, where _k_ is implementation-dependent and non-programmable. The value of the read-only field *HWCFG0.md_entry_num* is the _k_ value minus 1. The register *MDCFGLCK* should not be implemented.
+
+[NOTE]
+====
+( *HWCFG0.md_entry_num* + 1 ) * *HWCFG0.md_num* can be greater than *HWCFG1.num_entry*. Behavior of any entry with index &#8805; *HWCFG1.num_entry* is described on <<#SECTION_2_5, IOPMP Entry and IOPMP Entry Array>>.
+====
 
 For a particular case of _k_=1 (*HWCFG0.md_entry_num*=0), every memory domain has exactly one entry. One can skip the concept of the memory domain when using such an IOPMP.
 
@@ -63,7 +76,7 @@ This format is based on Format 1, except *HWCFG0.md_entry_num* is programmable. 
 For the sake of convenience of discussion, some highly used combinations of *HWCFG0* have an alias name, which are *srcmd_fmt*=0 and *mdcfg_fmt*=0 as the full model, *srcmd_fmt*=0 and *mdcfg_fmt*=1 as the rapid-_k_ model, where _k_ = (*md_entry_num* + 1), *srcmd_fmt*=0 and *mdcfg_fmt*=2 as the dynamic-_k_ model, where _k_ = (*md_entry_num* + 1), *srcmd_fmt*=1 and *mdcfg_fmt*=0 as the isolation model, and *srcmd_fmt*=1 and *mdcfg_fmt*=1 as the compact-_k_ model, where _k_ = (*md_entry_num* + 1).
 
 [caption="Figure {counter:image}: ", reftext="Figure {image}"]
-[title="an example block diagram of the rapid-4 model. The flow is the same as in <<iopmp-block-diagram>>, except the MDCFG table is simplified to a constant mapping illustrated in the dashed box. In this example, every MD has exactly four entries."]
+[title="an example block diagram of the rapid-4 model. The flow is the same as in <<iopmp-block-diagram>>, except the MDCFG Table is simplified to a constant mapping illustrated in the dashed box. In this example, every MD has exactly four entries."]
 image::images/iopmp_unit_block_diagram_rapid_4.png[]
 
 [caption="Figure {counter:image}: ", reftext="Figure {image}"]
@@ -71,47 +84,47 @@ image::images/iopmp_unit_block_diagram_rapid_4.png[]
 image::images/iopmp_unit_block_diagram_compact_4.png[]
 
 [caption="Figure {counter:image}: ", reftext="Figure {image}"]
-[title="an example block diagram of the model implements SRCMD table format 2 and MDCFG table format 1 with HWCFG0.md_entry_num is 0. In this example, every MD has exactly single entry, i.e., the entry index is equal to the MD index."]
+[title="an example block diagram of the model implements SRCMD Table format 2 and MDCFG Table format 1 with HWCFG0.md_entry_num is 0. In this example, every MD has exactly single entry, i.e., the entry index is equal to the MD index."]
 image::images/iopmp_unit_block_diagram_srcmd_fmt2.png[]
 
 [#SECTION_3_5]
 === Configuration Protection
-The term 'lock' refers to a hardware feature that renders one or more fields or registers nonprogrammable until the IOPMP is reset. This feature serves to maintain the integrity of essential configurations in the event of a compromise of secure software. In cases where a lock bit is programmable, it is expected to be reset to '0' and sticky to '1' upon receiving a write of '1'.
+The term 'lock' refers to a hardware feature that renders one or more fields or registers nonprogrammable until the IOPMP is reset. This feature serves to maintain the integrity of essential configurations in the event of a compromise of secure software. In cases where a lock bit is programmable, it is expected to be reset to '0' and is a W1SS field.
 
 [#SECTION_3_5_1]
 ==== SRCMD Table Protection
-The two fields *MDLCK.md* and *MDLCKH.mdh* have 63 bits together. Every bit is used to lock the association bits with a memory domain in the SRCMD table. In Format 0,  for MD 0 &#x2264; _m_ &#x2264; 30, *MDLCK.md[_m_]* locks *SRCMD(_s_).md[_m_]* for all existing RRID _s_. In Format 1, there is no *MDLCK*. In Format 2, *MDLCK.md[_m_]* locks both *SRCMD_PERM(_m_)* and *SRCMD_PERMH(_m_)*. For MD 31 &#x2264; _m_ &#x2264; 62, one should use *MDLCKH.mdh* to lock corresponding bits.
+In Format 0, every *SRCMD_EN(_s_)* register has a bit *l* at bit 0, which is used to lock registers *SRCMD_EN(_s_)*, and *SRCMD_ENH(_s_)* if any.
+
+The two fields *MDLCK.md* and *MDLCKH.mdh* have 63 bits together. Every bit is used to lock the association bits with a memory domain in the SRCMD Table. In Format 0, for MD 0 &#x2264; _m_ &#x2264; 30, *MDLCK.md[_m_]* locks *SRCMD(_s_).md[_m_]* for all existing RRID _s_. In Format 1, there is no *MDLCK*. In Format 2, *MDLCK.md[_m_]* locks both *SRCMD_PERM(_m_)* and *SRCMD_PERMH(_m_)*. For MD 31 &#x2264; _m_ &#x2264; 62, one should use *MDLCKH.mdh* to lock corresponding bits.
 
 Bit *MDLCK.l* is a sticky to 1 and indicates if *MDLCK* and *MDLCKH* are locked.
 
 *MDLCK.md* is optional, if not implemented, *MDLCK.md* should be wired to 0 and *MDLCK.l* should be wired to 1. *MDLCKH* is optional.
 
-Besides, in Format 0, every *SRCMD_EN(_s_)* register has a bit *l*, which is used to lock registers *SRCMD_EN(_s_)*, *SRCMD_ENH(_s_)*, *SRCMD_R(_s_)*, *SRCMD_RH(_s_)*, *SRCMD_W(_s_)*, and *SRCMD_WH(_s_)* if any.
-
 [NOTE]
 ====
-Locking SRCMD table in either way can prevent the table from being altered accidentally or maliciously.
+Locking SRCMD Table in either way can prevent the table from being altered accidentally or maliciously.
 By locking the association of the MD containing the configuration regions of a component, one can prevent the component from being configured by unwanted RRIDs. To make it more secure, one can use another high-priority MD containing the same regions but no permission, let it be associated with all unwanted RRIDs, and then lock the two MDs' associations by *MDLCK*/*MDLCKH*. By adopting this approach, it is possible to safeguard the configuration from direct access by potentially compromised security software.
 ====
 
 [#SECTION_3_5_2]
 ==== MDCFG Table Protection
-Register *MDCFGLCK* is designed to partially or fully lock the MDCFG table for Format 0. *MDCFGLCK* consists of two fields: *MDCFGLCK.l* and *MDCFGLCK.f*. *MDCFG(_m_)* is locked if _m_< *MDCFGLCK.f*. *MDCFGLCK.f* is incremental-only. Any smaller value can not be written into it. The bit *MDCFGLCK.l* is used to lock *MDCFGLCK*.
+Register *MDCFGLCK* is designed to partially or fully lock the MDCFG Table for Format 0. *MDCFGLCK* consists of two fields: *MDCFGLCK.l* and *MDCFGLCK.f*. *MDCFG(_m_)* is locked if _m_< *MDCFGLCK.f*. *MDCFGLCK.f* is incremental-only. Any smaller value can not be written into it. The bit *MDCFGLCK.l* is used to lock *MDCFGLCK*.
 
 Format 1 and 2 do not implement the register *MDCFGLCK*.
 
 [NOTE]
 ====
-If a MD is locked, while its preceding MD is not locked, it could lead to the potential addition or removal of unexpected entries within the locked MD. This can occur by manipulating the top index of the preceding unlocked MD. Thus, the specification requires that one MD is locked, all its preceding MDs should be locked.
+If *MDCFG(_m_)* is locked for MD _m_, while *MDCFG(_m_-1)* is not locked, it could lead to the potential addition or removal of unexpected IOPMP entries within the MD _m_. This can occur by manipulating *MDCFG(_m_-1).t*. Thus, the specification requires that *MDCFG(_m_)* is locked for MD _m_, all its preceding MDCFG Table entries (*MDCFG(0)* to *MDCFG(_m_-1)*) should be locked.
 ====
 
 [#SECTION_3_5_3]
 ==== Entry Protection
-IOPMP entry protection is also related to the other IOPMP entries belonging to the same memory domain. For a MD, locked entries should be placed in the higher priority. Otherwise, when the secure monitor is compromised, one unlocked entry in higher priority can overwrite all the other locked or non-locked entries in lower priority.  A register *ENTRYLCK* is define to indicate the number of nonprogrammable entries. *ENTRYLCK* register has two fields: *ENTRYLCK.l* and *ENTRYLCK.f*. Any IOPMP entry with index _i_ &#8804; *ENTRYLCK.f* is not programmable. If *ENTRYLCK.f* is initialized to 0 and can be increased only when written. Besides, *ENTRYLCK.l* is the lock to *ENTRYLCK.f* and itself. If *ENTRYLCK* is hardwired, *ENTRYLCK.l* should be wired to 1.
+IOPMP entry protection is also related to the other IOPMP entries belonging to the same memory domain. For a MD, locked entries should be placed in the higher priority. Otherwise, when the secure monitor is compromised, one unlocked entry in higher priority can overwrite all the other locked or non-locked entries in lower priority.  A register *ENTRYLCK* is define to indicate the number of nonprogrammable entries. *ENTRYLCK* register has two fields: *ENTRYLCK.l* and *ENTRYLCK.f*. Any IOPMP entry with index _i_ &#8804; *ENTRYLCK.f* is not programmable. *ENTRYLCK.f* is incremental-only. Any smaller value can not be written into it. Besides, *ENTRYLCK.l* is the lock to *ENTRYLCK.f* and itself. If *ENTRYLCK* is hardwired, *ENTRYLCK.l* should be wired to 1.
 
 
 [#SECTION_3_6]
 === Prelocked Configurations
 Prelocked configurations in the specification mean the fields or registers are locked right after reset. In practice, they could be hardwired and/or implemented by read-only memory. Every lock mechanism in this chapter can be optionally pre-locked.
-The non-zero reset value of *MDCFGLCK.f* reflects the pre-locked *MDCFG(_j_)*, where _j_< *MDCFGLCK.f*. The non-zero reset value of *ENTRYLCK.f* reflects the existing pre-locked entries. *SRCMD_EN/R/W(H)* can have prelocked bits fully or partially based on presets of *MDLCK.md* and *SRCMD_EN.l*. Similarly, *SRCMD_PERM(H)* also can have prelocked bits fully or partially based on presets of *MDLCK.md*.
+The non-zero reset value of *MDCFGLCK.f* reflects the pre-locked *MDCFG(_j_)*, where _j_< *MDCFGLCK.f*. The non-zero reset value of *ENTRYLCK.f* reflects the existing pre-locked entries. *SRCMD_EN(H)* can have prelocked bits fully or partially based on presets of *MDLCK.md* and *SRCMD_EN.l*. Similarly, *SRCMD_PERM(H)* also can have prelocked bits fully or partially based on presets of *MDLCK.md*.
 The rest of the lock bits can be preset, too. They are *ERR_CFG.l*, *MDLCK.l*, *MDCFGLCK.l*, and *ENTRYLCK.l*.

@@ -9,23 +9,28 @@ This document refers to the term “secure monitor” as the software responsibl
 h|Term h|Description
 |{set:cellbgcolor:#FFFFFF}AMO| atomic memory operation
 |DC| don't care
+|ID| identifier
 |IMP|implementation-dependent
+|IMSIC| Incoming Message-Signaled Interrupt Controller, defined in the RISC-V advanced interrupt architecture (AIA) specification
+|IOMMU| Input-Output Memory Management Unit, a RISC-V non-ISA specification
 |MD| memory domain
 |MMIO|memory mapped input/output devices
+|MSI| message-signaled interrupts
 |NA4|naturally aligned four-byte region, one of the address matching mode used in RISC-V PMP and IOPMP
 |NAPOT|naturally aligned power-of-2 region, one of the address matching mode used in RISC-V PMP and IOPMP
 |N/A| not available
 |OTP| one-time programmable
 |ROM| read-only memory
+|RRID| Request Role ID
 |RX|receiver
 |SPS| secondary permission setting, an extension of RISC-V IOPMP
 |TOR|top boundary of an arbitrary range, one of the address matching mode used in RISC-V PMP and IOPMP
 |TX|transmitter
-|WARL|write any read legal
-|W1C|write '1' clear 
-|W1CS|write '1' clear and sticky to 0
-|W1S|write '1' set
-|W1SS|write '1' set and sticky to 1
+|WARL|write any read legal, a behavior of fields
+|W1C|write '1' clear, a behavior of single bit fields
+|W1CS|write '1' clear and sticky to 0, a behavior of single bit fields: writing '1' clears the bit. If the bit is cleared, this state remains fixed until IOPMP registers are reset.
+|W1S|write '1' set, a behavior of single bit fields
+|W1SS|write '1' set and sticky to 1, a behavior of single bit fields: writing '1' sets the bit. If the bit is set, this state remains fixed until IOPMP registers are reset.
 |X( _n_ )|the _n_-th register in the register array X, which starts from 0.
 |X[ _n_ ]|the _n_-th bit of a register X or register field X
 |X( _n_ : _m_ )|the _n_-th to _m_-th registers of a register X.
@@ -42,12 +47,19 @@ If all transactions going through the IOPMP are issued by the same transaction r
 An IOPMP has one or multiple requestor ports, one or multiple receiver ports and one control port. A receiver port is where a transaction goes into the IOPMP, and a requestor port is where a transaction leaves it if the transaction passes all the checks. The control port is used to program the IOPMP.
 
 === Memory Domain
-An RRID is an abstract representation of a transaction requestor. It encompasses one or more transaction requestors that are granted identical permissions. A Memory Domain, MD for short, is an abstract representation of a transaction destination that groups a set of memory regions for a specific purpose. MDs are indexed from zero. For example, a network interface controller, NIC, may have three memory regions: an RX region, a TX region, and a region of control registers. We could group them into one MD. If a processor can fully control the NIC, it can be associated with the MD. An RRID associated with a MD may not have full permissions on all memory regions of the MD. The permission of each region is defined in the corresponding IOPMP entry. Additionally, there is an extension to adhere the permission to the MD that will be introduced in the <<#APPENDIX_A3, Appendix A3>>.
+An RRID is an abstract representation of a transaction requestor. It encompasses one or more transaction requestors that are granted identical permissions. A memory domain, MD for short, is an abstract representation of a transaction destination that groups a set of memory regions for a specific purpose. MDs are indexed from zero. For example, a network interface controller, NIC, may have three memory regions: an RX region, a TX region, and a region of control registers. We could group them into one MD. If a processor can fully control the NIC, the processor can be associated with the MD.
 
-It’s important to note that, generally speaking, a single RRID can be associated with multiple Memory Domains (MDs), and vice versa. However, certain configurations may impose restrictions on this flexibility, which will be discussed in the following chapter.
+It’s important to note that, generally speaking, a single RRID can be associated with multiple memory domains (MDs), and a MD can be associated with multiple RRIDs. SRCMD Table is a one of fundamental structures in IOPMP to indicate associations between RRIDs and MDs, which will be introduced in <<#SECTION_3_2, SRCMD Table Formats>>.
 
+MDCFG Table also is one of fundamental structures in IOPMP to define a set of memory regions in a MD, which will be introduced in <<#SECTION_3_3, MCDFG Table Formats>>. An IOPMP entry defines a single memory region, which will be introduced in <<#SECTION_2_5, IOPMP Entry and IOPMP Entry Array>>. 
+
+An RRID associated with a MD may not have full permissions on all memory regions of the MD, because the permission of each region is defined in the corresponding IOPMP entry. Additionally, some specific configurations of SRCMD Table can define the permission to a whole MD in SRCMD Table that will be introduced in <<#SECTION_3_2_3, SRCMD Table Format 2>> and <<#APPENDIX_A3, Appendix A3. Secondary Permission Setting>>.
+
+Certain configurations of SRCMD Table and MDCFG Table may impose restrictions on this flexibility, which will be discussed in <<#IOPMP_Tables_and_Configuration_Protection, Chapter 3. IOPMP Tables and Configuration Protection>>.
+
+[#SECTION_2_5]
 === IOPMP Entry and IOPMP Entry Array
-The IOPMP entry array, contains IOPMP entries. Each entry, starting from an index of zero, includes a specified memory region, the corresponding permissions, and optional features about error reactions and user customized attributes.
+The IOPMP entry array, contains *HWCFG1.entry_num* IOPMP entries. Each entry, starting from an index of zero, includes a specified memory region, the corresponding permissions, and optional features about error reactions and user customized attributes.
 
 For an entry indexed by _i_, *ENTRY_ADDR(_i_)*, *ENTRY_ADDRH(_i_)* and *ENTRY_CFG(_i_).a* encode the memory region in the same way as the RISC-V PMP. *ENTRY_ADDR(_i_)* and *ENTRY_ADDRH(_i_)* are the encoded address for the IOPMP with addresses greater than 34 bits. For addresses less than and equal to 34 bits, only *ENTRY_ADDR(_i_)* is in use. To determine whether *ENTRY_ADDRH(_i_)* are implemented, one can check *HWCFG0.addrh_en*. Please refer <<#HWCFG0, HWCFG0>> for more details of *HWCFG0.addrh_en*. *ENTRY_CFG(_i_).a* is the address mode, which are OFF, NA4, NAPOT, and TOR. Please refer to the RISC-V privileged spec for the details of the encoding schemes. *HWCFG0.tor_en* = 1 indicates the IOPMP supports TOR address mode.
 
@@ -61,12 +73,23 @@ Since the address encoding scheme of TOR refers to the previous entry's memory r
 
 *ENTRY_CFG(_i_).r/w/x* indicate the read access, write access and instruction fetch permission and they are WARL. That is, an implementation can decide which bits are programmable or hardwired and which bit combinations are unwanted. An IOPMP can differentiate between read and instruction fetch accesses when *HWCFG0.chk_x* is 1.
 
-Every entry has several WARL fields *sire/siwe/sixe/esre/eswe/esxe*, suppressing interrupts and bus error responses for its error reaction, and will be introduced in <<#SECTION_2_7, Error Reactions>>.
-The optional register *ENTRY_USER_CFG* stores customized attributes for an entry. To determine whether the register is implemented, one can check *HWCFG0.user_cfg_en*.
+*ENTRY_CFG(_i_)* also contains optional WARL fields: *sire*, *siwe*, *sixe*, *esre*, *eswe*, and *esxe*. These fields are used to control error reactions per entry, such as interrupt triggering and bus error responses. The detailed usages will be introduced in <<#SECTION_2_7, Error Reactions>>.
 
-Memory domains are a way of dividing the IOPMP entry array into different subarrays. Each subarray is a Memory Domain. Each IOPMP entry can belong to at most one Memory Domain, while a Memory Domain could have multiple IOPMP entries. 
+The optional register *ENTRY_USER_CFG(_i_)* stores customized attributes for an entry. To determine whether the register is implemented, one can check *HWCFG0.user_cfg_en*.
 
-When an RRID is associated with a Memory Domain, it is also inherently associated with all the entries that belong to that Memory Domain. An RRID could be associated with multiple Memory Domains, and one Memory Domain could be associated with multiple RRIDs.
+Any entry with index &#8805; *HWCFG1.entry_num* is not available. That is,
+
+* Registers of the entry are not implemented.
+* Address mode of the entry is treated as OFF when the IOPMP retrieves the entry in permission checks.
+
+Memory domains are a way of dividing the IOPMP entry array into different subarrays. Each subarray is a memory domain. Each IOPMP entry can belong to at most one memory domain, while a memory domain could have multiple IOPMP entries. 
+
+[NOTE]
+====
+A memory domain may have an IOPMP entry with index &#8805; *HWCFG1.entry_num* due to its register encoding or implementation. The entry is not available.
+====
+
+When an RRID is associated with a memory domain, it is also inherently associated with all the entries that belong to that memory domain.
 
 [#SECTION_2_6]
 === Priority and Matching Logic
@@ -82,27 +105,39 @@ IOPMP entries exhibit partial prioritization. Entries with indices smaller than 
 
 NOTE: The specification incorporates both priority and non-priority entries due to considerations of security, latency, and area. Priority entries, which are locked, safeguard the most sensitive data, even in the event of secure software being compromised. However, implementing a large number of these priority entries results in higher latency and increased area usage. On the other hand, non-priority entries are treated equally and can be cached in smaller numbers. This approach reduces the amortized latency, power consumption, and area when the locality is sufficiently high. Thus, the mix of entry types in the specification allows for a balance between security and performance.
 
-The entry with the highest priority that 
+An entry qualifies as a matching entry if:
 
-* matches any byte of the incoming transaction; and
-* is associated with the RRID carried by the transaction.
+* For priority entries, it matches any byte of the incoming transaction;
+* For non-priority entries, it matches all bytes of the incoming transaction;
+* It is associated with the RRID carried by the transaction; and
+* It holds the highest priority among entries that meet the previous criteria.
 
-If the matching entry is priority entry, the matching entry must match all bytes of a transaction, or the transaction is illegal with error type = "partial hit on a priority rule" (0x04), irrespective of its permission. An entry has own permission and permission from Memory Domain to grant a transaction permission. If a priority entry is matched but doesn't grant transaction permission to operate, the transaction is illegal with error type = "illegal read access" (0x01) for read access transaction, "illegal write access/AMO" (0x02) for write access/atomic memory operation (AMO) transaction, or "illegal instruction fetch" (0x03) for instruction fetch transaction.
+[NOTE]
+====
+Multiple matching entries are allowed for non-priority entries because they share the lowest priority.
+====
 
-NOTE: To grant an AMO transaction permission, entries and/or Memory Domains must have read access permission and write access permission.
+An entry has own permission and optional permission from corresponding memory domain to grant a transaction permission. An IOPMP can carry the optional permission from SRCMD Table to IOPMP entry array for the corresponding memory domain if it supports <<#SECTION_3_2_3, SRCMD Table Format 2>> or <<#APPENDIX_A3, SPS extension>>.
+
+If the matching entry is priority entry, the matching entry must match all bytes of a transaction, or the transaction is illegal with error type = "partial hit on a priority rule" (0x04), irrespective of its permission. If a priority entry is matched but doesn't grant transaction permission to operate, the transaction is illegal with error type = "illegal read access" (0x01) for read access transaction, "illegal write access/AMO" (0x02) for write access/atomic memory operation (AMO) transaction, or "illegal instruction fetch" (0x03) for instruction fetch transaction.
+
+[NOTE]
+====
+To grant an AMO transaction permission, entries and/or memory domains must have read access permission and write access permission.
+====
 
 [NOTE]
 ====
 Some AMO implementations of I/O agents are using a non-atomic read-modify-write sequence which could contain a read access transaction and a write access transaction, not single AMO transaction. Therefore, IOPMP possiblly captures error type = "illegal read access" (0x01) when read permission for the read-modify-write sequence from the I/O agents is not granted.
 ====
 
-Let's consider a non-priority entry matching all bytes of a transaction. It is legal if the entry grants the transaction permission to operate. When multiple non-priority entries match all bytes of a transaction and one of them allows the transaction, the transaction is legal. If none of them allows, the transaction is illegal with error type = "illegal read access" (0x01) for read access transaction, "illegal write access/AMO" (0x02) for write access/AMO  transaction, or "illegal instruction fetch" (0x03) for instruction fetch transaction.
+Let's consider the matching entry is non-priority entry. The transaction is legal if the entry grants the transaction permission to operate. When one of multiple non-priority matching entries grants the transaction permission to operate, the transaction is legal. If no matching entry allows, the transaction is illegal with error type = "illegal read access" (0x01) for read access transaction, "illegal write access/AMO" (0x02) for write access/AMO transaction, or "illegal instruction fetch" (0x03) for instruction fetch transaction.
 
-Finally, if no such above entry exists, the transaction is illegal with error type = "not hit any rule" (0x05).
+Finally, if no matching entry exists, the transaction is illegal with error type = "not hit any rule" (0x05).
 
 
 [caption="Figure {counter:image}: ", reftext="Figure {image}"]
-[title="an example block diagram of an IOPMP. It illustrates the checking flow of an IOPMP. This IOPMP takes three inputs: RRID, the transaction type (read/write), and the request range (address/len). It first looks up the SRCMD table according to the RRID carried by the incoming transaction to retrieve associated MD indexes and the corresponding permissions related to these MDs. By the MD indexes, the IOPMP looks up the MDCFG table to get the belonging entry indexes. The final step checks the access right according to the above entry indexes and corresponding permissions. An interrupt, an error response, and/or a record is generated once the transaction fails the permission check in the step.", id=iopmp-block-diagram]
+[title="an example block diagram of an IOPMP. It illustrates the checking flow of an IOPMP. This IOPMP takes three inputs: RRID, the transaction type (read/write), and the request range (address/len). It first looks up the SRCMD Table according to the RRID carried by the incoming transaction to retrieve associated MD indexes and the corresponding permissions related to these MDs. By the MD indexes, the IOPMP looks up the MDCFG Table to get the belonging entry indexes. The final step checks the access right according to the above entry indexes and corresponding permissions. An interrupt, an error response, and/or a record is generated once the transaction fails the permission check in the step.", id=iopmp-block-diagram]
 image::images/iopmp_unit_block_diagram.png[]
 
 [#SECTION_2_7]
@@ -115,7 +150,7 @@ Upon detecting an illegal transaction, the IOPMP could initiate three of the fol
 
 * Log the error details in IOPMP error record registers.
 
-The interrupt enabling on an IOPMP violation can be configured globally via *ERR_CFG* register or optionally locally through the *ENTRY_CFG* register for each entry. The *ERR_CFG.ie* bit serves as the global interrupt enable configuration bit. Every entry _i_ has three optional interrupt suppression bits in register *ENTRY_CFG(_i_)*, *sire*, *siwe*, and *sixe* to suppress interrupt triggering due to illegal reads, illegal writes and illegal instruction fetches on the corresponding entry, respectively. *HWCFG0.peis* is 1 if an implementation supports *sire*, *siwe*, or *sixe*. The interrupt pending indication is equivalent to the error valid indication, both are flagged through the *ERR_INFO.v* bit. An IOPMP interrupt will be triggered when a transaction is illegal and the interrupt is not suppressed. An IOPMP triggers interrupt by global interrupt enable configuration bit *ie* and suppression bits (*sire*, *siwe*, or *sixe*) in entries if a transaction is illegal with error type = "illegal read access" (0x01), "illegal write access/AMO" (0x02), or "illegal instruction fetch" (0x03) and *peis* is 1. On the other hand, if a transaction doesn't only violate permissions on entries, an IOPMP triggers interrupt only by global interrupt enable configuration bit *ie*. The permissions include permission bits in entries (*ENTRY_CFG(_i_).r/w/x*) and permission bits from SRCMD table (please refer <<#SECTION_3_2, SRCMD Table Formats>> for the details) to corresponding entries. The relation of interrupt control with interrupt suppression bits for an illegal transaction can be more precisely described as follows:
+The interrupt enabling on an IOPMP violation can be configured globally via *ERR_CFG* register or optionally locally through the *ENTRY_CFG* register for each entry. The *ERR_CFG.ie* bit serves as the global interrupt enable configuration bit. Every entry _i_ has three optional interrupt suppression bits in register *ENTRY_CFG(_i_)*, *sire*, *siwe*, and *sixe* to suppress interrupt triggering due to illegal reads, illegal writes and illegal instruction fetches on the corresponding entry, respectively. *HWCFG0.peis* is 1 if an implementation supports *sire*, *siwe*, or *sixe*. The interrupt pending indication is equivalent to the error valid indication, both are flagged through the *ERR_INFO.v* bit. An IOPMP interrupt will be triggered when a transaction is illegal and the interrupt is not suppressed. An IOPMP triggers interrupt by global interrupt enable configuration bit *ie* and suppression bits (*sire*, *siwe*, or *sixe*) in entries if a transaction is illegal with error type = "illegal read access" (0x01), "illegal write access/AMO" (0x02), or "illegal instruction fetch" (0x03) and *peis* is 1. On the other hand, if a transaction doesn't only violate permissions on entries, an IOPMP triggers interrupt only by global interrupt enable configuration bit *ie*. The permissions include permission bits in entries (*ENTRY_CFG(_i_).r/w/x*) and permission bits from SRCMD Table (please refer <<#SECTION_3_2, SRCMD Table Formats>> for the details) to corresponding entries. The relation of interrupt control with interrupt suppression bits for an illegal transaction can be more precisely described as follows:
 
 An entry indexed by _i_ has the highest priority and matches all bytes of the illegal transaction, and error type of the illegal transaction is: 
 
@@ -141,7 +176,7 @@ NOTE: Such local interrupt control mechanism can be beneficial in scenarios such
 
 Transactions that violate the IOPMP rule will by default yield a bus error. Additionally, the bus error response behavior on an IOPMP violation can be optionally configured globally via *ERR_CFG* register or locally through each *ENTRY_CFG* register. The IOPMP will signal the bus to the presence of a violation but will suppress the bus error if *ERR_CFG.rs* is implemented and set to 1 on a violation.  User-defined suppression behavior allows, for example, a read response of 0x0.  Likewise, the bus error response on an illegal write or instruction fetch. 
 
-In the same way, the bus error response behavior can be set up globally and individually for each IOPMP entry. *ERR_CFG.rs* globally suppresses returning a bus error on illegal access. When global suppression is disabled, individual per-entry suppression is possible using *sere*, *sewe*, and *sexe* for illegal read, illegal write, and illegal instruction fetch, respectively. *HWCFG0.pees* is 1 if an IOPMP implements *sere*, *sewe*, and *sexe*. An IOPMP will respond with a bus error when a transaction is illegal and the bus error is not suppressed. Bus error response behavior of an IOPMP is controlled by global bus error response suppression configuration bit *rs* and suppression bits (*sere*, *sewe*, or *sexe*) in entries if a transaction only violates permissions on entries and *pees* is 1. On the other hand, if a transaction doesn't only violate permissions on entries, bus error response behavior of an IOPMP is controlled only by bus error response suppression configuration bit *rs*. The permissions include permission bits in entries (*ENTRY_CFG(_i_).r/w/x*) and permission bits from SRCMD table (please refer <<#SECTION_3_2, SRCMD Table Formats>> for the details) to corresponding entries. The relation of bus error response suppression control with suppression bits in entries for an illegal transaction can be more precisely described as follows:
+In the same way, the bus error response behavior can be set up globally and individually for each IOPMP entry. *ERR_CFG.rs* globally suppresses returning a bus error on illegal access. When global suppression is disabled, individual per-entry suppression is possible using *sere*, *sewe*, and *sexe* for illegal read, illegal write, and illegal instruction fetch, respectively. *HWCFG0.pees* is 1 if an IOPMP implements *sere*, *sewe*, and *sexe*. An IOPMP will respond with a bus error when a transaction is illegal and the bus error is not suppressed. Bus error response behavior of an IOPMP is controlled by global bus error response suppression configuration bit *rs* and suppression bits (*sere*, *sewe*, or *sexe*) in entries if a transaction only violates permissions on entries and *pees* is 1. On the other hand, if a transaction doesn't only violate permissions on entries, bus error response behavior of an IOPMP is controlled only by bus error response suppression configuration bit *rs*. The permissions include permission bits in entries (*ENTRY_CFG(_i_).r/w/x*) and permission bits from SRCMD Table (please refer <<#SECTION_3_2, SRCMD Table Formats>> for the details) to corresponding entries. The relation of bus error response suppression control with suppression bits in entries for an illegal transaction can be more precisely described as follows:
 
 An entry indexed by _i_ has the highest priority and matches all bytes of the illegal transaction, and error type of the illegal transaction is: 
 
