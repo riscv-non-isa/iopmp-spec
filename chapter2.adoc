@@ -4,10 +4,10 @@
 This document refers to the term “secure monitor” as the software responsible for managing security-related tasks, including the programming of IOPMPs. The secure monitor is not restricted to operating on a single CPU or hart; instead, it may be distributed across multiple CPUs.
 
 .Glossary and Acronyms
-[cols="<1,<3",stripes=even]
+[%autowidth, cols="<1,<3", options="header"]
 |===
-h|Term h|Description
-|{set:cellbgcolor:#FFFFFF}AMO| atomic memory operation
+|Term |Description
+|AMO| atomic memory operation
 |DC| don't care
 |ID| identifier
 |IMP|implementation-dependent
@@ -136,8 +136,7 @@ If one matching entry is non-priority, the transaction is legal if any matching 
 
 Finally, if no matching entry exists, the transaction is illegal with error type = "not hit any rule" (0x05).
 
-[caption="Figure {counter:image}: ", reftext="Figure {image}"]
-[title="an example block diagram of an IOPMP. It illustrates the checking flow of an IOPMP. This IOPMP takes three inputs: RRID, the transaction type (read/write), and the request range (address/len). It first looks up the SRCMD Table according to the RRID carried by the incoming transaction to retrieve associated MD indexes and the corresponding permissions related to these MDs. By the MD indexes, the IOPMP looks up the MDCFG Table to get the belonging entry indexes. The final step checks the access right according to the above entry indexes and corresponding permissions. An interrupt, an error response, and/or a record is generated once the transaction fails the permission check in the step.", id=iopmp-block-diagram]
+.an example block diagram of an IOPMP. It illustrates the checking flow of an IOPMP. This IOPMP takes three inputs: RRID, the transaction type (read/write), and the request range (address/len). It first looks up the SRCMD Table according to the RRID carried by the incoming transaction to retrieve associated MD indexes and the corresponding permissions related to these MDs. By the MD indexes, the IOPMP looks up the MDCFG Table to get the belonging entry indexes. The final step checks the access right according to the above entry indexes and corresponding permissions. An interrupt, an error response, and/or a record is generated once the transaction fails the permission check in the step.", id=iopmp-block-diagram
 image::images/iopmp_unit_block_diagram.png[]
 
 [#SECTION_2_7]
@@ -203,9 +202,9 @@ For an illegal transaction matching multiple non-priority entries, if the interr
 The following table shows the control types (global or local) for each error type if the per-entry control bits are implemented (*HWCFG0.peis* = 1 and/or *HWCFG0.pees* = 1):
 
 .Error types and corresponding control bits
-[cols="<1,<2,<5,<3"]
+[%autowidth, cols="<1,<2,<5,<3", options="header"]
 |===
-3+h| Error type  h| Control bits
+3+| Error type  | Control bits
    |0x00        2+| No error                          | N/A
    |0x01        2+| Illegal read access               | Global^1.^ and local^2.^
    |0x02        2+| Illegal write access/AMO          | Global and local

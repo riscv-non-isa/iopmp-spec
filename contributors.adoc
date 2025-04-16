@@ -4,8 +4,6 @@ This RISC-V specification has been contributed to directly or indirectly by (in 
 
 [%hardbreaks]
 
-It is a tentative initial and has not been completed. I'm sorry if I missed you, wrote your name wrong or not your full name, or if you want me to remove you. Please email scku@andestech.com so I can fix it soon.
-
 Allen Baum,
 Alvin Che-Chia Chang,
 Andrew Dellow,
