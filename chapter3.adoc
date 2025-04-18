@@ -42,9 +42,10 @@ The MDCFG table is used to map a memory domain to its own entries. It can be vie
 ==== MDCFG Table Format 0
 In the format, every memory domain _m_ has a register, *MDCFG(_m_)*. Field *MDCFG(_m_).t* encodes the range of IOPMP entry belonging to the memory domain _m_. That is,
 
-* an entry with index _j_ belongs to MD _m_ if *MDCFG(_m_-1).t* &#8804; _j_ < *MDCFG(_m_).t*, where _m_ > 0;
-* an entry with index _j_ belongs to MD 0 if _j_ < *MDCFG(0).t*; and
-* *MDCFG(_m_+1).t* should be programmed greater than or equal to *MDCFG(_m_).t*; otherwise, MDCFG Table is improperly programmed. 
+* an entry with index _j_ belongs to MD _m_ if *MDCFG(_m_-1).t* &#8804; _j_ < *MDCFG(_m_).t*, where _m_ > 0.
+* an entry with index _j_ belongs to MD 0 if _j_ < *MDCFG(0).t*.
+
+*MDCFG(_m_+1).t* should be programmed greater than or equal to *MDCFG(_m_).t*; otherwise, MDCFG Table is improperly programmed. 
 
 The MDCFG Table behavior of improperly programming them is implementation-dependent as long as 
 
@@ -75,7 +76,7 @@ This format is based on Format 1, except *HWCFG0.md_entry_num* is programmable. 
 === IOPMP Models
 For the sake of convenience of discussion, some highly used combinations of *HWCFG0* have an alias name, which are *srcmd_fmt*=0 and *mdcfg_fmt*=0 as the full model, *srcmd_fmt*=0 and *mdcfg_fmt*=1 as the rapid-_k_ model, where _k_ = (*md_entry_num* + 1), *srcmd_fmt*=0 and *mdcfg_fmt*=2 as the dynamic-_k_ model, where _k_ = (*md_entry_num* + 1), *srcmd_fmt*=1 and *mdcfg_fmt*=0 as the isolation model, and *srcmd_fmt*=1 and *mdcfg_fmt*=1 as the compact-_k_ model, where _k_ = (*md_entry_num* + 1).
 
-.an example block diagram of the rapid-4 model. The flow is the same as in <<iopmp-block-diagram>>, except the MDCFG Table is simplified to a constant mapping illustrated in the dashed box. In this example, every MD has exactly four entries.
+.an example block diagram of the rapid-4 model. The flow is the same as in <<IOPMP_BLOCK_DIAGRAM>>, except the MDCFG Table is simplified to a constant mapping illustrated in the dashed box. In this example, every MD has exactly four entries.
 image::images/iopmp_unit_block_diagram_rapid_4.png[]
 
 .an example block diagram of the compact-4 model.

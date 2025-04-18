@@ -19,7 +19,6 @@ This document refers to the term “secure monitor” as the software responsibl
 |NA4|naturally aligned four-byte region, one of the address matching mode used in RISC-V PMP and IOPMP
 |NAPOT|naturally aligned power-of-2 region, one of the address matching mode used in RISC-V PMP and IOPMP
 |N/A| not available
-|OTP| one-time programmable
 |ROM| read-only memory
 |RRID| Request Role ID
 |RX|receiver
@@ -117,7 +116,7 @@ An entry qualifies as a matching entry for an incoming transaction if:
 Multiple matching entries are allowed for non-priority entries because they share the lowest priority.
 ====
 
-Matched entries can grant a transaction according to its access type. If any matched entry allows the access type, the transaction is legal. Every entry can permit read, write, and execution of a transaction by its r, w, and x bits, respectively.
+Matched entries can grant a transaction according to its access type. If any matched entry allows the access type, the transaction is legal. Every entry can permit read, write, and instruction fetch of a transaction by its *r*, *w*, and *x* bits, respectively.
 An IOPMP can carry the optional permission from SRCMD Table to IOPMP entry array for the corresponding memory domain if it supports <<#SECTION_3_2_3, SRCMD Table Format 2>> or <<#APPENDIX_A3, SPS extension>>.
 
 If the matching entry is priority entry, the matching entry must match all bytes of a transaction, or the transaction is illegal with error type = "partial hit on a priority rule" (0x04), irrespective of its permission. If a priority entry is matched but doesn't grant transaction permission to operate, the transaction is illegal with error type = "illegal read access" (0x01) for read access transaction, "illegal write access/AMO" (0x02) for write access/atomic memory operation (AMO) transaction, or "illegal instruction fetch" (0x03) for instruction fetch transaction.
@@ -136,7 +135,8 @@ If one matching entry is non-priority, the transaction is legal if any matching 
 
 Finally, if no matching entry exists, the transaction is illegal with error type = "not hit any rule" (0x05).
 
-.an example block diagram of an IOPMP. It illustrates the checking flow of an IOPMP. This IOPMP takes three inputs: RRID, the transaction type (read/write), and the request range (address/len). It first looks up the SRCMD Table according to the RRID carried by the incoming transaction to retrieve associated MD indexes and the corresponding permissions related to these MDs. By the MD indexes, the IOPMP looks up the MDCFG Table to get the belonging entry indexes. The final step checks the access right according to the above entry indexes and corresponding permissions. An interrupt, an error response, and/or a record is generated once the transaction fails the permission check in the step.", id=iopmp-block-diagram
+[#IOPMP_BLOCK_DIAGRAM]
+.an example block diagram of an IOPMP. It illustrates the checking flow of an IOPMP. This IOPMP takes three inputs: RRID, the transaction type (read/write), and the request range (address/len). It first looks up the SRCMD Table according to the RRID carried by the incoming transaction to retrieve associated MD indexes and the corresponding permissions related to these MDs. By the MD indexes, the IOPMP looks up the MDCFG Table to get the belonging entry indexes. The final step checks the access right according to the above entry indexes and corresponding permissions. An interrupt, an error response, and/or a record is generated once the transaction fails the permission check in the step.
 image::images/iopmp_unit_block_diagram.png[]
 
 [#SECTION_2_7]
@@ -222,6 +222,6 @@ The following table shows the control types (global or local) for each error typ
    |0x0E ~ 0x0F 2+| User-defined error                | Implementation-dependent
 |===
 
-^1.^ Bit *ie* or *rs* in *ERR_CFG*. It depends on which reaction (i.e., interrupt or bus error response).
+^1.^ Bit *ie* or *rs* in *ERR_CFG*. It depends on which reaction (that is, interrupt or bus error response).
 
-^2.^ Bits *sire*, *siwe*, *sixe*, *sere*, *sewe*, or *sexe* in *ENTRY_CFG(_i_)*. It depends on which reaction (i.e., interrupt or bus error response) and which transaction type of the illegal transaction (i.e., read access, write access or instruction fetch).
+^2.^ Bits *sire*, *siwe*, *sixe*, *sere*, *sewe*, or *sexe* in *ENTRY_CFG(_i_)*. It depends on which reaction (that is, interrupt or bus error response) and which transaction type of the illegal transaction (that is, read access, write access or instruction fetch).
