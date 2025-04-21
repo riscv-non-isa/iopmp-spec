@@ -11,19 +11,19 @@ This document refers to the term “secure monitor” as the software responsibl
 |DC| don't care
 |ID| identifier
 |IMP|implementation-dependent
-|IMSIC| Incoming Message-Signaled Interrupt Controller, defined in the RISC-V advanced interrupt architecture (AIA) specification
+|IMSIC| Incoming Message-Signaled Interrupt Controller, defined in the RISC-V advanced interrupt architecture (AIA) cite:[AIA] specification
 |IOMMU| Input-Output Memory Management Unit, a RISC-V non-ISA specification
 |MD| memory domain
 |MMIO|memory mapped input/output devices
 |MSI| message-signaled interrupts
-|NA4|naturally aligned four-byte region, one of the address matching mode used in RISC-V PMP and IOPMP
-|NAPOT|naturally aligned power-of-2 region, one of the address matching mode used in RISC-V PMP and IOPMP
+|NA4|naturally aligned four-byte region, one of the address matching mode used in RISC-V PMP cite:[PrivISA] and IOPMP
+|NAPOT|naturally aligned power-of-2 region, one of the address matching mode used in RISC-V PMP cite:[PrivISA] and IOPMP
 |N/A| not available
 |ROM| read-only memory
 |RRID| Request Role ID
 |RX|receiver
 |SPS| secondary permission setting, an extension of RISC-V IOPMP
-|TOR|top boundary of an arbitrary range, one of the address matching mode used in RISC-V PMP and IOPMP
+|TOR|top boundary of an arbitrary range, one of the address matching mode used in RISC-V PMP cite:[PrivISA] and IOPMP
 |TX|transmitter
 |WARL|write any read legal, a behavior of fields
 |W1C|write '1' clear, a behavior of single bit fields
@@ -47,6 +47,17 @@ An IOPMP has one or multiple requestor ports, one or multiple receiver ports and
 
 === Memory Domain
 An RRID is an abstract representation of a transaction requestor. It encompasses one or more transaction requestors that are granted identical permissions. A memory domain, MD for short, is an abstract representation of a transaction destination that groups a set of memory regions for a specific purpose. MDs are indexed from zero. For example, a network interface controller, NIC, may have three memory regions: an RX region, a TX region, and a region of control registers. We could group them into one MD. If a processor can fully control the NIC, the processor can be associated with the MD.
+
+<<#MD_EXAMPLE_1>> shows a possible association for the example. 
+
+[#MD_EXAMPLE_1]
+.NIC example of RRID and MD association.
+[%autowidth, options="header"]
+|===
+|Memory domain | RRID 0 (all from processor) | RRID 1 (all from NIC)
+| NIC regions (TX region, RX region and region of control registers) | associated | associated
+| Other regions| associated | 
+|===
 
 It’s important to note that, generally speaking, a single RRID can be associated with multiple memory domains (MDs), and a MD can be associated with multiple RRIDs. SRCMD Table is a one of fundamental structures in IOPMP to indicate associations between RRIDs and MDs, which will be introduced in <<#SECTION_3_2, SRCMD Table Formats>>.
 

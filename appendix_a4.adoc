@@ -2,7 +2,7 @@
 [Appendix_A4]
 == A4: Message-Signaled Interrupts (MSI)
 
-In systems built with an Incoming Message-Signaled Interrupt Controller (IMSIC), the IOPMP can trigger message-signaled interrupts (MSI) by writing a word of data to a specific physical address. The address is MSI address and is specified by *ERR_MSIADDR* and *ERR_MSIADDRH* (implemented only when *HWCFG0.addrh_en* = 1), while the content to write is stored in the field *msidata* in the register *ERR_CFG*. The *ERR_MSIADDR*, *ERR_MSIADDRH*, and *ERR_CFG* are locked by the *ERR_CFG.l*.
+In systems built with an Incoming Message-Signaled Interrupt Controller (IMSIC) cite:[AIA], the IOPMP can trigger message-signaled interrupts (MSI) by writing a word of data to a specific physical address. The address is MSI address and is specified by *ERR_MSIADDR* and *ERR_MSIADDRH* (implemented only when *HWCFG0.addrh_en* = 1), while the content to write is stored in the field *msidata* in the register *ERR_CFG*. The *ERR_MSIADDR*, *ERR_MSIADDRH*, and *ERR_CFG* are locked by the *ERR_CFG.l*.
 
 *ERR_MSIADDRH* is available if the target address of IMSIC uses over 34 bits (greater than 0x2_0000_0000). *ERR_MSIADDR* encodes bit 31 to bit 0 of the address, while *ERR_MSIADDRH* encodes bit 63 to bit 32. When the target address of IMSIC uses less than or equal to 34 bits, *ERR_MSIADDR* encodes bit 33 to bit 2. *ERR_MSIADDRH* is available only when *HWCFG0.addrh_en* = 1 and *ERR_CFG.msi_en* = 1.    
 
