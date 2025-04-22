@@ -73,7 +73,7 @@ Since the address encoding scheme of TOR refers to the previous entry's memory r
 
 *ENTRY_CFG(_i_).r/w/x* indicate the read access, write access and instruction fetch permission and they are WARL. That is, an implementation can decide which bits are programmable or hardwired and which bit combinations are unwanted. An IOPMP can differentiate between read and instruction fetch accesses when *HWCFG0.chk_x* is 1.
 
-*ENTRY_CFG(_i_)* also contains optional WARL fields: *sire*, *siwe*, *sixe*, *esre*, *eswe*, and *esxe*. These fields are used to control error reactions per entry, such as interrupt triggering and bus error responses. The detailed usages will be introduced in <<#SECTION_2_7, Error Reactions>>.
+*ENTRY_CFG(_i_)* also contains optional WARL fields: *sire*, *siwe*, *sixe*, *sere*, *sewe*, and *sexe*. These fields are used to control error reactions per entry, such as interrupt triggering and bus error responses. The detailed usages will be introduced in <<#SECTION_2_7, Error Reactions>>.
 
 The optional register *ENTRY_USER_CFG(_i_)* stores customized attributes for an entry. To determine whether the register is implemented, one can check *HWCFG0.user_cfg_en*.
 
