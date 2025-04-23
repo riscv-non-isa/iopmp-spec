@@ -40,7 +40,7 @@ The MDCFG Table is used to map a memory domain to its own entries. It can be vie
 
 [#SECTION_3_3_1]
 ==== MDCFG Table Format 0
-In the format, every memory domain _m_ has a register, *MDCFG(_m_)*. Field *MDCFG(_m_).t* presents the upper bound (not included) and field *MDCFG(_m_-1).t* presents the lower bound (included) for _m_ > 0. They form the index range of IOPMP entries belonging to the memory domain _m_. That is,
+In the format, every memory domain _m_ has a register, *MDCFG(_m_)*. Field *MDCFG(_m_).t* represents the upper bound (not included) and field *MDCFG(_m_-1).t* represents the lower bound (included) for _m_ > 0. They form the index range of IOPMP entries belonging to the memory domain _m_. That is,
 
 * an entry with index _j_ belongs to MD _m_ if *MDCFG(_m_ - 1).t* &#8804; _j_ < *MDCFG(_m_).t*, where _m_ > 0.
 * an entry with index _j_ belongs to MD 0 if _j_ < *MDCFG(0).t*.
