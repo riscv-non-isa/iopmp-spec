@@ -12,7 +12,7 @@ After retrieving all related entries, an IOPMP checks the transaction according 
 
 [#SECTION_3_2]
 === SRCMD Table Formats
-Format 0 and 2 of the SRCMD Table use a bit map to associate every RRID with memory domains. Format 1 is a simplified version that uses the RRID as the memory domain index. That is, the RRIDs and MD indexes are one-to-one mapping. 
+Format 0 of the SRCMD Table uses a bit map to associate every RRID with memory domains. Format 1 is a simplified version that uses the RRID as the memory domain index. That is, the RRIDs and MD indexes are one-to-one mapping. In the Format 2, every RRID implicitly associates all implemented memory domains. Instead, Format 2 of the SRCMD Table uses a bit map to output permissions for each memory domain based on the RRID.
 
 [#SECTION_3_2_1]
 ==== SRCMD Table Format 0
@@ -36,24 +36,37 @@ This format also has a physical SRCMD Table of an array, like Format 0, but the 
 
 [#SECTION_3_3]
 === MDCFG Table Formats
-The MDCFG table is used to map a memory domain to its own entries. It can be viewed as a partition of all entries in the IOPMP. Its three formats aim to fit different design targets.
+The MDCFG Table is used to map a memory domain to its own entries. It can be viewed as a partition of all entries in the IOPMP. Its three formats aim to fit different design targets.
 
 [#SECTION_3_3_1]
 ==== MDCFG Table Format 0
-In the format, every memory domain _m_ has a register, *MDCFG(_m_)*. Field *MDCFG(_m_).t* encodes the range of IOPMP entry belonging to the memory domain _m_. That is,
+In the format, every memory domain _m_ has a register, *MDCFG(_m_)*. Field *MDCFG(_m_).t* presents the upper bound (not included) and field *MDCFG(_m_-1).t* presents the lower bound (included) for _m_ > 0. They form the index range of IOPMP entries belonging to the memory domain _m_. That is,
 
-* an entry with index _j_ belongs to MD _m_ if *MDCFG(_m_-1).t* &#8804; _j_ < *MDCFG(_m_).t*, where _m_ > 0;
-* an entry with index _j_ belongs to MD 0 if _j_ < *MDCFG(0).t*; and
-* *MDCFG(_m_+1).t* should be programmed greater than or equal to *MDCFG(_m_).t*; otherwise, MDCFG Table is improperly programmed. 
+* an entry with index _j_ belongs to MD _m_ if *MDCFG(_m_ - 1).t* &#8804; _j_ < *MDCFG(_m_).t*, where _m_ > 0.
+* an entry with index _j_ belongs to MD 0 if _j_ < *MDCFG(0).t*.
 
-The MDCFG Table behavior of improperly programming them is implementation-dependent as long as 
+Programmers should maintain proper settings in the MDCFG Table, where *MDCFG(_m_ + 1).t* should be greater than or equal to *MDCFG(_m_).t* for any legal MD m. Otherwise, the MDCFG table has an improper setting, that is, there exist two legal MDs _m_ and _k_, *MDCFG(_k_).t* > *MDCFG(_m_).t* for _k_ < _m_. In this case, we denote the MD _m_ has an improper setting.
+
+When the MDCFG Table has any improper setting, the belonging of IOPMP entries is implementation-dependent, but the following conditions should be held:
 
 * an entry must belong to at most one memory domain; and
 * the index of an entry in a lower-indexed memory domain should be lower than that in a higher-indexed memory domain.
 
 [NOTE]
 ====
-A proper setting of MDCFGs must maintain *MDCFG(_m_).t* &#8804; *MDCFG(_m_+1).t* for any legal _m_; otherwise, it is an improper setting. For portability, programmers should ensure *MDCFG(_m_).t* increased monotonically for _m_ during the runtime. If a process of programming or initializing MDCFGs could transiently cause an improper setting, one should use the procedure introduced in <<#SECTION_4,  Programming IOPMPs>> to avoid security issues. Even though the procedure may introduce extra steps, these registers are not subject to change at a high frequency to hurt overall performance. Thus, the specification requires programmers to maintain a proper setting instead of requiring specific hardware behaviors on improper settings.
+For portability, programmers should ensure the MDCFG Table has a proper setting during the runtime. In the case that the process of programming or initializing the MDCFG Table causes an improper setting to occur transiently, one should use the procedure introduced in <<#SECTION_4, Programming IOPMPs>> to avoid security issues. Even though the procedure may introduce extra steps, the table is not subject to change at a high frequency to hurt overall performance. Thus, the specification requires programmers to maintain a proper setting instead of requiring specific hardware behaviors on improper settings.
+====
+
+[NOTE]
+====
+Here are some reference behaviors for an improper setting, which may include, but are not limited to:
+
+. correct the values to make the table have a proper setting,
+. reject the write access to make an improper setting, or
+. leave the improper setting in the MDCFG Table, but the belonging of entries for all MDs _m_ having an improper setting becomes:
+.. no entry belongs to MD _m_, or
+.. no entry belongs to all MDs _m_ to (*HWCFG0.md_num* - 1).
+
 ====
 
 [#SECTION_3_3_2]
