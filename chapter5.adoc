@@ -352,7 +352,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 5+h|0x0070
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}rrid  |15:0       |R      |DC        |Indicate the errored RRID.
-|{set:cellbgcolor:#FFFFFF}eid   |31:16  |R      |DC          |Indicates the index pointing to the entry that catches the violation. If no entry is hit, i.e., *etype*=0x05 or 0x06, the value of this field is invalid. If the field is not implemented, it should be wired to 0xffff.
+|{set:cellbgcolor:#FFFFFF}eid   |31:16  |R      |DC          |Indicates the index pointing to the entry that catches the violation. If no entry is hit, that is, *etype*=0x05, 0x06 or 0x07, the value of this field is invalid. If the field is not implemented, it should be wired to 0xffff.
 |===
 
 *ERR_MFR* is an optional register. If Multi-Faults Record Extension is enabled (*HWCFG0.mfr_en*=1), *ERR_MFR* can be used to retrieve which RRIDs make subsequent violations.

@@ -9,21 +9,22 @@ This document refers to the term “secure monitor” as the software responsibl
 |Term |Description
 |AMO| atomic memory operation
 |DC| don't care
+|DMA| direct memory access
 |ID| identifier
 |IMP|implementation-dependent
-|IMSIC| Incoming Message-Signaled Interrupt Controller, defined in the RISC-V advanced interrupt architecture (AIA) specification
+|IMSIC| Incoming Message-Signaled Interrupt Controller, defined in the RISC-V advanced interrupt architecture (AIA) cite:[AIA] specification
 |IOMMU| Input-Output Memory Management Unit, a RISC-V non-ISA specification
 |MD| memory domain
 |MMIO|memory mapped input/output devices
 |MSI| message-signaled interrupts
-|NA4|naturally aligned four-byte region, one of the address matching mode used in RISC-V PMP and IOPMP
-|NAPOT|naturally aligned power-of-2 region, one of the address matching mode used in RISC-V PMP and IOPMP
+|NA4|naturally aligned four-byte region, one of the address matching mode used in RISC-V PMP cite:[PrivISA] and IOPMP
+|NAPOT|naturally aligned power-of-2 region, one of the address matching mode used in RISC-V PMP cite:[PrivISA] and IOPMP
 |N/A| not available
 |ROM| read-only memory
 |RRID| Request Role ID
 |RX|receiver
 |SPS| secondary permission setting, an extension of RISC-V IOPMP
-|TOR|top boundary of an arbitrary range, one of the address matching mode used in RISC-V PMP and IOPMP
+|TOR|top boundary of an arbitrary range, one of the address matching mode used in RISC-V PMP cite:[PrivISA] and IOPMP
 |TX|transmitter
 |WARL|write any read legal, a behavior of fields
 |W1C|write '1' clear, a behavior of single bit fields
@@ -60,7 +61,7 @@ Certain configurations of SRCMD Table and MDCFG Table may impose restrictions on
 === IOPMP Entry and IOPMP Entry Array
 The IOPMP entry array, contains *HWCFG1.entry_num* IOPMP entries. Each entry, starting from an index of zero, includes a specified memory region, the corresponding permissions, and optional features about error reactions and user customized attributes.
 
-For an entry indexed by _i_, *ENTRY_ADDR(_i_)*, *ENTRY_ADDRH(_i_)* and *ENTRY_CFG(_i_).a* encode the memory region in the same way as the RISC-V PMP. *ENTRY_ADDR(_i_)* and *ENTRY_ADDRH(_i_)* are the encoded address for the IOPMP with addresses greater than 34 bits. For addresses less than and equal to 34 bits, only *ENTRY_ADDR(_i_)* is in use. To determine whether *ENTRY_ADDRH(_i_)* are implemented, one can check *HWCFG0.addrh_en*. Please refer <<#HWCFG0, HWCFG0>> for more details of *HWCFG0.addrh_en*. *ENTRY_CFG(_i_).a* is the address mode, which are OFF, NA4, NAPOT, and TOR. Please refer to the RISC-V privileged spec for the details of the encoding schemes. *HWCFG0.tor_en* = 1 indicates the IOPMP supports TOR address mode.
+For an entry indexed by _i_, *ENTRY_ADDR(_i_)*, *ENTRY_ADDRH(_i_)* and *ENTRY_CFG(_i_).a* encode the memory region in the same way as the RISC-V PMP. *ENTRY_ADDR(_i_)* and *ENTRY_ADDRH(_i_)* are the encoded address for the IOPMP with addresses greater than 34 bits. For addresses less than and equal to 34 bits, only *ENTRY_ADDR(_i_)* is in use. To determine whether *ENTRY_ADDRH(_i_)* are implemented, one can check *HWCFG0.addrh_en*. Please refer <<#HWCFG0, HWCFG0>> for more details of *HWCFG0.addrh_en*. *ENTRY_CFG(_i_).a* is the address mode, which are OFF, NA4, NAPOT, and TOR. Please refer to the RISC-V privileged spec cite:[PrivISA] for the details of the encoding schemes. *HWCFG0.tor_en* = 1 indicates the IOPMP supports TOR address mode.
 
 [NOTE]
 ====
@@ -72,7 +73,7 @@ Since the address encoding scheme of TOR refers to the previous entry's memory r
 
 *ENTRY_CFG(_i_).r/w/x* indicate the read access, write access and instruction fetch permission and they are WARL. That is, an implementation can decide which bits are programmable or hardwired and which bit combinations are unwanted. An IOPMP can differentiate between read and instruction fetch accesses when *HWCFG0.chk_x* is 1.
 
-*ENTRY_CFG(_i_)* also contains optional WARL fields: *sire*, *siwe*, *sixe*, *esre*, *eswe*, and *esxe*. These fields are used to control error reactions per entry, such as interrupt triggering and bus error responses. The detailed usages will be introduced in <<#SECTION_2_7, Error Reactions>>.
+*ENTRY_CFG(_i_)* also contains optional WARL fields: *sire*, *siwe*, *sixe*, *sere*, *sewe*, and *sexe*. These fields are used to control error reactions per entry, such as interrupt triggering and bus error responses. The detailed usages will be introduced in <<#SECTION_2_7, Error Reactions>>.
 
 The optional register *ENTRY_USER_CFG(_i_)* stores customized attributes for an entry. To determine whether the register is implemented, one can check *HWCFG0.user_cfg_en*.
 
@@ -100,7 +101,7 @@ When a transaction arrives at an IOPMP, the IOPMP first checks whether the RRID 
 
 NOTE: Whether an RRID is legal is implementation-dependent, even though it < *HWCFG1.rrid_num*.
 
-IOPMP entries are partially prioritized. Entries identified by indices less than the value defined in HWCFG2.prio_entry are prioritized according to their respective index values. Specifically, entries with lower indices are assigned a higher priority. These entries are referred to as priority entries. Conversely, entries with indices greater than or equal to *prio_entry* are treated equally and assigned the lowest priority. These entries are referred to as non-prioritized entries. The value of *prio_entry* is implementation-dependent. Additionally, *HWCFG0.prient_prog* indicates if *prio_entry* is programmable. 
+IOPMP entries are partially prioritized. Entries identified by indices less than the value defined in *HWCFG2.prio_entry* are prioritized according to their respective index values. Specifically, entries with lower indices are assigned a higher priority. These entries are referred to as priority entries. Conversely, entries with indices greater than or equal to *prio_entry* are treated equally and assigned the lowest priority. These entries are referred to as non-prioritized entries. The value of *prio_entry* is implementation-dependent. Additionally, *HWCFG0.prient_prog* indicates if *prio_entry* is programmable. 
 
 NOTE: The specification incorporates both priority and non-priority entries due to considerations of security, latency, and area. Priority entries, which are locked, safeguard the most sensitive data, even in the event of secure software being compromised. However, implementing a large number of these priority entries results in higher latency and increased area usage. On the other hand, non-priority entries are treated equally and can be cached in smaller numbers. This approach reduces the amortized latency, power consumption, and area when the locality is sufficiently high. Thus, the mix of entry types in the specification allows for a balance between security and performance.
 
