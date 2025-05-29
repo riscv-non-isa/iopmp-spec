@@ -1,5 +1,6 @@
 /***************************************************************************
 // Author: Yazan Hussnain (yazan.hussain@10xengineers.ai)
+//         Gull Ahmed (gull.ahmed@10xengineers.ai)
 // Date: October 21, 2024
 // Description:
 // This file implements the IOPMP (I/O Physical Memory Protection)
@@ -209,8 +210,12 @@ iopmpMatchStatus_t iopmpRuleAnalyzer(iopmp_trans_req_t trans_req, uint64_t prev_
     }
     if (addr_match_status) { return ENTRY_NOTMATCH; } // No match found
 
+    #if (SRC_ENFORCEMENT_EN)
+        match_status = iopmpCheckPerms(0, trans_req.perm, iopmpcfg, md);
+    #else
     // Check access permissions
-    match_status = iopmpCheckPerms(trans_req.rrid, trans_req.perm, iopmpcfg, md);
+        match_status = iopmpCheckPerms(trans_req.rrid, trans_req.perm, iopmpcfg, md);
+    #endif
 
     // If all checks pass, return full match status
     return match_status;

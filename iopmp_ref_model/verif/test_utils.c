@@ -1,5 +1,6 @@
 /***************************************************************************
 // Author: Gull Ahmed (gull.ahmed@10xengineers.ai)
+//         Yazan Hussnain (yazan.hussain@10xengineers.ai)
 // Date: October 21, 2024
 // Description: This file contains all the functions that could be used
 // while testing any IOPMP Model.
@@ -7,6 +8,10 @@
 #include "test_utils.h"
 #include "config.h"
 #include "iopmp.h"
+
+int test_num;
+int8_t *memory;
+uint64_t bus_error = 0;
 
 /**
   * @brief Allocates memory of the specified size in gigabytes.
@@ -35,13 +40,18 @@ int create_memory(uint8_t mem_gb) {
   * @param data - Pointer to the data for read.
   * @return 0 if the read was successful, BUS_ERROR if the address corresponds to a bus error.
  **/
-uint8_t read_memory(uint64_t addr, uint8_t size, char *data) {
+uint8_t read_memory(uint64_t addr, uint8_t size, uint64_t *data) {
+    uint64_t readData;
     // Validate address against bus_error
     if (addr == bus_error) { return BUS_ERROR; }
 
     // Perform memory read
-    memcpy(data, &memory[addr], size);
-    return 0; // Read successfult
+    memcpy(&readData, &memory[addr], size);
+
+    if (size == 4) { *data = (readData & (uint64_t)0xFFFFFFFF); }
+    else { *data = readData; }
+
+    return 0; // Read successful
 }
 
 /**
@@ -52,12 +62,16 @@ uint8_t read_memory(uint64_t addr, uint8_t size, char *data) {
   * @param size - The size of the data in bytes.
   * @return 0 if the write was successful, BUS_ERROR if the address corresponds to a bus error.
  **/
-uint8_t write_memory(char *data, uint64_t addr, uint32_t size) {
+uint8_t write_memory(uint64_t *data, uint64_t addr, uint32_t size) {
+    uint64_t modifiedData;
     // Validate address against bus_error
     if (addr == bus_error) { return BUS_ERROR; }
 
+    if (size == 4) { modifiedData = (*data & (uint64_t)0xFFFFFFFF); }
+    else { modifiedData = *data; }
+
     // Perform memory write
-    memcpy(&memory[addr], data, size);
+    memcpy(&memory[addr], &modifiedData, size);
 
     return 0; // Write successful
 }
@@ -102,7 +116,7 @@ void configure_entry_n(uint8_t entry_reg, uint64_t entry_idx, reg_intf_dw data, 
   * @param rrid RRID Of the Bus Initiator
   * @param addr Address to be checked
   * @param length Number of transfers
-  * @param size It should be 0 for 1-byte, 1 for 2-byte, 2 for 4-byte access.   
+  * @param size It should be 0 for 1-byte, 1 for 2-byte, 2 for 4-byte access.
   * @param perm The permissions required for this transcation.
   * @param iopmp_trans_req This is pointer, pass it as it is.
  **/
@@ -115,6 +129,13 @@ void receiver_port(uint16_t rrid, uint64_t addr, uint32_t length, uint32_t size,
 }
 
 /**
+  * @brief Set Enable High
+ **/
+void set_hwcfg0_enable(){
+    write_register(0x0008,read_register(0x0008,4) | 0x80000000,4);  // Set Enable after Programming
+}
+
+/**
   * @brief error_record_check
   *
   * @param err_type RRID Of the Bus Initiator
@@ -123,18 +144,18 @@ void receiver_port(uint16_t rrid, uint64_t addr, uint32_t length, uint32_t size,
   * @param err_rcd Set if error should be recorded
  **/
 int error_record_chk(uint8_t err_type, uint8_t req_perm, uint64_t req_addr, bool err_rcd){
-    err_reqinfo_t err_req_info_temp;
-    err_req_info_temp.raw = read_register(0x0064, 4);
+    err_info_t err_info_temp;
+    err_info_temp.raw = read_register(0x0064, 4);
     if (err_rcd){
-        FAIL_IF((err_req_info_temp.v != 1));                                                            
-        FAIL_IF((err_req_info_temp.ttype != req_perm));                                     
-        FAIL_IF((err_req_info_temp.etype != (err_type)));                                               
-        FAIL_IF((read_register(0x0068, 4) != (uint32_t)((req_addr >> 2) & 0xFFFFFFFF)));    
+        FAIL_IF((err_info_temp.v != 1));
+        FAIL_IF((err_info_temp.ttype != req_perm));
+        FAIL_IF((err_info_temp.etype != (err_type)));
+        FAIL_IF((read_register(0x0068, 4) != (uint32_t)((req_addr >> 2) & 0xFFFFFFFF)));
         FAIL_IF((read_register(0x006C, 4) != (uint32_t)((req_addr >> 34) & 0xFFFFFFFF)));
     }
     else {
-        FAIL_IF((err_req_info_temp.v == 1)); 
-    }                                                   
-    
-    return 0;                                                            
+        FAIL_IF((err_info_temp.v == 1));
+    }
+
+    return 0;
 }

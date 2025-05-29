@@ -30,9 +30,8 @@
 #define IOPMP_NA4   2  // Naturally aligned 4-byte regions
 #define IOPMP_NAPOT 3  // Naturally aligned power of two regions
 
-#define BUS_ERROR     0x3
+#define BUS_ERROR     0xC
 #define MSI_DATA_BYTE 0x4
-#define MAX_SVS       0xFFFF
 
 #define WORD_BITS        32
 #define SRCMD_REG_STRIDE 32
@@ -52,23 +51,26 @@
 #define MASK_BIT_POS(BIT_POS) ((1U << BIT_POS) - 1)
 #define GET_BIT(VAL, BIT_NUM) ((VAL >> BIT_NUM) & 1)
 
+
 // Global Variables: Definitions for IOPMP global variables
 extern iopmp_regs_t g_reg_file;        // Global register file for IOPMP
 extern iopmp_entries_t iopmp_entries;  // IOPMP entry table
 extern err_mfrs_t err_svs;             // Error status vector
 extern int intrpt_suppress;            // Set when interrupt is suppressed
 extern int error_suppress;             // Set when error is suppressed
-extern int rrid_stall[IOPMP_RRID_NUM];      // Stall status array for requester IDs
+extern int rrid_stall[IOPMP_RRID_NUM]; // Stall status array for requester IDs
+extern int stall_cntr;                 // Counts stalled transactions
 
-extern uint8_t write_memory(char *data, uint64_t addr, uint32_t size);
-extern uint8_t read_memory(uint64_t addr, uint8_t size, char *data);
+extern uint8_t write_memory(uint64_t *data, uint64_t addr, uint32_t size);
 
 // Function Declarations: Core IOPMP operations
 int iopmpAddrRange(uint64_t *startAddr, uint64_t *endAddr, uint64_t prev_iopmpaddr, uint64_t iopmpaddr, entry_cfg_t iopmpcfg);
 int iopmpMatchAddr(iopmp_trans_req_t trans_req, uint64_t lo, uint64_t hi, int is_priority);
 iopmpMatchStatus_t iopmpCheckPerms(uint16_t rrid, perm_type_e req_perm, entry_cfg_t iopmpcfg, uint8_t md);
 iopmpMatchStatus_t iopmpRuleAnalyzer(iopmp_trans_req_t trans_req, uint64_t prev_iopmpaddr, uint64_t iopmpaddr, entry_cfg_t iopmpcfg, uint8_t md, int is_priority);
-iopmp_trans_rsp_t iopmp_validate_access(iopmp_trans_req_t trans_req, uint8_t *intrpt);
+extern void iopmp_validate_access(iopmp_trans_req_t *trans_req, iopmp_trans_rsp_t* iopmp_trans_rsp, uint8_t *intrpt);
+void setRridSv(uint16_t rrid);
+int checkRridSv(uint16_t rrid);
 void errorCapture(perm_type_e trans_type, uint8_t error_type, uint16_t rrid, uint16_t entry_id, uint64_t err_addr, uint8_t *intrpt);
 void generate_interrupt(uint8_t *intrpt);
 
