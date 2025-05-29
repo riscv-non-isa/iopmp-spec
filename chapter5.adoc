@@ -269,7 +269,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 5+h|ERR_CFG{set:cellbgcolor:#D3D3D3}
 5+h|0x0060
 h|Field                           |Bits   |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}l       |0:0    |W1SS   |0          |Lock fields to *ERR_CFG* register
+|{set:cellbgcolor:#FFFFFF}l       |0:0    |W1SS   |0          |Lock bit to *ERR_CFG* register. The bit also locks *ERR_MSIADDR* and *ERR_MSIADDRH* if they are available.
 |{set:cellbgcolor:#FFFFFF}ie      |1:1    |RW     |0          |Enable the interrupt of the IOPMP rule violation.
 |{set:cellbgcolor:#FFFFFF}rs      |2:2    |WARL   |0         a| 
 
