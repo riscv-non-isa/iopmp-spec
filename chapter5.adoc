@@ -150,7 +150,7 @@ h|Field                         |Bits   |R/W    |Default    |Description
 5+h|ENTRYOFFSET{set:cellbgcolor:#D3D3D3}
 5+h|0x0014
 h|Field                         |Bits   |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}offset|31:0   |R      |IMP        |Indicate the offset address of the IOPMP array from the base of an IOPMP instance, a.k.a. the address of *VERSION*. Note: the offset is a signed number. That is, the IOPMP array can be placed in front of *VERSION*.  
+|{set:cellbgcolor:#FFFFFF}offset|31:0   |R      |IMP        |Indicate the offset address of the IOPMP array from the base of an IOPMP instance, a.k.a. the address of *VERSION*. Note: the offset is a signed number in two's complement representation. That is, the IOPMP array can be placed in front of *VERSION*.  
 |===
 
 *HWCFG_USER* is an optional register to provide users to define their own configurations.
