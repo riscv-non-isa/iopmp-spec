@@ -1,13 +1,13 @@
 [[Registers]]
 == Registers
-If an optional register is not implemented, the behavior is implementation-dependent unless otherwise specified. An optional field in an implemented register means being WARL. If it is not programmable, it should be hardwired to value matching its meaning and should not cause any effect when written.
+If an optional register is not implemented, the behavior is implementation-dependent unless otherwise specified. An optional field in an implemented register means being WARL. If it is not programmable, it should be hardwired to value matching its meaning and should not cause any effect when written. Reserved regions are reserved for standard use. The behavior in the reserved regions is implementation-dependent.
 
 .Register summary
 [cols="<3,<6,<14",options="header"]
 |===
 |OFFSET |Register |Description
 
-.21+|0x0000  2+|{set:cellbgcolor:#D3D3D3} INFO
+.22+|0x0000  2+|{set:cellbgcolor:#D3D3D3} INFO
 |{set:cellbgcolor:#FFFFFF} VERSION |Indicates the specification and the IP vendor.
 |{set:cellbgcolor:#FFFFFF} IMPLEMENTATION | Indicates the implementation version.
 |{set:cellbgcolor:#FFFFFF} HWCFG0~2 |Indicate the configurations of current IOPMP instance.
@@ -32,8 +32,12 @@ If an optional register is not implemented, the behavior is implementation-depen
 |ERR_MSIADDR/ERR_MSIADDRH| (Optional) The address to trigger MSI.
 |ERR_USER(0:7) | (Optional) User-defined violation information.
 
-.2+|0x0800 2+|{set:cellbgcolor:#D3D3D3} MDCFG Table,  _m_ = 0...*HWCFG0.md_num*-1, only available when *HWCFG0.mdcfg_fmt* = 0.
+|{set:cellbgcolor:#FFFFFF} - | Other regions in offset 0x0000 to 0x0800 are reserved for standard use.
+
+.3+|0x0800 2+|{set:cellbgcolor:#D3D3D3} MDCFG Table,  _m_ = 0...*HWCFG0.md_num*-1, only available when *HWCFG0.mdcfg_fmt* = 0.
 |{set:cellbgcolor:#FFFFFF}MDCFG(_m_)  |MD config register, which is to specify the indices of IOPMP entries belonging to a MD.
+
+|{set:cellbgcolor:#FFFFFF} - | Other regions in offset 0x0800 to 0x1000 are reserved for standard use.
 
 .6+|0x1000    2+|{set:cellbgcolor:#D3D3D3} SRCMD Table, _s_ = 0...*HWCFG1.rrid_num*-1, only available when *HWCFG0.srcmd_fmt* = 0.
 |{set:cellbgcolor:#FFFFFF}SRCMD_EN(_s_)/SRCMD_ENH(_s_)    |The bitmapped MD enabling register of the requestor _s_ that *SRCMD_EN(_s_)[_m_]* indicates if the requestor is associated with MD _m_ and *SRCMD_ENH(_s_)[_m_]* indicates if the requestor is associated with MD (_m_+31).
@@ -150,7 +154,7 @@ h|Field                         |Bits   |R/W    |Default    |Description
 5+h|ENTRYOFFSET{set:cellbgcolor:#D3D3D3}
 5+h|0x0014
 h|Field                         |Bits   |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}offset|31:0   |R      |IMP        |Indicate the offset address of the IOPMP array from the base of an IOPMP instance, a.k.a. the address of *VERSION*. Note: the offset is a signed number. That is, the IOPMP array can be placed in front of *VERSION*.  
+|{set:cellbgcolor:#FFFFFF}offset|31:0   |R      |IMP        |Indicate the offset address of the IOPMP array from the base of an IOPMP instance, a.k.a. the address of *VERSION*. Note: the offset is a signed number in two's complement representation. That is, the IOPMP array can be placed in front of *VERSION*.  
 |===
 
 *HWCFG_USER* is an optional register to provide users to define their own configurations.
@@ -269,7 +273,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 5+h|ERR_CFG{set:cellbgcolor:#D3D3D3}
 5+h|0x0060
 h|Field                           |Bits   |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}l       |0:0    |W1SS   |0          |Lock fields to *ERR_CFG* register
+|{set:cellbgcolor:#FFFFFF}l       |0:0    |W1SS   |0          |Lock bit to *ERR_CFG* register. The bit also locks *ERR_MSIADDR* and *ERR_MSIADDRH* if they are available.
 |{set:cellbgcolor:#FFFFFF}ie      |1:1    |RW     |0          |Enable the interrupt of the IOPMP rule violation.
 |{set:cellbgcolor:#FFFFFF}rs      |2:2    |WARL   |0         a| 
 
