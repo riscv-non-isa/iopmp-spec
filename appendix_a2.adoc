@@ -14,6 +14,7 @@ Placing IOPMPs in parallel can seamlessly enhance the support for an increased n
 
 ====
 
+[#APPENDIX_A2_2]
 *A2.2 Cascading IOPMP*
 
 Cascading multiple IOPMPs allows a transaction to traverse through more than one IOPMP. Each time a transaction goes through an IOPMP, it is tagged a new RRID until it reaches the final IOPMP. This new RRID represents that the transaction has been checked by a specific IOPMP. Subsequent IOPMPs could deem the transaction trustworthy and forward it to their initiator port without further checks, or check it in a higher level view, e.g., a subsystem view. An IOPMP with the above feature of tagging a new RRID is referred to as an IOPMP gateway. Its *HWCFG0.rrid_transl_en* should be set to 1, and *HWCFG2.rrid_transl* is used to store the RRID.  *HWCFG0.rrid_transl_prog* indicates whether *HWCFG2.rrid_transl* is programmable or not. To lock *rrid_transl*, write 1 to *rrid_transl_prog*, which clears *rrid_transl_prog* and is sticky to 0.
