@@ -135,7 +135,7 @@ IOPMP entry protection is also related to the other IOPMP entries belonging to t
 [#SECTION_3_5_4]
 ==== Summary of Table, Register, and Field Locks
 
-Almost all programmable tables, registers, and fields have a corresponding lock mechanism that prevents updates until the IOPMP is reset. The following is a summary
+Almost all programmable tables, registers, and fields have a corresponding lock mechanism that prevents updates until the IOPMP is reset. The following is a summary.
 
 * <<#SECTION_3_5_1, SRCMD Table Protection>> - locks for the SRCMD Table.
 * <<#SECTION_3_5_2, MDCFG Table Protection>> - locks for the MDCFG Table.
