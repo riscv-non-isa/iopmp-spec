@@ -94,7 +94,7 @@ image::images/iopmp_unit_block_diagram_rapid_4.png[]
 .an example block diagram of the compact-4 model.
 image::images/iopmp_unit_block_diagram_compact_4.png[]
 
-.an example block diagram of the model implements SRCMD Table format 2 and MDCFG Table format 1 with HWCFG0.md_entry_num is 0. In this example, every MD has exactly single entry, i.e., the entry index is equal to the MD index.
+.an example block diagram of SRCMD Format 2. It illustrates the implementation of SRCMD Table Format 2 and MDCFG Table Format 1, where HWCFG0.md_entry_num is set to 0. In this example, each MD contains a single entry, meaning the entry index corresponds directly to the MD index.
 image::images/iopmp_unit_block_diagram_srcmd_fmt2.png[]
 
 [#SECTION_3_5]
