@@ -136,7 +136,7 @@ Please refer to <<#SECTION_3_2, SRCMD Table Formats>> for details.
 5+h|0x000C
 h|Field                         |Bits   |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}rrid_num |15:0 |R      |IMP        |Indicate the supported number of RRID in the instance
-|entry_num                      |31:16  |R      |IMP        |Indicate the supported number of entries in the instance
+|entry_num                      |31:16  |R      |IMP        |Indicate the supported number of entries in the instance, which should be larger than zero.
 |===
 
 
