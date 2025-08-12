@@ -608,6 +608,26 @@ void write_register(uint64_t offset, reg_intf_dw data, uint8_t num_bytes) {
             g_reg_file.mdcfg[(offset-MDCFG_TABLE_BASE_OFFSET)/4].t = mdcfg_temp.t;
         }
         g_reg_file.mdcfg[(offset-MDCFG_TABLE_BASE_OFFSET)/4].rsv = 0;
+
+#if (MDCFG_TABLE_IMPROPER_SETTING_BEHAVIOR == 0)
+        /*
+         * MDCFG table must be monotonically incremental. Some reference
+         * behaviors for an improper setting are given in the specification,
+         * e.g., "correct the values to make the table have a proper setting".
+         * The reference model authomatically fixes it if current MDCFG table
+         * violates the monotonically incremental rule. Programmer can check
+         * this register after programming done.
+         *
+         * The MDCFG look up table is implemented in the following way:
+         * - For any m >= 1, if (MDCFG(m).t < MDCFG(m-1).t):
+         *                       MDCFG(m).t = MDCFG(m-1).t
+         */
+        for (int m = 1; m < IOPMP_MD_NUM; m++) {
+            if (g_reg_file.mdcfg[m].t < g_reg_file.mdcfg[m - 1].t) {
+                g_reg_file.mdcfg[m].t = g_reg_file.mdcfg[m - 1].t;
+            }
+        }
+#endif
     }
 #endif
 
