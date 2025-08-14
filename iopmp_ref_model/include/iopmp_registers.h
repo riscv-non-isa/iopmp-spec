@@ -260,7 +260,7 @@ typedef union {
 // with MDLCK to support upto 63 memory domains (MDs),
 typedef union {
     struct {
-        uint32_t mdh : 31;                  // md[j] = 1, indicates MD j+31 is locked
+        uint32_t mdh;                       // md[j] = 1, indicates MD j+31 is locked
                                             // for all source memory domain table entries.
     };
     uint32_t raw;
