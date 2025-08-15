@@ -31,6 +31,7 @@ typedef struct __attribute__((__packed__)) {
     uint32_t    length;    // Length of the transaction
     uint32_t    size;      // Size of each access in the transaction
     perm_type_e perm;      // Type of permission requested
+    bool        is_amo;    // Indicates the AMO Access
 } iopmp_trans_req_t;
 
 // Enumerates status results for IOPMP transactions

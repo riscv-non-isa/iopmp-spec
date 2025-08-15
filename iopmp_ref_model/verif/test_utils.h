@@ -55,7 +55,7 @@ extern uint8_t read_memory(uint64_t addr, uint8_t size, uint64_t *data);
 extern void configure_srcmd_n(uint8_t srcmd_reg, uint16_t srcmd_idx, reg_intf_dw data, uint8_t num_bytes);
 extern void configure_mdcfg_n(uint8_t md_idx, reg_intf_dw data, uint8_t num_bytes);
 extern void configure_entry_n(uint8_t entry_reg, uint64_t entry_idx, reg_intf_dw data, uint8_t num_bytes);
-extern void receiver_port(uint16_t rrid, uint64_t addr, uint32_t length, uint32_t size, perm_type_e perm, iopmp_trans_req_t *iopmp_trans_req);
+extern void receiver_port(uint16_t rrid, uint64_t addr, uint32_t length, uint32_t size, perm_type_e perm, bool is_amo, iopmp_trans_req_t *iopmp_trans_req);
 extern int error_record_chk(uint8_t err_type, uint8_t perm, uint64_t addr, bool err_rcd);
 extern void set_hwcfg0_enable();
 

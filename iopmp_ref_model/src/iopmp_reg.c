@@ -741,7 +741,7 @@ void write_register(uint64_t offset, reg_intf_dw data, uint8_t num_bytes) {
                 // Entry Cfg Register
                 case 2:
                     iopmp_entries.entry_table[ENTRY_TABLE_INDEX(offset)].entry_cfg.r = entry_cfg_temp.r;
-                    iopmp_entries.entry_table[ENTRY_TABLE_INDEX(offset)].entry_cfg.w = entry_cfg_temp.w & entry_cfg_temp.r;
+                    iopmp_entries.entry_table[ENTRY_TABLE_INDEX(offset)].entry_cfg.w = entry_cfg_temp.w;
                     iopmp_entries.entry_table[ENTRY_TABLE_INDEX(offset)].entry_cfg.x = entry_cfg_temp.x;
                     if (entry_cfg_temp.a == IOPMP_TOR) {
                         // ENTRY_CFG.A is WARL, check for TOR Enable before, writing.
