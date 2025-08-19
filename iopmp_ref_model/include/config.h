@@ -46,3 +46,9 @@
 #else
     #define IOPMP_RRID_NUM      32          // Maximum RRID number when SRCMD_FMT is 2, as SRCMD_PERM is 32 bits.
 #endif
+
+#if (MDCFG_FMT == 0)
+    // Select the behavior for an MDCFG table improper setting.
+    // 0: correct the values to make the table have a proper setting
+    #define MDCFG_TABLE_IMPROPER_SETTING_BEHAVIOR   0
+#endif
