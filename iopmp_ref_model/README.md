@@ -80,8 +80,8 @@ These functions are designed for use within a testbench to input stimuli and obt
 9. **`void configure_entry_n(uint8_t entry_reg, uint64_t entry_idx, reg_intf_dw data, uint8_t num_bytes)`**
    This function is used for Entry Table Configurations. entry_idx could be any legal Entry table index, data contains the value that you want to write in this register. The number of bytes to write is specified by `num_bytes`. It could be 4-Byte write or 8-Byte Write.
 
-10. **`void receiver_port(uint16_t rrid, uint64_t addr, uint32_t length, uint32_t size, perm_type_e perm, iopmp_trans_req_t *iopmp_trans_req)`**
-   This function contains receiver port signals, that will be passed to the iopmp, where rrid is RRID Of the Bus Initiator, addr is Address to be checked, length is length Number of transfers, size is It should be 0 for 1-byte, 1 for 2-byte, 2 for 4-byte access, perm is the permissions required for this transcation, iopmp_trans_req is a pointer, pass it as it is.
+10. **`void receiver_port(uint16_t rrid, uint64_t addr, uint32_t length, uint32_t size, perm_type_e perm, bool is_amo, iopmp_trans_req_t *iopmp_trans_req)`**
+   This function contains receiver port signals, that will be passed to the iopmp, where rrid is RRID Of the Bus Initiator, addr is Address to be checked, length is length Number of transfers, size is It should be 0 for 1-byte, 1 for 2-byte, 2 for 4-byte access, perm is the permissions required for this transcation, is_amo indicates whether this transaction is AMO or not, iopmp_trans_req is a pointer, pass it as it is.
 
 11. **`int error_record_chk(uint8_t err_type, uint8_t req_perm, uint64_t req_addr, bool err_rcd)`**
    This could be used to check the error record register data. err_type is the ype of Error, req_perm contains the Requested permissions, req_addr contains the requested address, err_rcd indicated if Set if error should be recorded

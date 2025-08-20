@@ -34,6 +34,12 @@ void iopmp_validate_access(iopmp_trans_req_t *trans_req, iopmp_trans_rsp_t* iopm
         iopmp_trans_rsp->rrid_transl = g_reg_file.hwcfg2.rrid_transl;
     #endif
 
+    // Check to block invalid combination
+    if (trans_req->perm == INSTR_FETCH && trans_req->is_amo) {
+        fprintf(stderr, "Instruction Fetch transaction cannot be an Atomic Memory Operation (AMO)\n");
+        assert(trans_req->is_amo == 0);
+    }
+
     intrpt_suppress = 0;
     error_suppress  = 0;
     int lwr_entry, upr_entry;

@@ -29,7 +29,7 @@ int main () {
 
     START_TEST("Test OFF - Read Access permissions");
     reset_iopmp();
-    receiver_port(2, 364, 0, 0, READ_ACCESS, &iopmp_trans_req);
+    receiver_port(2, 364, 0, 0, READ_ACCESS, 1, &iopmp_trans_req);
 
     // Entry Table CFG
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), (368 >> 2), 4);
@@ -44,7 +44,7 @@ int main () {
 
     START_TEST("Test OFF - Write Access permissions");
     reset_iopmp();
-    receiver_port(2, 364, 0, 0, WRITE_ACCESS, &iopmp_trans_req);
+    receiver_port(2, 364, 0, 0, WRITE_ACCESS, 1, &iopmp_trans_req);
 
     // Entry Table CFG
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), (368 >> 2), 4);
@@ -60,7 +60,7 @@ int main () {
 
     START_TEST("Test OFF - Instruction Fetch permissions");
     reset_iopmp();
-    receiver_port(2, 364, 0, 0, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 364, 0, 0, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // Entry Table CFG
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), (368 >> 2), 4);
@@ -76,7 +76,7 @@ int main () {
 
     START_TEST("Test OFF - UNKNOWN RRID ERROR");
     reset_iopmp();
-    receiver_port(70, 364, 0, 0, READ_ACCESS, &iopmp_trans_req);
+    receiver_port(70, 364, 0, 0, READ_ACCESS, 1, &iopmp_trans_req);
 
     // Entry Table CFG
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), (368 >> 2), 4);
@@ -93,7 +93,7 @@ int main () {
 #if (IOPMP_TOR_EN)
     START_TEST("Test TOR - Partial hit on a priority rule error");
     reset_iopmp();
-    receiver_port(2, 364, 0, 3, READ_ACCESS, &iopmp_trans_req);
+    receiver_port(2, 364, 0, 3, READ_ACCESS, 1, &iopmp_trans_req);
 
     // Entry Table CFG
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), (368 >> 2), 4);
@@ -108,7 +108,7 @@ int main () {
 
     START_TEST("Test TOR - 4Byte Read Access");
     reset_iopmp();
-    receiver_port(2, 364, 0, 2, READ_ACCESS, &iopmp_trans_req);
+    receiver_port(2, 364, 0, 2, READ_ACCESS, 1, &iopmp_trans_req);
 
     // Entry Table CFG
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), (368 >> 2), 4);
@@ -126,7 +126,7 @@ int main () {
     reset_iopmp();
     write_register(HWCFG0_OFFSET, read_register(HWCFG0_OFFSET,   4) & 0xFF04FFFF, 4);   // md_entry_num set to 2
 
-    receiver_port(2, 364, 0, 2, WRITE_ACCESS, &iopmp_trans_req);
+    receiver_port(2, 364, 0, 2, WRITE_ACCESS, 1, &iopmp_trans_req);
 
     // Entry Table CFG
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), (368 >> 2), 4);
@@ -140,10 +140,28 @@ int main () {
     write_register(ERR_INFO_OFFSET,   0, 4);
     END_TEST();
 
+    START_TEST("Test TOR - 4Byte Non-AMO Write Access");
+    reset_iopmp();
+    write_register(HWCFG0_OFFSET, read_register(HWCFG0_OFFSET,   4) & 0xFF04FFFF, 4);   // md_entry_num set to 2
+
+    receiver_port(2, 364, 0, 2, WRITE_ACCESS, 0, &iopmp_trans_req);
+
+    // Entry Table CFG
+    configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), (368 >> 2), 4);
+    configure_entry_n(ENTRY_CFG, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), (TOR|W), 4);
+    set_hwcfg0_enable();
+
+
+    // requestor Port Signals
+    iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
+    CHECK_IOPMP_TRANS(IOPMP_SUCCESS,ENTRY_MATCH);
+    write_register(ERR_INFO_OFFSET,   0, 4);
+    END_TEST();
+
     START_TEST("Test TOR - 4Byte Only Write Access");
     reset_iopmp();
 
-    receiver_port(2, 364, 0, 2, WRITE_ACCESS, &iopmp_trans_req);
+    receiver_port(2, 364, 0, 2, WRITE_ACCESS, 1, &iopmp_trans_req);
 
     // Entry Table CFG
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), (368 >> 2), 4);
@@ -161,7 +179,7 @@ int main () {
     START_TEST("Test NA4 - 4Byte Read Access");
     reset_iopmp();
 
-    receiver_port(30, 364, 0, 2, READ_ACCESS, &iopmp_trans_req);
+    receiver_port(30, 364, 0, 2, READ_ACCESS, 1, &iopmp_trans_req);
 
     // Entry Table CFG
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), (364 >> 2), 4);
@@ -176,7 +194,7 @@ int main () {
     START_TEST("Test NA4 - 4Byte No Read Access error");
     reset_iopmp();
 
-    receiver_port(32, 364, 0, 2, READ_ACCESS, &iopmp_trans_req);
+    receiver_port(32, 364, 0, 2, READ_ACCESS, 1, &iopmp_trans_req);
     // Entry Table CFG
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), (364 >> 2), 4);
     configure_entry_n(ENTRY_CFG, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), (NA4), 4);
@@ -193,7 +211,7 @@ int main () {
     // Reset IOPMP
     reset_iopmp();
 
-    receiver_port(32, 364, 0, 2, WRITE_ACCESS, &iopmp_trans_req);
+    receiver_port(32, 364, 0, 2, WRITE_ACCESS, 1, &iopmp_trans_req);
 
     // Entry Table CFG
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), (364 >> 2), 4);
@@ -210,7 +228,7 @@ int main () {
     // Reset
     reset_iopmp();
 
-    receiver_port(32, 364, 0, 2, WRITE_ACCESS, &iopmp_trans_req);
+    receiver_port(32, 364, 0, 2, WRITE_ACCESS, 1, &iopmp_trans_req);
 
     // Entry Table CFG
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), (364 >> 2), 4);
@@ -227,7 +245,7 @@ int main () {
     // Reset IOPMP
     reset_iopmp();
 
-    receiver_port(32, 364, 0, 2, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(32, 364, 0, 2, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // Entry Table CFG
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), (364 >> 2), 4);
@@ -244,7 +262,7 @@ int main () {
     // Reset IOPMP
     reset_iopmp();
 
-    receiver_port(32, 364, 0, 2, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(32, 364, 0, 2, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // Entry Table CFG
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), (364 >> 2), 4);
@@ -261,7 +279,7 @@ int main () {
     // Reset
     reset_iopmp();
 
-    receiver_port(2, 364, 0, 3, READ_ACCESS, &iopmp_trans_req);
+    receiver_port(2, 364, 0, 3, READ_ACCESS, 1, &iopmp_trans_req);
 
     // Entry Table CFG
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), (364 >> 2), 4);
@@ -278,7 +296,7 @@ int main () {
     // Reset
     reset_iopmp();
 
-    receiver_port(32, 368, 0, 0, READ_ACCESS, &iopmp_trans_req);
+    receiver_port(32, 368, 0, 0, READ_ACCESS, 1, &iopmp_trans_req);
 
     // Entry Table CFG
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), (364 >> 2), 4);
@@ -295,7 +313,7 @@ int main () {
     // Reset IOPMP
     reset_iopmp();
 
-    receiver_port(32, 360, 0, 3, READ_ACCESS, &iopmp_trans_req);
+    receiver_port(32, 360, 0, 3, READ_ACCESS, 1, &iopmp_trans_req);
 
     // Entry Table CFG
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), 90, 4);
@@ -312,7 +330,7 @@ int main () {
     // Reset IOPMP
     reset_iopmp();
 
-    receiver_port(32, 360, 0, 3, READ_ACCESS, &iopmp_trans_req);
+    receiver_port(32, 360, 0, 3, READ_ACCESS, 1, &iopmp_trans_req);
 
     // Entry Table CFG
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), 90, 4);
@@ -330,7 +348,7 @@ int main () {
     // Reset IOPMP
     reset_iopmp();
 
-    receiver_port(32, 360, 0, 3, WRITE_ACCESS, &iopmp_trans_req);
+    receiver_port(32, 360, 0, 3, WRITE_ACCESS, 1, &iopmp_trans_req);
 
     // Entry Table CFG
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), 90, 4);
@@ -347,7 +365,7 @@ int main () {
     // Reset IOPMP
     reset_iopmp();
 
-    receiver_port(32, 360, 0, 3, WRITE_ACCESS, &iopmp_trans_req);
+    receiver_port(32, 360, 0, 3, WRITE_ACCESS, 1, &iopmp_trans_req);
 
     // Entry Table CFG
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), 90, 4);
@@ -363,7 +381,7 @@ int main () {
 
     START_TEST("Test NAPOT - 8 Byte Instruction access error");
     reset_iopmp();
-    receiver_port(32, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(32, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // Entry Table CFG
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), 90, 4);
@@ -380,7 +398,7 @@ int main () {
     START_TEST("Test NAPOT - 8 Byte Instruction access");
     // Reset
     reset_iopmp();
-    receiver_port(32, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(32, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
     // Entry Table CFG
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), 90, 4);
     configure_entry_n(ENTRY_CFG, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), (NAPOT|X), 4);
@@ -396,7 +414,7 @@ int main () {
     START_TEST("Test NAPOT - 8 Byte Instruction access for non-priority Entry");
     // Receiver Port Signals
     reset_iopmp();
-    receiver_port(32, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(32, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), 74, 4);
     configure_entry_n(ENTRY_CFG, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM+1)), 0x1C, 4);
@@ -420,7 +438,7 @@ int main () {
     // Reset IOPMP
     reset_iopmp();
 
-    receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // Entry Table CFG
     write_register(ENTRYLCK_OFFSET,   0x1000, 4);   // ENTRY[0]-ENTRY[15] are locked
@@ -438,7 +456,7 @@ int main () {
 
     reset_iopmp();
 
-    receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // Entry Table CFG
     write_register(ENTRYLCK_OFFSET,   0x8, 4);   // ENTRY[0]-ENTRY[15] are locked
@@ -455,7 +473,7 @@ int main () {
     START_TEST("Test Entry_LCK register lock bit");
 
     reset_iopmp();
-    receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // Entry Table CFG
     write_register(ENTRYLCK_OFFSET,   0x1000, 4);   // ENTRY[0]-ENTRY[15] are locked
@@ -471,7 +489,7 @@ int main () {
     END_TEST();
 
     START_TEST("Test MFR Extension");
-    receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
     // Entry Table CFG
     write_register(ENTRYLCK_OFFSET,   0x8, 4);   // ENTRY[0]-ENTRY[3] are locked
     write_register(ENTRYLCK_OFFSET,   0x1, 4);   // ENTRYLCK is locked
@@ -498,7 +516,7 @@ int main () {
     START_TEST("Test Interrupt Suppression is Enabled");
    reset_iopmp();
    write_register(ERR_OFFSET,   0x2, 4);
-   receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+   receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
    configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), 90, 4);     // (364 >> 2) and keeping lsb 0
    configure_entry_n(ENTRY_CFG, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), 0x99, 4);    // Address Mode is NAPOT, with read permission and exe suppression
@@ -514,7 +532,7 @@ int main () {
    START_TEST("Test Interrupt Suppression is disabled");
    reset_iopmp();
    write_register(ERR_OFFSET,   0x2, 4);
-   receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+   receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
    configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), 90, 4);
    configure_entry_n(ENTRY_CFG, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), (NAPOT|R), 4);
     set_hwcfg0_enable();
@@ -531,7 +549,7 @@ int main () {
    // Receiver Port Signals
    reset_iopmp();
    write_register(ERR_OFFSET,   0x4, 4);
-   receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+   receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
    configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), 90, 4);               // (364 >> 2) and keeping lsb 0
    configure_entry_n(ENTRY_CFG, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), (SEXE|NAPOT|R), 4);    // Address Mode is NAPOT, with read permission and exe suppression
     set_hwcfg0_enable();
@@ -549,7 +567,7 @@ int main () {
    START_TEST("Test Error Suppression is Enabled but rs is zero");
    // Receiver Port Signals
    reset_iopmp();
-   receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+   receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
    configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), 90, 4);               // (364 >> 2) and keeping lsb 0
    configure_entry_n(ENTRY_CFG, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), (SEXE|NAPOT|R), 4);    // Address Mode is NAPOT, with read permission and exe suppression
     set_hwcfg0_enable();
@@ -567,7 +585,7 @@ int main () {
    START_TEST("Test Error Suppression is disabled");
    // Receiver Port Signals
    reset_iopmp();
-   receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+   receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
    configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), 90, 4);          // (364 >> 2) and keeping lsb 0
    configure_entry_n(ENTRY_CFG, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), (NAPOT|R), 4);    // Address Mode is NAPOT, with read permission and exe suppression
     set_hwcfg0_enable();
@@ -586,7 +604,7 @@ int main () {
    // Receiver Port Signals
    reset_iopmp();
    write_register(ERR_OFFSET,   0x6, 4);
-   receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+   receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
    configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), 90, 4);                          // (364 >> 2) and keeping lsb 0
    configure_entry_n(ENTRY_CFG, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), (SEXE | SIXE | NAPOT | R), 4);    // Address Mode is NAPOT, with read permission and exe suppression
     set_hwcfg0_enable();
@@ -606,7 +624,7 @@ int main () {
    // Receiver Port Signals
    reset_iopmp();
    write_register(ERR_OFFSET,   0x2, 4);
-   receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+   receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
    configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), 90, 4);            // (364 >> 2) and keeping lsb 0
    configure_entry_n(ENTRY_CFG, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), (NAPOT | R), 4);    // Address Mode is NAPOT, with read permission and exe suppression
     set_hwcfg0_enable();
@@ -624,7 +642,7 @@ int main () {
 #if (IOPMP_RRID_TRANSL_EN)
    START_TEST("Test Cascading IOPMP Feature");
    reset_iopmp();
-   receiver_port(32, 360, 0, 3, WRITE_ACCESS, &iopmp_trans_req);
+   receiver_port(32, 360, 0, 3, WRITE_ACCESS, 1, &iopmp_trans_req);
    configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), 90, 4);   // (364 >> 2) and keeping lsb 0
    configure_entry_n(ENTRY_CFG, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), 0x1B, 4);
     set_hwcfg0_enable();
@@ -645,7 +663,7 @@ int main () {
     bus_error = 0x8000;
     write_register(ERR_OFFSET, 0x8F0A, 4);
     write_register(ERR_MSIADDR_OFFSET, 0x8000, 4);
-    receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), 90, 4);
     configure_entry_n(ENTRY_CFG, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), (NAPOT|R), 4);
     set_hwcfg0_enable();
@@ -664,7 +682,7 @@ int main () {
     reset_iopmp();
     write_register(ERR_OFFSET, 0x8F0A, 4);
     write_register(ERR_MSIADDR_OFFSET, 0x8000, 4);
-    receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), 90, 4);
     configure_entry_n(ENTRY_CFG, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), (NAPOT|R), 4);
     set_hwcfg0_enable();
@@ -687,13 +705,13 @@ int main () {
     configure_entry_n(ENTRY_CFG, 0, (NAPOT | W | R), 4);
     set_hwcfg0_enable();
 
-    receiver_port(32, 360, 0, 3, WRITE_ACCESS, &iopmp_trans_req);
+    receiver_port(32, 360, 0, 3, WRITE_ACCESS, 1, &iopmp_trans_req);
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
     CHECK_IOPMP_TRANS(IOPMP_SUCCESS, ENTRY_MATCH);
     write_register(ERR_INFO_OFFSET,   0, 4);
 
-    receiver_port(12, 360, 0, 3, WRITE_ACCESS, &iopmp_trans_req);
+    receiver_port(12, 360, 0, 3, WRITE_ACCESS, 1, &iopmp_trans_req);
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
     CHECK_IOPMP_TRANS(IOPMP_SUCCESS, ENTRY_MATCH);
@@ -704,7 +722,7 @@ int main () {
 #if ((STALL_BUF_DEPTH != 0) & (IMP_RRIDSCP))
     START_TEST("Stall MD Feature");
     // reset_iopmp();
-    receiver_port(5, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(5, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), 90, 4);   // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), (NAPOT | X), 4);
     set_hwcfg0_enable();
@@ -725,7 +743,7 @@ int main () {
     START_TEST("Faulting Stalled Transactions Feature");
     reset_iopmp();
     write_register(ERR_OFFSET,   0x10, 4);
-    receiver_port(5, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(5, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
     configure_entry_n(ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), 90, 4);   // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), (NAPOT | X), 4);
     set_hwcfg0_enable();

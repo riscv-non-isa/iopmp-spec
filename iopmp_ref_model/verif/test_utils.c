@@ -118,14 +118,16 @@ void configure_entry_n(uint8_t entry_reg, uint64_t entry_idx, reg_intf_dw data, 
   * @param length Number of transfers
   * @param size It should be 0 for 1-byte, 1 for 2-byte, 2 for 4-byte access.
   * @param perm The permissions required for this transcation.
+  * @param is_amo Set this Flag, If it's a AMO transaction.
   * @param iopmp_trans_req This is pointer, pass it as it is.
  **/
-void receiver_port(uint16_t rrid, uint64_t addr, uint32_t length, uint32_t size, perm_type_e perm, iopmp_trans_req_t *iopmp_trans_req){
-    iopmp_trans_req->rrid    = rrid;
-    iopmp_trans_req->addr    = addr;
-    iopmp_trans_req->length  = length;
-    iopmp_trans_req->size    = size;
-    iopmp_trans_req->perm    = perm;
+void receiver_port(uint16_t rrid, uint64_t addr, uint32_t length, uint32_t size, perm_type_e perm, bool is_amo, iopmp_trans_req_t *iopmp_trans_req){
+    iopmp_trans_req->rrid   = rrid;
+    iopmp_trans_req->addr   = addr;
+    iopmp_trans_req->length = length;
+    iopmp_trans_req->size   = size;
+    iopmp_trans_req->perm   = perm;
+    iopmp_trans_req->is_amo = is_amo;
 }
 
 /**

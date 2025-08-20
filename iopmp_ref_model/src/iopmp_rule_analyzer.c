@@ -96,9 +96,10 @@ int iopmpMatchAddr(iopmp_trans_req_t trans_req, uint64_t lo, uint64_t hi, int is
   * @param req_perm Requested permission type (Read, Write, Execute)
   * @param iopmpcfg IOPMP configuration for the entry
   * @param md Respective Memory Domain
+  * @param is_amo Indicates the AMO Access
   * @return ENTRY_MATCH if permission is granted, specific ILLEGAL_* code if denied
  **/
-iopmpMatchStatus_t iopmpCheckPerms(uint16_t rrid, perm_type_e req_perm, entry_cfg_t iopmpcfg, uint8_t md) {
+iopmpMatchStatus_t iopmpCheckPerms(uint16_t rrid, perm_type_e req_perm, entry_cfg_t iopmpcfg, uint8_t md, bool is_amo) {
 
     #if (SRCMD_FMT == 0)
         uint64_t srcmd_r, srcmd_w;
@@ -128,15 +129,15 @@ iopmpMatchStatus_t iopmpCheckPerms(uint16_t rrid, perm_type_e req_perm, entry_cf
 
     #if (SRCMD_FMT == 0)
         read_allowed    = sps_en ? (iopmpcfg.r & srcmd_r_bit) : iopmpcfg.r;
-        write_allowed   = (sps_en ? (iopmpcfg.w & srcmd_w_bit & iopmpcfg.r & srcmd_r_bit) : (iopmpcfg.w & iopmpcfg.r));
-        execute_allowed = (sps_en ? (iopmpcfg.x & srcmd_r_bit) : iopmpcfg.x);
+        write_allowed   = sps_en ? (iopmpcfg.w & srcmd_w_bit & ((iopmpcfg.r & srcmd_r_bit) | !is_amo)) : (iopmpcfg.w & (iopmpcfg.r | !is_amo));
+        execute_allowed = sps_en ? (iopmpcfg.x & srcmd_r_bit) : iopmpcfg.x;
     #elif (SRCMD_FMT == 1)
         read_allowed    = iopmpcfg.r;
-        write_allowed   = (iopmpcfg.w & iopmpcfg.r);
+        write_allowed   = (iopmpcfg.w & (iopmpcfg.r | !is_amo));
         execute_allowed = iopmpcfg.x;
     #elif (SRCMD_FMT == 2)
         read_allowed    = iopmpcfg.r || srcmd_perm_r;
-        write_allowed   = ((iopmpcfg.w || srcmd_perm_w) & (iopmpcfg.r || srcmd_perm_r));
+        write_allowed   = ((iopmpcfg.w || srcmd_perm_w) & ((iopmpcfg.r || srcmd_perm_r) | !is_amo));
         execute_allowed = (iopmpcfg.x || srcmd_perm_r);
     #endif
 
@@ -211,10 +212,10 @@ iopmpMatchStatus_t iopmpRuleAnalyzer(iopmp_trans_req_t trans_req, uint64_t prev_
     if (addr_match_status) { return ENTRY_NOTMATCH; } // No match found
 
     #if (SRC_ENFORCEMENT_EN)
-        match_status = iopmpCheckPerms(0, trans_req.perm, iopmpcfg, md);
+        match_status = iopmpCheckPerms(0, trans_req.perm, iopmpcfg, md, trans_req.is_amo);
     #else
     // Check access permissions
-        match_status = iopmpCheckPerms(trans_req.rrid, trans_req.perm, iopmpcfg, md);
+        match_status = iopmpCheckPerms(trans_req.rrid, trans_req.perm, iopmpcfg, md, trans_req.is_amo);
     #endif
 
     // If all checks pass, return full match status

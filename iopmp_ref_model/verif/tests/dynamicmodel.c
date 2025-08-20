@@ -39,7 +39,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR,((IOPMP_MD_ENTRY_NUM + 1) * 3),(364 >> 2), 4);
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x01, 4);
     set_hwcfg0_enable();
-    receiver_port(2, 364, 0, 0, READ_ACCESS, &iopmp_trans_req);
+    receiver_port(2, 364, 0, 0, READ_ACCESS, 1, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -55,7 +55,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR,((IOPMP_MD_ENTRY_NUM + 1) * 3),(364 >> 2), 4);
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x01, 4);
     set_hwcfg0_enable();
-    receiver_port(2, 364, 0, 0, WRITE_ACCESS, &iopmp_trans_req);
+    receiver_port(2, 364, 0, 0, WRITE_ACCESS, 1, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -71,7 +71,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR,((IOPMP_MD_ENTRY_NUM + 1) * 3),(364 >> 2), 4);
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x01, 4);
     set_hwcfg0_enable();
-    receiver_port(2, 364, 0, 0, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 364, 0, 0, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -87,7 +87,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR,((IOPMP_MD_ENTRY_NUM + 1) * 3),(364 >> 2), 4);
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x01, 4);
     set_hwcfg0_enable();
-    receiver_port(70, 364, 0, 0, READ_ACCESS, &iopmp_trans_req);
+    receiver_port(70, 364, 0, 0, READ_ACCESS, 1, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -104,7 +104,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR,((IOPMP_MD_ENTRY_NUM + 1) * 3), (368 >> 2), 4);
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x9, 4);
     set_hwcfg0_enable();
-    receiver_port(2, 364, 0, 3, READ_ACCESS, &iopmp_trans_req);
+    receiver_port(2, 364, 0, 3, READ_ACCESS, 1, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -122,7 +122,7 @@ int main () {
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x9, 4);
     set_hwcfg0_enable();
 
-    receiver_port(2, 364, 0, 2, READ_ACCESS, &iopmp_trans_req);
+    receiver_port(2, 364, 0, 2, READ_ACCESS, 1, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -138,7 +138,7 @@ int main () {
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x9, 4);
     set_hwcfg0_enable();
 
-    receiver_port(2, 364, 0, 2, READ_ACCESS, &iopmp_trans_req);
+    receiver_port(2, 364, 0, 2, READ_ACCESS, 1, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -155,7 +155,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR,((IOPMP_MD_ENTRY_NUM + 1) * 3), (368 >> 2), 4);
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x9, 4);
     set_hwcfg0_enable();
-    receiver_port(2, 364, 0, 2, READ_ACCESS, &iopmp_trans_req);
+    receiver_port(2, 364, 0, 2, READ_ACCESS, 1, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -174,7 +174,7 @@ int main () {
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0xB, 4);
     set_hwcfg0_enable();
 
-    receiver_port(2, 364, 0, 2, WRITE_ACCESS, &iopmp_trans_req);
+    receiver_port(2, 364, 0, 2, WRITE_ACCESS, 1, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -192,7 +192,7 @@ int main () {
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0xA, 4);
     set_hwcfg0_enable();
 
-    receiver_port(2, 364, 0, 2, WRITE_ACCESS, &iopmp_trans_req);
+    receiver_port(2, 364, 0, 2, WRITE_ACCESS, 1, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -209,7 +209,7 @@ int main () {
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x11, 4);
     set_hwcfg0_enable();
 
-    receiver_port(32, 364, 0, 2, READ_ACCESS, &iopmp_trans_req);
+    receiver_port(32, 364, 0, 2, READ_ACCESS, 1, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -226,7 +226,7 @@ int main () {
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x10, 4);
     set_hwcfg0_enable();
 
-    receiver_port(32, 364, 0, 2, READ_ACCESS, &iopmp_trans_req);
+    receiver_port(32, 364, 0, 2, READ_ACCESS, 1, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -243,7 +243,7 @@ int main () {
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x11, 4);
     set_hwcfg0_enable();
 
-    receiver_port(32, 364, 0, 2, READ_ACCESS, &iopmp_trans_req);
+    receiver_port(32, 364, 0, 2, READ_ACCESS, 1, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -261,7 +261,7 @@ int main () {
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x13, 4);
     set_hwcfg0_enable();
 
-    receiver_port(32, 364, 0, 2, WRITE_ACCESS, &iopmp_trans_req);
+    receiver_port(32, 364, 0, 2, WRITE_ACCESS, 1, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -278,7 +278,7 @@ int main () {
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x11, 4);
     set_hwcfg0_enable();
 
-    receiver_port(32, 364, 0, 2, WRITE_ACCESS, &iopmp_trans_req);
+    receiver_port(32, 364, 0, 2, WRITE_ACCESS, 1, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -295,7 +295,7 @@ int main () {
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x13, 4);
     set_hwcfg0_enable();
 
-    receiver_port(32, 364, 0, 2, WRITE_ACCESS, &iopmp_trans_req);
+    receiver_port(32, 364, 0, 2, WRITE_ACCESS, 1, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -312,7 +312,7 @@ int main () {
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x17, 4);
     set_hwcfg0_enable();
 
-    receiver_port(32, 364, 0, 2, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(32, 364, 0, 2, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -329,7 +329,7 @@ int main () {
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x13, 4);
     set_hwcfg0_enable();
 
-    receiver_port(32, 364, 0, 2, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(32, 364, 0, 2, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -346,7 +346,7 @@ int main () {
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x17, 4);
     set_hwcfg0_enable();
 
-    receiver_port(32, 364, 0, 2, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(32, 364, 0, 2, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -362,7 +362,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR,((IOPMP_MD_ENTRY_NUM + 1) * 3), (364 >> 2), 4);
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x11, 4);
     set_hwcfg0_enable();
-    receiver_port(32, 364, 0, 3, READ_ACCESS, &iopmp_trans_req);
+    receiver_port(32, 364, 0, 3, READ_ACCESS, 1, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -378,7 +378,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR,((IOPMP_MD_ENTRY_NUM + 1) * 3),(364 >> 2), 4);
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x11, 4);
     set_hwcfg0_enable();
-    receiver_port(32, 368, 0, 0, READ_ACCESS, &iopmp_trans_req);
+    receiver_port(32, 368, 0, 0, READ_ACCESS, 1, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -394,7 +394,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR,((IOPMP_MD_ENTRY_NUM + 1) * 3),90, 4);    // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x19, 4);
     set_hwcfg0_enable();
-    receiver_port(32, 360, 0, 3, READ_ACCESS, &iopmp_trans_req);
+    receiver_port(32, 360, 0, 3, READ_ACCESS, 1, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -410,7 +410,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR,((IOPMP_MD_ENTRY_NUM + 1) * 3),90, 4);    // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x18, 4);
     set_hwcfg0_enable();
-    receiver_port(32, 360, 0, 3, READ_ACCESS, &iopmp_trans_req);
+    receiver_port(32, 360, 0, 3, READ_ACCESS, 1, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -426,7 +426,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR,((IOPMP_MD_ENTRY_NUM + 1) * 3),90, 4);    // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x18, 4);
     set_hwcfg0_enable();
-    receiver_port(32, 360, 0, 3, WRITE_ACCESS, &iopmp_trans_req);
+    receiver_port(32, 360, 0, 3, WRITE_ACCESS, 1, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -443,7 +443,23 @@ int main () {
     configure_entry_n(ENTRY_ADDR,((IOPMP_MD_ENTRY_NUM + 1) * 3),90, 4);    // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x1B, 4);
     set_hwcfg0_enable();
-    receiver_port(32, 360, 0, 3, WRITE_ACCESS, &iopmp_trans_req);
+    receiver_port(32, 360, 0, 3, WRITE_ACCESS, 1, &iopmp_trans_req);
+
+    // requestor Port Signals
+    iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
+    CHECK_IOPMP_TRANS(IOPMP_SUCCESS, ENTRY_MATCH);
+    write_register(ERR_INFO_OFFSET,   0, 4);
+    END_TEST();
+
+    START_TEST("Test NAPOT - 8 Byte Non-AMO write access");
+    reset_iopmp();
+    configure_srcmd_n(SRCMD_EN, 32, 0x10, 4);
+    configure_srcmd_n(SRCMD_W, 32, 0x10, 4);
+    // Entry Table CFG
+    configure_entry_n(ENTRY_ADDR,((IOPMP_MD_ENTRY_NUM + 1) * 3),90, 4);    // (364 >> 2) and keeping lsb 0
+    configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x1A, 4);
+    set_hwcfg0_enable();
+    receiver_port(32, 360, 0, 3, WRITE_ACCESS, 0, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -459,7 +475,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR,((IOPMP_MD_ENTRY_NUM + 1) * 3),90, 4);    // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x18, 4);
     set_hwcfg0_enable();
-    receiver_port(32, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(32, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -475,7 +491,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR,((IOPMP_MD_ENTRY_NUM + 1) * 3),90, 4);    // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x1C, 4);
     set_hwcfg0_enable();
-    receiver_port(32, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(32, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -522,7 +538,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR,((IOPMP_MD_ENTRY_NUM + 1) * 3),90, 4);    // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x1C, 4);
     set_hwcfg0_enable();
-    receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -539,7 +555,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR,((IOPMP_MD_ENTRY_NUM + 1) * 3),90, 4);    // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x1C, 4);
     set_hwcfg0_enable();
-    receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -556,7 +572,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR,((IOPMP_MD_ENTRY_NUM + 1) * 3),90, 4);    // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x1C, 4);
     set_hwcfg0_enable();
-    receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -572,7 +588,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR,((IOPMP_MD_ENTRY_NUM + 1) * 3),90, 4);    // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x1C, 4);
     set_hwcfg0_enable();
-    receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -589,7 +605,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR,((IOPMP_MD_ENTRY_NUM + 1) * 3),90, 4);    // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x1C, 4);
     set_hwcfg0_enable();
-    receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -605,7 +621,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR,((IOPMP_MD_ENTRY_NUM + 1) * 3),90, 4);    // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x1C, 4);
     set_hwcfg0_enable();
-    receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -624,7 +640,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR,((IOPMP_MD_ENTRY_NUM + 1) * 3),90, 4);    // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x1C, 4);
     set_hwcfg0_enable();
-    receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -643,7 +659,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR,((IOPMP_MD_ENTRY_NUM + 1) * 3),90, 4);    // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x1C, 4);
     set_hwcfg0_enable();
-    receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -661,7 +677,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR,((IOPMP_MD_ENTRY_NUM + 1) * 3),90, 4);    // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG,((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x1C, 4);
     set_hwcfg0_enable();
-    receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // requestor Port Signals
     err_mfr_t err_mfr_temp;
@@ -685,7 +701,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR, ((IOPMP_MD_ENTRY_NUM + 1) * 31), 90, 4);   // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG, ((IOPMP_MD_ENTRY_NUM + 1) * 31), 0x1C, 4);
     set_hwcfg0_enable();
-    receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -701,7 +717,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR, ((IOPMP_MD_ENTRY_NUM + 1) * 31), 90, 4);   // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG, ((IOPMP_MD_ENTRY_NUM + 1) * 31), 0x1C, 4);
     set_hwcfg0_enable();
-    receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -717,7 +733,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR, ((IOPMP_MD_ENTRY_NUM + 1) * 31), 90, 4);   // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG, ((IOPMP_MD_ENTRY_NUM + 1) * 31), 0x99, 4);  // Address Mode is NAPOT, with read permission and exe suppression
     set_hwcfg0_enable();
-    receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // Requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -734,7 +750,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR, ((IOPMP_MD_ENTRY_NUM + 1) * 31), 90, 4);
     configure_entry_n(ENTRY_CFG, ((IOPMP_MD_ENTRY_NUM + 1) * 31), (NAPOT|R), 4);
     set_hwcfg0_enable();
-    receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // Requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -752,7 +768,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR, ((IOPMP_MD_ENTRY_NUM + 1) * 31), 90, 4);              // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG, ((IOPMP_MD_ENTRY_NUM + 1) * 31), (SEXE|NAPOT|R), 4);   // Address Mode is NAPOT, with read permission and exe suppression
     set_hwcfg0_enable();
-    receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // Requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -771,7 +787,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR, ((IOPMP_MD_ENTRY_NUM + 1) * 31), 90, 4);              // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG, ((IOPMP_MD_ENTRY_NUM + 1) * 31), (SEXE|NAPOT|R), 4);   // Address Mode is NAPOT, with read permission and exe suppression
     set_hwcfg0_enable();
-    receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // Requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -790,7 +806,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR, ((IOPMP_MD_ENTRY_NUM + 1) * 31), 90, 4);          // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG, ((IOPMP_MD_ENTRY_NUM + 1) * 31), (NAPOT|R), 4);    // Address Mode is NAPOT, with read permission and exe suppression
     set_hwcfg0_enable();
-    receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // Requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -810,7 +826,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR, ((IOPMP_MD_ENTRY_NUM + 1) * 31), 90, 4);                          // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG, ((IOPMP_MD_ENTRY_NUM + 1) * 31), (SEXE | SIXE | NAPOT | R), 4);    // Address Mode is NAPOT, with read permission and exe suppression
     set_hwcfg0_enable();
-    receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // Requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -831,7 +847,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR, ((IOPMP_MD_ENTRY_NUM + 1) * 31), 90, 4);            // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG, ((IOPMP_MD_ENTRY_NUM + 1) * 31), (NAPOT | R), 4);    // Address Mode is NAPOT, with read permission and exe suppression
     set_hwcfg0_enable();
-    receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // Requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -852,7 +868,7 @@ int main () {
     set_hwcfg0_enable();
     write_register(MDSTALL_OFFSET, 0x10, 4);
     write_register(RRISCP_OFFSET,5,4);
-    receiver_port(5, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(5, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -875,7 +891,7 @@ int main () {
     set_hwcfg0_enable();
     write_register(MDSTALL_OFFSET, 0x10, 4);
     write_register(RRISCP_OFFSET,5,4);
-    receiver_port(5, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(5, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -898,7 +914,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR, ((IOPMP_MD_ENTRY_NUM + 1) * 3), 90, 4);   // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG, ((IOPMP_MD_ENTRY_NUM + 1) * 3), 0x1B, 4);
     set_hwcfg0_enable();
-    receiver_port(32, 360, 0, 3, WRITE_ACCESS, &iopmp_trans_req);
+    receiver_port(32, 360, 0, 3, WRITE_ACCESS, 1, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -920,7 +936,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR, ((IOPMP_MD_ENTRY_NUM + 1) * 31), 90, 4);
     configure_entry_n(ENTRY_CFG, ((IOPMP_MD_ENTRY_NUM + 1) * 31), (NAPOT | R), 4);
     set_hwcfg0_enable();
-    receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // Requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -941,7 +957,7 @@ int main () {
     configure_entry_n(ENTRY_ADDR, ((IOPMP_MD_ENTRY_NUM + 1) * 31), 90, 4);
     configure_entry_n(ENTRY_CFG, ((IOPMP_MD_ENTRY_NUM + 1) * 31), (NAPOT | R), 4);
     set_hwcfg0_enable();
-    receiver_port(2, 360, 0, 3, INSTR_FETCH, &iopmp_trans_req);
+    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
 
     // Requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
@@ -967,14 +983,14 @@ int main () {
     configure_entry_n(ENTRY_ADDR, 0, 90, 4);   // (364 >> 2) and keeping lsb 0
     configure_entry_n(ENTRY_CFG, 0, (NAPOT | W | R), 4);
     set_hwcfg0_enable();
-    receiver_port(32, 360, 0, 3, WRITE_ACCESS, &iopmp_trans_req);
+    receiver_port(32, 360, 0, 3, WRITE_ACCESS, 1, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
     CHECK_IOPMP_TRANS(IOPMP_SUCCESS, ENTRY_MATCH);
     write_register(ERR_INFO_OFFSET,   0, 4);
 
-    receiver_port(12, 360, 0, 3, WRITE_ACCESS, &iopmp_trans_req);
+    receiver_port(12, 360, 0, 3, WRITE_ACCESS, 1, &iopmp_trans_req);
 
     // requestor Port Signals
     iopmp_validate_access(&iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
