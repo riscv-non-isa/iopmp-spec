@@ -328,20 +328,22 @@ typedef union {
 
         uint32_t msi_werr  : 1;             // It’s asserted when IOPMP-originated MSI has failed.
 
-        uint32_t etype : 3;                 // Indicates the type of violation
+        uint32_t etype : 4;                 // Indicates the type of violation
                                             // 0x00 = no error
                                             // 0x01 = illegal read access
-                                            // 0x02 = illegal write access
+                                            // 0x02 = illegal write access/AMO
                                             // 0x03 = illegal instruction fetch
                                             // 0x04 = partial hit on a priority rule
                                             // 0x05 = not hit any rule
                                             // 0x06 = unknown RRID
-                                            // 0x07 = user-defined error
+                                            // 0x07 = error due to a stalled transaction
+                                            // 0x08 ~ 0x0D = N/A, reserved for future
+                                            // 0x0E ~ 0x0F = user-defined error
 
         uint32_t svc   : 1;                 // Indicate there is a subsequent violation caught in ERR_MFR.
                                             // Implemented only for HWCFG0.mfr_en=1,
 
-        uint32_t rsv   : 24;                // reserved for future use
+        uint32_t rsv   : 23;                // reserved for future use
     };
     uint32_t raw;
 } err_info_t;
