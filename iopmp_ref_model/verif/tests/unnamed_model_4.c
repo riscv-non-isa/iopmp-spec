@@ -622,7 +622,11 @@ int main () {
     reset_iopmp();
     bus_error = 0x8000;
     write_register(ERR_OFFSET, 0x8F0A, 4);
+#if (IOPMP_ADDRH_EN)
     write_register(ERR_MSIADDR_OFFSET, 0x8000, 4);
+#else
+    write_register(ERR_MSIADDR_OFFSET, (0x8000 >> 2), 4);
+#endif
     configure_srcmd_n(SRCMD_PERM, 31, 0x1, 4);
     configure_entry_n(ENTRY_ADDR, 1, 90, 4);
     configure_entry_n(ENTRY_CFG, 1, (NAPOT | R), 4);
@@ -642,7 +646,11 @@ int main () {
     START_TEST("Test MSI");
     reset_iopmp();
     write_register(ERR_OFFSET, 0x8F0A, 4);
+#if (IOPMP_ADDRH_EN)
     write_register(ERR_MSIADDR_OFFSET, 0x8000, 4);
+#else
+    write_register(ERR_MSIADDR_OFFSET, (0x8000 >> 2), 4);
+#endif
     configure_srcmd_n(SRCMD_PERM, 31, 0x1, 4);
     configure_entry_n(ENTRY_ADDR, 1, 90, 4);
     configure_entry_n(ENTRY_CFG, 1, (NAPOT|R), 4);
