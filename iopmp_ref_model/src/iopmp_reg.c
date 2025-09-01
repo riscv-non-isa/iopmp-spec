@@ -660,16 +660,20 @@ void write_register(uint64_t offset, reg_intf_dw data, uint8_t num_bytes) {
     // Pre-compute access range and lock status based on format type
     #if (SRCMD_FMT == 0)
         srcmd_tbl_access = IS_IN_RANGE(offset, SRCMD_TABLE_BASE_OFFSET, SRCMD_TABLE_BASE_OFFSET + (IOPMP_RRID_NUM * SRCMD_REG_STRIDE) + 28);
-        is_srcmd_locked  = g_reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_en.l;
+        if (srcmd_tbl_access) {
+            is_srcmd_locked = g_reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_en.l;
+        }
 
     #elif (SRCMD_FMT == 2)
         srcmd_tbl_access = IS_IN_RANGE(offset, SRCMD_TABLE_BASE_OFFSET, SRCMD_TABLE_BASE_OFFSET + (IOPMP_MD_NUM * SRCMD_REG_STRIDE) + 8);
-        int table_index  = SRCMD_TABLE_INDEX(offset);
+        if (srcmd_tbl_access) {
+            int table_index = SRCMD_TABLE_INDEX(offset);
 
-        if (table_index < 31) {
-            is_srcmd_locked = (g_reg_file.mdlck.md >> table_index) & 1;
-        } else {
-            is_srcmd_locked = (g_reg_file.mdlckh.mdh >> (table_index - 31)) & 1;
+            if (table_index < 31) {
+                is_srcmd_locked = (g_reg_file.mdlck.md >> table_index) & 1;
+            } else {
+                is_srcmd_locked = (g_reg_file.mdlckh.mdh >> (table_index - 31)) & 1;
+            }
         }
     #endif
 
