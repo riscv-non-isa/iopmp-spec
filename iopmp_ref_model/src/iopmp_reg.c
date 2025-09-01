@@ -382,7 +382,9 @@ void write_register(uint64_t offset, reg_intf_dw data, uint8_t num_bytes) {
     entrylck_t       entrylck_temp       = { .raw = upr_data4 };
     err_cfg_t        err_cfg_temp        = { .raw = lwr_data4 };
     entry_addr_t     entry_addr_temp     = { .raw = lwr_data4 };
+#if (IOPMP_ADDRH_EN)
     entry_addrh_t    entry_addrh_temp    = { .raw = upr_data4 };
+#endif
     entry_cfg_t      entry_cfg_temp      = { .raw = lwr_data4 };
     entry_user_cfg_t entry_user_cfg_temp = { .raw = upr_data4 };
 
@@ -394,7 +396,9 @@ void write_register(uint64_t offset, reg_intf_dw data, uint8_t num_bytes) {
 // Conditional block for msi addr
 #if (MSI_EN)
     err_msiaddr_t    err_msiaddr_temp    = { .raw = lwr_data4 };
+#if (IOPMP_ADDRH_EN)
     err_msiaddrh_t   err_msiaddrh_temp   = { .raw = upr_data4 };
+#endif
 #endif
 
 // Conditional block for SRCMD format
