@@ -21,6 +21,10 @@
 #include "iopmp.h"
 #include "config.h"
 
+/* Generate 32-bit mask[h:l] */
+#define GENMASK_32(h, l) \
+    (((~(uint32_t)0) - ((uint32_t)1 << (l)) + 1) & (~(uint32_t)0 >> (32-1-(h))))
+
 int rrid_stall[IOPMP_RRID_NUM];
 
 /**
@@ -415,12 +419,12 @@ void write_register(uint64_t offset, reg_intf_dw data, uint8_t num_bytes) {
 
 // SRCMD format handling
 #if (SRCMD_FMT == 0)
-    srcmd_en_t  srcmd_en_temp  = { .raw = lwr_data4 & ((IOPMP_MD_NUM >= 32) ? UINT32_MAX : (1ULL << (IOPMP_MD_NUM + 1)) - 1) };
-    srcmd_enh_t srcmd_enh_temp = { .raw = (IOPMP_MD_NUM < 32) ? 0 : upr_data4 & ((1ULL << (IOPMP_MD_NUM - 32)) - 1) };
-    srcmd_r_t   srcmd_r_temp   = { .raw = lwr_data4 & ((IOPMP_MD_NUM >= 32) ? UINT32_MAX : (1ULL << (IOPMP_MD_NUM + 1)) - 1) };
-    srcmd_rh_t  srcmd_rh_temp  = { .raw = (IOPMP_MD_NUM < 32) ? 0 : upr_data4 & ((1ULL << (IOPMP_MD_NUM - 32)) - 1) };
-    srcmd_w_t   srcmd_w_temp   = { .raw = lwr_data4 & ((IOPMP_MD_NUM >= 32) ? UINT32_MAX : (1ULL << (IOPMP_MD_NUM + 1)) - 1) };
-    srcmd_wh_t  srcmd_wh_temp  = { .raw = (IOPMP_MD_NUM < 32) ? 0 : upr_data4 & ((1ULL << (IOPMP_MD_NUM - 32)) - 1) };
+    srcmd_en_t  srcmd_en_temp  = { .raw = lwr_data4 & ((IOPMP_MD_NUM >= 31) ? UINT32_MAX : GENMASK_32(IOPMP_MD_NUM, 0)) };
+    srcmd_enh_t srcmd_enh_temp = { .raw = (IOPMP_MD_NUM < 32) ? 0 : upr_data4 & GENMASK_32(IOPMP_MD_NUM - 32, 0) };
+    srcmd_r_t   srcmd_r_temp   = { .raw = lwr_data4 & ((IOPMP_MD_NUM >= 31) ? UINT32_MAX : GENMASK_32(IOPMP_MD_NUM, 0)) };
+    srcmd_rh_t  srcmd_rh_temp  = { .raw = (IOPMP_MD_NUM < 32) ? 0 : upr_data4 & GENMASK_32(IOPMP_MD_NUM - 32, 0) };
+    srcmd_w_t   srcmd_w_temp   = { .raw = lwr_data4 & ((IOPMP_MD_NUM >= 31) ? UINT32_MAX : GENMASK_32(IOPMP_MD_NUM, 0)) };
+    srcmd_wh_t  srcmd_wh_temp  = { .raw = (IOPMP_MD_NUM < 32) ? 0 : upr_data4 & GENMASK_32(IOPMP_MD_NUM - 32, 0) };
 #elif (SRCMD_FMT == 2)
     srcmd_perm_t  srcmd_perm_temp  = { .raw = lwr_data4 };
     srcmd_permh_t srcmd_permh_temp = { .raw = upr_data4 };
@@ -428,13 +432,13 @@ void write_register(uint64_t offset, reg_intf_dw data, uint8_t num_bytes) {
 
 // IOPMP Stall configuration
 #if (IOPMP_STALL_EN)
-    mdstall_t  mdstall_temp  = { .raw = lwr_data4 & ((IOPMP_MD_NUM >= 32) ? UINT32_MAX : (1ULL << (IOPMP_MD_NUM + 1)) - 1) };
-    mdstallh_t mdstallh_temp = { .raw = (IOPMP_MD_NUM < 32) ? 0 : upr_data4 & ((1ULL << (IOPMP_MD_NUM - 32)) - 1) };
+    mdstall_t  mdstall_temp  = { .raw = lwr_data4 & ((IOPMP_MD_NUM >= 31) ? UINT32_MAX : GENMASK_32(IOPMP_MD_NUM, 0)) };
+    mdstallh_t mdstallh_temp = { .raw = (IOPMP_MD_NUM < 32) ? 0 : upr_data4 & GENMASK_32(IOPMP_MD_NUM - 32, 0) };
     #if (IMP_RRIDSCP)
         rridscp_t  rridscp_temp  = { .raw = lwr_data4 };
         rridscp_temp.op          = (lwr_data4 >> 30) & MASK_BIT_POS(2);
     #endif
-    mdstall_temp.md          = (lwr_data4 >> 1) & ((IOPMP_MD_NUM >= 32) ? UINT32_MAX : (1ULL << IOPMP_MD_NUM) - 1);
+    mdstall_temp.md          = (lwr_data4 >> 1) & ((IOPMP_MD_NUM >= 31) ? UINT32_MAX : GENMASK_32(IOPMP_MD_NUM - 1, 0));
     mdstall_temp.exempt      = GET_BIT(lwr_data4, 0);
 #endif
 
