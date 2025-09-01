@@ -518,7 +518,7 @@ int main () {
     CHECK_IOPMP_TRANS(IOPMP_ERROR, NOT_HIT_ANY_RULE);
     END_TEST();
 
-
+#if (IOPMP_MFR_EN)
     START_TEST("Test MFR Extension");
     write_register(ENTRYLCK_OFFSET,   0x8, 4);   // ENTRY[0]-ENTRY[3] are locked
     write_register(ENTRYLCK_OFFSET,   0x1, 4);   // ENTRYLCK is locked
@@ -543,6 +543,7 @@ int main () {
     FAIL_IF((err_mfr_temp.svw != 4));
     write_register(ERR_INFO_OFFSET,   0, 4);
     END_TEST();
+#endif
 
     START_TEST("Test Interrupt Suppression is Enabled");
     reset_iopmp();

@@ -132,7 +132,11 @@ int reset_iopmp() {
     g_reg_file.err_reqaddrh.raw        = 0;
     g_reg_file.err_reqid.rrid          = 0;
     g_reg_file.err_reqid.eid           = IMP_ERROR_REQID ? 0 : 0xFFFF;
+#if (IOPMP_MFR_EN)
     g_reg_file.err_mfr.raw             = 0;
+#else
+    g_reg_file.reserved11              = 0;
+#endif
 
 #if (MSI_EN)
     g_reg_file.err_msiaddr.raw         = 0;
@@ -204,9 +208,13 @@ int reset_iopmp() {
         iopmp_entries.entry_table[i].entry_cfg.raw      = 0;
         iopmp_entries.entry_table[i].entry_user_cfg.raw = 0;
     }
+
+#if (IOPMP_MFR_EN)
     for (int i = 0; i < (IOPMP_RRID_NUM/16); i++) {
         err_svs.sv[i].raw = 0;
     }
+#endif
+
     for (int i = 0; i < IOPMP_RRID_NUM; i++) {
         rrid_stall[i] = 0;
     }
@@ -259,6 +267,8 @@ uint8_t is_access_valid(uint64_t offset, uint8_t num_bytes) {
 reg_intf_dw read_register(uint64_t offset, uint8_t num_bytes) {
 
     if (!is_access_valid(offset, num_bytes)) return 0;
+
+#if (IOPMP_MFR_EN)
     // If the requested offset corresponds to the error MFR (ERR_MFR_OFFSET)
     // handle reading from the error register.
     if (offset == ERR_MFR_OFFSET) {
@@ -294,6 +304,7 @@ reg_intf_dw read_register(uint64_t offset, uint8_t num_bytes) {
         // If no errors are found, return the raw value of the error register.
         return g_reg_file.err_mfr.raw;
     }
+#endif
 
     // If the offset is within the valid range for entry registers, return the appropriate value.
     if ((offset >= ENTRY_OFFSET) && (offset < (ENTRY_OFFSET + 0xC + (IOPMP_ENTRY_NUM * ENTRY_REG_STRIDE) + 4))) {
@@ -570,9 +581,11 @@ void write_register(uint64_t offset, reg_intf_dw data, uint8_t num_bytes) {
         return;
 #endif
 
+#if (IOPMP_MFR_EN)
     case ERR_MFR_OFFSET:
         g_reg_file.err_mfr.svi = err_mfr_temp.svi;
         break;
+#endif
 
 #if (MSI_EN)
     case ERR_MSIADDR_OFFSET:

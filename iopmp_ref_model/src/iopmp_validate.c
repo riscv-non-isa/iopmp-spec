@@ -12,7 +12,9 @@
 
 iopmp_regs_t    g_reg_file;
 iopmp_entries_t iopmp_entries;
+#if (IOPMP_MFR_EN)
 err_mfrs_t      err_svs;
+#endif
 int             intrpt_suppress;
 int             error_suppress;
 int             stall_cntr;

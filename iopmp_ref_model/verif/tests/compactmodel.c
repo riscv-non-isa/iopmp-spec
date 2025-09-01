@@ -494,6 +494,7 @@ int main () {
    CHECK_IOPMP_TRANS(IOPMP_ERROR, NOT_HIT_ANY_RULE);
    END_TEST();
 
+#if (IOPMP_MFR_EN)
    START_TEST("Test MFR Extension");
    receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
    // Entry Table CFG
@@ -518,6 +519,7 @@ int main () {
    FAIL_IF((err_mfr_temp.svw != 4));
    write_register(ERR_INFO_OFFSET,   0, 4);
    END_TEST();
+#endif
 
    START_TEST("Test Interrupt Suppression is Enabled");
    reset_iopmp();
