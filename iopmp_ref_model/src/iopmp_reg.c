@@ -654,16 +654,16 @@ void write_register(uint64_t offset, reg_intf_dw data, uint8_t num_bytes) {
 
 // Code block for handling SRCMD table accesses based on format type
 #if (SRCMD_FMT != 1)
-    int srcmd_tlb_access;
+    int srcmd_tbl_access;
     int is_srcmd_locked = 0;  // Initialize as unlocked
 
     // Pre-compute access range and lock status based on format type
     #if (SRCMD_FMT == 0)
-        srcmd_tlb_access = IS_IN_RANGE(offset, SRCMD_TABLE_BASE_OFFSET, SRCMD_TABLE_BASE_OFFSET + (IOPMP_RRID_NUM * SRCMD_REG_STRIDE) + 28);
+        srcmd_tbl_access = IS_IN_RANGE(offset, SRCMD_TABLE_BASE_OFFSET, SRCMD_TABLE_BASE_OFFSET + (IOPMP_RRID_NUM * SRCMD_REG_STRIDE) + 28);
         is_srcmd_locked  = g_reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_en.l;
 
     #elif (SRCMD_FMT == 2)
-        srcmd_tlb_access = IS_IN_RANGE(offset, SRCMD_TABLE_BASE_OFFSET, SRCMD_TABLE_BASE_OFFSET + (IOPMP_MD_NUM * SRCMD_REG_STRIDE) + 8);
+        srcmd_tbl_access = IS_IN_RANGE(offset, SRCMD_TABLE_BASE_OFFSET, SRCMD_TABLE_BASE_OFFSET + (IOPMP_MD_NUM * SRCMD_REG_STRIDE) + 8);
         int table_index  = SRCMD_TABLE_INDEX(offset);
 
         if (table_index < 31) {
@@ -674,7 +674,7 @@ void write_register(uint64_t offset, reg_intf_dw data, uint8_t num_bytes) {
     #endif
 
     // Proceed only if within access range and not locked
-    if (srcmd_tlb_access && !is_srcmd_locked) {
+    if (srcmd_tbl_access && !is_srcmd_locked) {
         uint32_t srcmd_reg = SRCMD_REG_INDEX(offset);
 
         switch (srcmd_reg) {
