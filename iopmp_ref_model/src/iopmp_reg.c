@@ -276,7 +276,9 @@ reg_intf_dw read_register(uint64_t offset, uint8_t num_bytes) {
     // If the requested offset corresponds to the error MFR (ERR_MFR_OFFSET)
     // handle reading from the error register.
     if (offset == ERR_MFR_OFFSET) {
-        uint32_t err_mfr;
+        // ERR_INFO.svc=0 indicates there is no subsequent violation.
+        if (g_reg_file.err_info.svc == 0)
+            return 0;
 
         // Clear the error flags for error register.
         g_reg_file.err_mfr.svs = 0;
@@ -296,16 +298,21 @@ reg_intf_dw read_register(uint64_t offset, uint8_t num_bytes) {
                 g_reg_file.err_mfr.svi = current_index;                     // Update the error index.
                 g_reg_file.err_mfr.svs = 1;                                 // Subsequent Violation Status
 
-                // Get the raw error register value.
-                err_mfr = g_reg_file.err_mfr.raw;
-
                 // Clear the error flag after processing.
                 err_svs.sv[current_index].svw = 0;
-                return err_mfr;  // Return the error register value.
+                break;
             }
         }
 
-        // If no errors are found, return the raw value of the error register.
+        // Clear ERR_INFO.svc if there is no subsequent violation.
+        g_reg_file.err_info.svc = 0;
+        for (int i = 0; i < (IOPMP_RRID_NUM/16); i++) {
+            if (err_svs.sv[i].svw) {
+                g_reg_file.err_info.svc = 1;
+                break;
+            }
+        }
+
         return g_reg_file.err_mfr.raw;
     }
 #endif
