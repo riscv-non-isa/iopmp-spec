@@ -9,11 +9,18 @@ COVFLAGS =
 ifeq ($(cov), 1)
 COVFLAGS += -fprofile-arcs -ftest-coverage -lgcov --coverage
 endif
+asan =
+ASAN_CFLAGS =
+ASAN_LDFLAGS =
+ifeq ($(asan), 1)
+ASAN_CFLAGS += -fsanitize=address -fno-omit-frame-pointer -O1 -g3
+ASAN_LDFLAGS += -lasan
+endif
 
 # Compiler and flags
 CC := gcc
-CFLAGS := -Wall -Werror $(COVFLAGS) -I./include -Iverif/ -fPIC
-LDFLAGS := -lm
+CFLAGS := -Wall -Werror $(COVFLAGS) $(ASAN_CFLAGS) -I./include -Iverif/ -fPIC
+LDFLAGS := -lm $(ASAN_LDFLAGS)
 
 # Common source files
 COMMON_SOURCES := $(SRC_DIR)/iopmp_reg.c \
@@ -138,6 +145,7 @@ help:
 	@echo "                        Example: make build model=full_model"
 	@echo "  sharedLib=1           Build shared libraries instead of static ones"
 	@echo "  cov=1                 Enable code coverage during compilation"
+	@echo "  asan=1                Enable AddressSanitizer"
 	@echo ""
 	@echo "Available Models:"
 	@echo "  full_model            SRCMD_FMT = 0, MDCFG_FMT = 0"

@@ -730,7 +730,7 @@ int main () {
     CHECK_IOPMP_TRANS(IOPMP_ERROR, NOT_HIT_ANY_RULE);
     END_TEST();
 
-
+#if (IOPMP_MFR_EN)
     START_TEST("Test MFR Extension");
     write_register(ENTRYLCK_OFFSET,   0x8, 4);   // ENTRY[0]-ENTRY[3] are locked
     write_register(ENTRYLCK_OFFSET,   0x1, 4);   // ENTRYLCK is locked
@@ -756,6 +756,7 @@ int main () {
     FAIL_IF((err_mfr_temp.svw != 4));
     write_register(ERR_INFO_OFFSET,   0, 4);
     END_TEST();
+#endif
 
     START_TEST("Test MDLCK, updating locked srcmd_enh field");
     reset_iopmp();
@@ -1007,7 +1008,11 @@ int main () {
     reset_iopmp();
     bus_error = 0x8000;
     write_register(ERR_OFFSET, 0x8F0A, 4);
+#if (IOPMP_ADDRH_EN)
     write_register(ERR_MSIADDR_OFFSET, 0x8000, 4);
+#else
+    write_register(ERR_MSIADDR_OFFSET, (0x8000 >> 2), 4);
+#endif
     configure_srcmd_n(SRCMD_ENH, 2, 0x1, 4);
     configure_srcmd_n(SRCMD_RH, 2, 0x1, 4);
     configure_mdcfg_n(31, 2, 4);
@@ -1029,7 +1034,11 @@ int main () {
     START_TEST("Test MSI");
     reset_iopmp();
     write_register(ERR_OFFSET, 0x8F0A, 4);
+#if (IOPMP_ADDRH_EN)
     write_register(ERR_MSIADDR_OFFSET, 0x8000, 4);
+#else
+    write_register(ERR_MSIADDR_OFFSET, (0x8000 >> 2), 4);
+#endif
     configure_srcmd_n(SRCMD_ENH, 2, 0x1, 4);
     configure_srcmd_n(SRCMD_RH, 2, 0x1, 4);
     configure_mdcfg_n(31, 2, 4);

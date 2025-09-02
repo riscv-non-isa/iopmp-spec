@@ -21,6 +21,10 @@
 #include "iopmp.h"
 #include "config.h"
 
+/* Generate 32-bit mask[h:l] */
+#define GENMASK_32(h, l) \
+    (((~(uint32_t)0) - ((uint32_t)1 << (l)) + 1) & (~(uint32_t)0 >> (32-1-(h))))
+
 int rrid_stall[IOPMP_RRID_NUM];
 
 /**
@@ -132,7 +136,11 @@ int reset_iopmp() {
     g_reg_file.err_reqaddrh.raw        = 0;
     g_reg_file.err_reqid.rrid          = 0;
     g_reg_file.err_reqid.eid           = IMP_ERROR_REQID ? 0 : 0xFFFF;
+#if (IOPMP_MFR_EN)
     g_reg_file.err_mfr.raw             = 0;
+#else
+    g_reg_file.reserved11              = 0;
+#endif
 
 #if (MSI_EN)
     g_reg_file.err_msiaddr.raw         = 0;
@@ -204,9 +212,13 @@ int reset_iopmp() {
         iopmp_entries.entry_table[i].entry_cfg.raw      = 0;
         iopmp_entries.entry_table[i].entry_user_cfg.raw = 0;
     }
+
+#if (IOPMP_MFR_EN)
     for (int i = 0; i < (IOPMP_RRID_NUM/16); i++) {
         err_svs.sv[i].raw = 0;
     }
+#endif
+
     for (int i = 0; i < IOPMP_RRID_NUM; i++) {
         rrid_stall[i] = 0;
     }
@@ -259,6 +271,8 @@ uint8_t is_access_valid(uint64_t offset, uint8_t num_bytes) {
 reg_intf_dw read_register(uint64_t offset, uint8_t num_bytes) {
 
     if (!is_access_valid(offset, num_bytes)) return 0;
+
+#if (IOPMP_MFR_EN)
     // If the requested offset corresponds to the error MFR (ERR_MFR_OFFSET)
     // handle reading from the error register.
     if (offset == ERR_MFR_OFFSET) {
@@ -294,6 +308,7 @@ reg_intf_dw read_register(uint64_t offset, uint8_t num_bytes) {
         // If no errors are found, return the raw value of the error register.
         return g_reg_file.err_mfr.raw;
     }
+#endif
 
     // If the offset is within the valid range for entry registers, return the appropriate value.
     if ((offset >= ENTRY_OFFSET) && (offset < (ENTRY_OFFSET + 0xC + (IOPMP_ENTRY_NUM * ENTRY_REG_STRIDE) + 4))) {
@@ -371,7 +386,9 @@ void write_register(uint64_t offset, reg_intf_dw data, uint8_t num_bytes) {
     entrylck_t       entrylck_temp       = { .raw = upr_data4 };
     err_cfg_t        err_cfg_temp        = { .raw = lwr_data4 };
     entry_addr_t     entry_addr_temp     = { .raw = lwr_data4 };
+#if (IOPMP_ADDRH_EN)
     entry_addrh_t    entry_addrh_temp    = { .raw = upr_data4 };
+#endif
     entry_cfg_t      entry_cfg_temp      = { .raw = lwr_data4 };
     entry_user_cfg_t entry_user_cfg_temp = { .raw = upr_data4 };
 
@@ -383,7 +400,9 @@ void write_register(uint64_t offset, reg_intf_dw data, uint8_t num_bytes) {
 // Conditional block for msi addr
 #if (MSI_EN)
     err_msiaddr_t    err_msiaddr_temp    = { .raw = lwr_data4 };
+#if (IOPMP_ADDRH_EN)
     err_msiaddrh_t   err_msiaddrh_temp   = { .raw = upr_data4 };
+#endif
 #endif
 
 // Conditional block for SRCMD format
@@ -400,12 +419,12 @@ void write_register(uint64_t offset, reg_intf_dw data, uint8_t num_bytes) {
 
 // SRCMD format handling
 #if (SRCMD_FMT == 0)
-    srcmd_en_t  srcmd_en_temp  = { .raw = lwr_data4 & ((IOPMP_MD_NUM >= 32) ? UINT32_MAX : (1ULL << (IOPMP_MD_NUM + 1)) - 1) };
-    srcmd_enh_t srcmd_enh_temp = { .raw = (IOPMP_MD_NUM < 32) ? 0 : upr_data4 & ((1ULL << (IOPMP_MD_NUM - 32)) - 1) };
-    srcmd_r_t   srcmd_r_temp   = { .raw = lwr_data4 & ((IOPMP_MD_NUM >= 32) ? UINT32_MAX : (1ULL << (IOPMP_MD_NUM + 1)) - 1) };
-    srcmd_rh_t  srcmd_rh_temp  = { .raw = (IOPMP_MD_NUM < 32) ? 0 : upr_data4 & ((1ULL << (IOPMP_MD_NUM - 32)) - 1) };
-    srcmd_w_t   srcmd_w_temp   = { .raw = lwr_data4 & ((IOPMP_MD_NUM >= 32) ? UINT32_MAX : (1ULL << (IOPMP_MD_NUM + 1)) - 1) };
-    srcmd_wh_t  srcmd_wh_temp  = { .raw = (IOPMP_MD_NUM < 32) ? 0 : upr_data4 & ((1ULL << (IOPMP_MD_NUM - 32)) - 1) };
+    srcmd_en_t  srcmd_en_temp  = { .raw = lwr_data4 & ((IOPMP_MD_NUM >= 31) ? UINT32_MAX : GENMASK_32(IOPMP_MD_NUM, 0)) };
+    srcmd_enh_t srcmd_enh_temp = { .raw = (IOPMP_MD_NUM < 32) ? 0 : upr_data4 & GENMASK_32(IOPMP_MD_NUM - 32, 0) };
+    srcmd_r_t   srcmd_r_temp   = { .raw = lwr_data4 & ((IOPMP_MD_NUM >= 31) ? UINT32_MAX : GENMASK_32(IOPMP_MD_NUM, 0)) };
+    srcmd_rh_t  srcmd_rh_temp  = { .raw = (IOPMP_MD_NUM < 32) ? 0 : upr_data4 & GENMASK_32(IOPMP_MD_NUM - 32, 0) };
+    srcmd_w_t   srcmd_w_temp   = { .raw = lwr_data4 & ((IOPMP_MD_NUM >= 31) ? UINT32_MAX : GENMASK_32(IOPMP_MD_NUM, 0)) };
+    srcmd_wh_t  srcmd_wh_temp  = { .raw = (IOPMP_MD_NUM < 32) ? 0 : upr_data4 & GENMASK_32(IOPMP_MD_NUM - 32, 0) };
 #elif (SRCMD_FMT == 2)
     srcmd_perm_t  srcmd_perm_temp  = { .raw = lwr_data4 };
     srcmd_permh_t srcmd_permh_temp = { .raw = upr_data4 };
@@ -413,13 +432,13 @@ void write_register(uint64_t offset, reg_intf_dw data, uint8_t num_bytes) {
 
 // IOPMP Stall configuration
 #if (IOPMP_STALL_EN)
-    mdstall_t  mdstall_temp  = { .raw = lwr_data4 & ((IOPMP_MD_NUM >= 32) ? UINT32_MAX : (1ULL << (IOPMP_MD_NUM + 1)) - 1) };
-    mdstallh_t mdstallh_temp = { .raw = (IOPMP_MD_NUM < 32) ? 0 : upr_data4 & ((1ULL << (IOPMP_MD_NUM - 32)) - 1) };
+    mdstall_t  mdstall_temp  = { .raw = lwr_data4 & ((IOPMP_MD_NUM >= 31) ? UINT32_MAX : GENMASK_32(IOPMP_MD_NUM, 0)) };
+    mdstallh_t mdstallh_temp = { .raw = (IOPMP_MD_NUM < 32) ? 0 : upr_data4 & GENMASK_32(IOPMP_MD_NUM - 32, 0) };
     #if (IMP_RRIDSCP)
         rridscp_t  rridscp_temp  = { .raw = lwr_data4 };
         rridscp_temp.op          = (lwr_data4 >> 30) & MASK_BIT_POS(2);
     #endif
-    mdstall_temp.md          = (lwr_data4 >> 1) & ((IOPMP_MD_NUM >= 32) ? UINT32_MAX : (1ULL << IOPMP_MD_NUM) - 1);
+    mdstall_temp.md          = (lwr_data4 >> 1) & ((IOPMP_MD_NUM >= 31) ? UINT32_MAX : GENMASK_32(IOPMP_MD_NUM - 1, 0));
     mdstall_temp.exempt      = GET_BIT(lwr_data4, 0);
 #endif
 
@@ -570,9 +589,11 @@ void write_register(uint64_t offset, reg_intf_dw data, uint8_t num_bytes) {
         return;
 #endif
 
+#if (IOPMP_MFR_EN)
     case ERR_MFR_OFFSET:
         g_reg_file.err_mfr.svi = err_mfr_temp.svi;
         break;
+#endif
 
 #if (MSI_EN)
     case ERR_MSIADDR_OFFSET:
@@ -633,27 +654,31 @@ void write_register(uint64_t offset, reg_intf_dw data, uint8_t num_bytes) {
 
 // Code block for handling SRCMD table accesses based on format type
 #if (SRCMD_FMT != 1)
-    int srcmd_tlb_access;
+    int srcmd_tbl_access;
     int is_srcmd_locked = 0;  // Initialize as unlocked
 
     // Pre-compute access range and lock status based on format type
     #if (SRCMD_FMT == 0)
-        srcmd_tlb_access = IS_IN_RANGE(offset, SRCMD_TABLE_BASE_OFFSET, SRCMD_TABLE_BASE_OFFSET + (IOPMP_RRID_NUM * SRCMD_REG_STRIDE) + 28);
-        is_srcmd_locked  = g_reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_en.l;
+        srcmd_tbl_access = IS_IN_RANGE(offset, SRCMD_TABLE_BASE_OFFSET, SRCMD_TABLE_BASE_OFFSET + (IOPMP_RRID_NUM * SRCMD_REG_STRIDE) + 28);
+        if (srcmd_tbl_access) {
+            is_srcmd_locked = g_reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_en.l;
+        }
 
     #elif (SRCMD_FMT == 2)
-        srcmd_tlb_access = IS_IN_RANGE(offset, SRCMD_TABLE_BASE_OFFSET, SRCMD_TABLE_BASE_OFFSET + (IOPMP_MD_NUM * SRCMD_REG_STRIDE) + 8);
-        int table_index  = SRCMD_TABLE_INDEX(offset);
+        srcmd_tbl_access = IS_IN_RANGE(offset, SRCMD_TABLE_BASE_OFFSET, SRCMD_TABLE_BASE_OFFSET + (IOPMP_MD_NUM * SRCMD_REG_STRIDE) + 8);
+        if (srcmd_tbl_access) {
+            int table_index = SRCMD_TABLE_INDEX(offset);
 
-        if (table_index < 31) {
-            is_srcmd_locked = (g_reg_file.mdlck.md >> table_index) & 1;
-        } else {
-            is_srcmd_locked = (g_reg_file.mdlckh.mdh >> (table_index - 31)) & 1;
+            if (table_index < 31) {
+                is_srcmd_locked = (g_reg_file.mdlck.md >> table_index) & 1;
+            } else {
+                is_srcmd_locked = (g_reg_file.mdlckh.mdh >> (table_index - 31)) & 1;
+            }
         }
     #endif
 
     // Proceed only if within access range and not locked
-    if (srcmd_tlb_access && !is_srcmd_locked) {
+    if (srcmd_tbl_access && !is_srcmd_locked) {
         uint32_t srcmd_reg = SRCMD_REG_INDEX(offset);
 
         switch (srcmd_reg) {

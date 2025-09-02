@@ -43,7 +43,9 @@ void errorCapture(perm_type_e trans_type, uint8_t error_type, uint16_t rrid, uin
         g_reg_file.err_reqid.eid  = entry_id;
 
     // If an error was previously logged, handle a subsequent violation
-    } else if (!checkRridSv(rrid) && g_reg_file.hwcfg0.mfr_en && (!error_suppress | !intrpt_suppress)) {
+    }
+#if (IOPMP_MFR_EN)
+    else if (!checkRridSv(rrid) && g_reg_file.hwcfg0.mfr_en && (!error_suppress | !intrpt_suppress)) {
         // Update violation window
         setRridSv(rrid);
     }
@@ -55,12 +57,14 @@ void errorCapture(perm_type_e trans_type, uint8_t error_type, uint16_t rrid, uin
             break;
         }
     }
+#endif
 
     // Generate Interrupt
     if (!err_reqinfo_v)
         generate_interrupt(intrpt);
 }
 
+#if (IOPMP_MFR_EN)
 /**
   * @brief Sets the corresponding bit in the error subsequent violations (SV) structure for a given RRID.
   *
@@ -79,3 +83,4 @@ void setRridSv(uint16_t rrid) {
 int checkRridSv(uint16_t rrid) {
     return (err_svs.sv[rrid/16].svw >> (rrid % 16)) & 0x1;
 }
+#endif
