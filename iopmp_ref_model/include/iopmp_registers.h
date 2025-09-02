@@ -706,8 +706,12 @@ typedef union {
     uint64_t        regs8[((IOPMP_ENTRY_NUM * 16) + 4)/2];
 } iopmp_entries_t;
 
+#define ALIGNUP(x, a)   (((x) + ((a) - 1)) & ~((a) - 1))
+// Number of subsequent violation record windows to accommodate all RRIDs.
+#define NUM_SVW         (ALIGNUP(IOPMP_RRID_NUM, 16) / 16)
+
 typedef struct {
-    err_mfr_t sv[IOPMP_RRID_NUM/16];
+    err_mfr_t sv[NUM_SVW];
 } err_mfrs_t;
 
 #endif
