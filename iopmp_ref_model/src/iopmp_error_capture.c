@@ -51,7 +51,7 @@ void errorCapture(perm_type_e trans_type, uint8_t error_type, uint16_t rrid, uin
     }
 
     // Check for any subsequent violation and set err_info.svc
-    for (int i = 0; i < (IOPMP_RRID_NUM/16); i++) {
+    for (int i = 0; i < NUM_SVW; i++) {
         if (err_svs.sv[i].svw) {
             g_reg_file.err_info.svc = 1;
             break;
