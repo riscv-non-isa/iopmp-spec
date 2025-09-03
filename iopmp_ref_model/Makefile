@@ -4,11 +4,15 @@ SRC_DIR  := src
 VERIF    := verif
 TEST_DIR := $(VERIF)/tests
 LIB_DIR  := lib
+LIBIOPMP_DIR := ../libiopmp
+LIBIOPMP     := $(LIBIOPMP_DIR)/build/lib/libiopmp.a
+
 cov =
 COVFLAGS =
 ifeq ($(cov), 1)
 COVFLAGS += -fprofile-arcs -ftest-coverage -lgcov --coverage
 endif
+
 asan =
 ASAN_CFLAGS =
 ASAN_LDFLAGS =
@@ -17,20 +21,34 @@ ASAN_CFLAGS += -fsanitize=address -fno-omit-frame-pointer -O1 -g3
 ASAN_LDFLAGS += -lasan
 endif
 
+libiopmp =
+LIBIOPMP_CFLAGS =
+LIBIOPMP_LDFLAGS =
+LIBIOPMP_PREREQ =
+ifeq ($(libiopmp), 1)
+# Enable coverage analysis
+cov = 1
+LIBIOPMP_CFLAGS += -I$(LIBIOPMP_DIR)/include
+LIBIOPMP_LDFLAGS += $(LIBIOPMP) -lgcov
+# Prerequisite
+LIBIOPMP_PREREQ += $(LIBIOPMP)
+endif
+
 # Compiler and flags
 CC := gcc
-CFLAGS := -Wall -Werror $(COVFLAGS) $(ASAN_CFLAGS) -I./include -Iverif/ -fPIC
-LDFLAGS := -lm $(ASAN_LDFLAGS)
+CFLAGS := -Wall -Werror $(COVFLAGS) $(ASAN_FLAGS) $(LIBIOPMP_CFLAGS) -I./include -Iverif/ -fPIC
+LDFLAGS := -lm $(ASAN_LDFLAGS) $(LIBIOPMP_LDFLAGS)
 
 # Common source files
 COMMON_SOURCES := $(SRC_DIR)/iopmp_reg.c \
-				  $(SRC_DIR)/iopmp_interrupt.c \
+                  $(SRC_DIR)/iopmp_interrupt.c \
                   $(SRC_DIR)/iopmp_rule_analyzer.c \
                   $(SRC_DIR)/iopmp_validate.c \
                   $(SRC_DIR)/iopmp_error_capture.c \
                   $(VERIF)/test_utils.c
 
 # Models and configurations
+ifneq ($(libiopmp),1)
 MODELS := full_model:fullmodel.c:0:0 \
           rapid_k_model:rapidmodel.c:0:1 \
           dynamic_k_model:dynamicmodel.c:0:2 \
@@ -40,6 +58,9 @@ MODELS := full_model:fullmodel.c:0:0 \
           unnamed_model_2:unnamed_model_2.c:2:0 \
           unnamed_model_3:unnamed_model_3.c:2:1 \
           unnamed_model_4:unnamed_model_4.c:2:2
+else
+MODELS := libiopmp_INFO:libiopmp_INFO.c:0:0
+endif
 
 # Targets
 .PHONY: all build run clean
@@ -54,7 +75,7 @@ $(LIB_DIR):
 	mkdir -p $(LIB_DIR)
 
 # Build all models into libraries and executables
-build: $(BIN_DIR) $(LIB_DIR)
+build: $(BIN_DIR) $(LIB_DIR) $(LIBIOPMP_PREREQ)
 	@if [ -z "$(model)" ]; then \
 		echo "Building all models..."; \
 		for entry in $(MODELS); do \
@@ -146,6 +167,7 @@ help:
 	@echo "  sharedLib=1           Build shared libraries instead of static ones"
 	@echo "  cov=1                 Enable code coverage during compilation"
 	@echo "  asan=1                Enable AddressSanitizer"
+	@echo "  libiopmp=1            Build libiopmp test program"
 	@echo ""
 	@echo "Available Models:"
 	@echo "  full_model            SRCMD_FMT = 0, MDCFG_FMT = 0"
@@ -157,6 +179,9 @@ help:
 	@echo "  unnamed_model_2       SRCMD_FMT = 2, MDCFG_FMT = 0"
 	@echo "  unnamed_model_3       SRCMD_FMT = 2, MDCFG_FMT = 1"
 	@echo "  unnamed_model_4       SRCMD_FMT = 2, MDCFG_FMT = 2"
+	@echo ""
+	@echo "Available libiopmp test program:"
+	@echo "  libiopmp_INFO         SRCMD_FMT = 0, MDCFG_FMT = 0"
 	@echo ""
 
 # Clean the binary and library directories
