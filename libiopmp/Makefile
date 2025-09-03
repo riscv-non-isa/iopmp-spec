@@ -39,7 +39,6 @@ CFLAGS	+= -fno-strict-aliasing -ffunction-sections -fdata-sections
 CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
 CFLAGS	+= -fno-asynchronous-unwind-tables -fno-unwind-tables
 CFLAGS	+= -I$(src_dir) -I$(inc_dir)
-CFLAGS	+= --coverage
 
 ifeq ($(DEBUG),y)
 CFLAGS	+= -O0 -DDEBUG
@@ -48,6 +47,7 @@ CFLAGS	+= -O2
 endif
 
 ifeq ($(CFG_IOPMP_REF_MODEL),y)
+CFLAGS	+= --coverage
 CFLAGS	+= -DENABLE_IO_WEAK_FUNCTIONS
 endif
 
