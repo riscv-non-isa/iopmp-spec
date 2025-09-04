@@ -24,153 +24,212 @@
 /******************************************************************************/
 /* libiopmp data structure.                                                   */
 /******************************************************************************/
+/**
+ * Structure for an IOPMP instance, including base address, operations,
+ * configurations, etc
+ */
 struct iopmp_instance {
-    /* Base MMIO physical address of IOPMP */
+    /** Base MMIO physical address of IOPMP */
     uintptr_t addr;
-    /* PMP granularity */
+    /** PMP granularity */
     uint32_t granularity;
-    /* Implemented bits of ENTRY_ADDR(H) */
+    /** Implemented bits of ENTRY_ADDR(H) */
     uint64_t entry_addr_bits;
-    /* Operations */
+    /** Generic operations for all models */
     struct iopmp_operations_generic *ops_generic;
+    /** Operations for specific model */
     struct iopmp_operations_specific *ops_specific;
+    /** Operations for model supports SPS extension */
     struct iopmp_operations_sps *ops_sps;
 
-    /* Base MMIO physical address of IOPMP entries */
+    /** Base MMIO physical address of IOPMP entries */
     uintptr_t addr_entry_array;
 
-    /* The JEDEC manufacturer ID */
+    /** The JEDEC manufacturer ID */
     uint32_t vendor;
-    /* The user-defined implementation ID */
+    /** The user-defined implementation ID */
     uint32_t impid;
-    /* Indicate the supported number of RRID in the instance */
+    /** Indicate the supported number of RRID in the instance */
     uint16_t rrid_num;
-    /* Indicate the supported number of entries in the instance */
+    /** Indicate the supported number of entries in the instance */
     uint16_t entry_num;
-    /* Indicate the number of entries matched with priority */
+    /** Indicate the number of entries matched with priority */
     uint16_t prio_entry_num;
-    /* The RRID tagged to outgoing transactions */
+    /** The RRID tagged to outgoing transactions */
     uint16_t rrid_transl;
-    /* The specification version */
+    /** The specification version */
     uint8_t specver;
-    /* Indicate the supported number of MD in the instance */
+    /** Indicate the supported number of MD in the instance */
     uint8_t md_num;
-    /* When mdcfg_fmt = 1 or 2, indicate each MD has (md_entry_num+1) entries */
+    /** When mdcfg_fmt={1,2}, indicate each MD has (md_entry_num+1) entries */
     uint8_t md_entry_num;
 
-    /* Configuration Protection Registers */
+    /** Cache of MDLCK.l */
     uint8_t mdlck_lock;
+    /** Cache of MDLCK.md */
     uint64_t mdlck_md;
+    /** Cache of MDCFGLCK.l */
     uint8_t mdcfglck_lock;
+    /** Cache of MDCFGLCK.f */
     uint8_t mdcfglck_f;
+    /** Cache of ENTRYLCK.l */
     uint8_t entrylck_lock;
+    /** Cache of ENTRYLCK.f */
     uint16_t entrylck_f;
 
-    /* Error Capture Registers */
+    /** Cache of {ERR_MSIADDRH, ERR_MSIADDR} */
     uint64_t msiaddr64;
+    /** Cache of ERR_CFG.msidata */
     uint16_t msidata;
 
-    /* Flags */
+    /** Flags */
     struct {
-        /* Indicate the IOPMP instance has been initialized */
+        /** Flag to indicate the IOPMP instance has been initialized */
         unsigned int init : 1;
-        /* Indicate the MDCFG format */
+        /** Flag to indicate the MDCFG format */
         unsigned int mdcfg_fmt : 2;
-        /* Indicate the SRCMD format */
+        /** Flag to indicate the SRCMD format */
         unsigned int srcmd_fmt : 2;
-        /* Indicate if TOR is supported */
+        /** Flag to indicate if TOR is supported */
         unsigned int tor_en : 1;
-        /* Indicate secondary permission settings is supported */
+        /** Flag to indicate SPS(secondary permission settings) is supported */
         unsigned int sps_en : 1;
-        /* Indicate if user customized attributes is supported */
+        /** Flag to indicate if user customized attributes is supported */
         unsigned int user_cfg_en : 1;
-        /* Indicates if HWCFG2.prio_entry is programmable */
+        /** Flag to indicates if HWCFG2.prio_entry is programmable */
         unsigned int prient_prog : 1;
-        /* Indicate the if tagging a new RRID on the initiator port is supported */
+        /**
+         * Flag to indicate the if tagging a new RRID on the initiator port is
+         * supported
+         */
         unsigned int rrid_transl_en : 1;
-        /* Indicate if the field rrid_transl is programmable */
+        /** Flag to indicate if the field HWCFG2.rrid_transl is programmable */
         unsigned int rrid_transl_prog : 1;
-        /* Indicate if the IOPMP implements the check of an instruction fetch */
+        /**
+         * Flag to indicate if the IOPMP implements the check of an instruction
+         * fetch
+         */
         unsigned int chk_x : 1;
-        /* For chk_x=1, the IOPMP with no_x=1 always fails on an instruction fetch */
+        /**
+         * Flag to indicate for chk_x=1, the IOPMP with no_x=1 always fails on
+         * an instruction fetch
+         */
         unsigned int no_x : 1;
-        /* Indicate if the IOPMP always fails write accesses considered as as no rule matched */
+        /**
+         * Flag to indicate if the IOPMP always fails write accesses considered
+         * as no rule matched
+         */
         unsigned int no_w : 1;
-        /* Indicate if the IOPMP implements stall-related features */
+        /** Flag to indicate if the IOPMP implements stall-related features */
         unsigned int stall_en : 1;
-        /* Indicate if the IOPMP implements interrupt suppression per entry */
+        /**
+         * Flag to indicate if the IOPMP implements interrupt suppression per
+         * entry
+         */
         unsigned int peis : 1;
-        /* Indicate if the IOPMP implements the error suppression per entry */
+        /**
+         * Flag to indicate if the IOPMP implements error suppression per entry
+         */
         unsigned int pees : 1;
-        /* Indicate if the IOPMP implements Multi Faults Record Extension */
+        /**
+         * Flag to indicate if the IOPMP implements MFR(Multi-Faults Record)
+         * extension
+         */
         unsigned int mfr_en : 1;
-        /* Indicate if the IOPMP implements ENTRY_ADDRH(i) */
+        /**
+         * Flag to indicate if registers ENTRY_ADDRH(i) and ERR_MSIADDRH (if
+         * ERR_CFG.msi_en = 1) are available
+         */
         unsigned int addrh_en : 1;
-        /* Indicate if the IOPMP checks transactions */
+        /** Indicate if the IOPMP checks transactions */
         unsigned int enable : 1;
-        /* Lock fields to ERR_CFG register */
+        /** Lock fields to ERR_CFG register */
         unsigned int err_cfg_lock : 1;
-        /* Enable the global interrupt of the IOPMP */
+        /** Enable the global interrupt of the IOPMP */
         unsigned int intr_enable : 1;
-        /* Suppress the global error responses of the IOPMP */
+        /** Suppress the global error responses of the IOPMP */
         unsigned int err_resp_suppress : 1;
-        /* Indicate whether the IOPMP triggers MSI */
+        /** Flag to indicate whether the IOPMP triggers MSI */
         unsigned int msi_en : 1;
-        /* Indicate whether the IOPMP faults stalled transactions */
+        /** Flag to indicate whether the IOPMP faults stalled transactions */
         unsigned int stall_violation_en : 1;
-        /* Indicate if stall by RRID is supported */
+        /** Flag to indicate if stall by RRID is supported */
         unsigned int support_stall_by_rrid : 1;
-        /* Indicate if stall by MD is supported */
+        /** Flag to indicate if stall by MD is supported */
         unsigned int support_stall_by_md : 1;
-        /* Indicate if IOPMP is stalling some transactions */
+        /** Flag to indicate if IOPMP is stalling some transactions */
         unsigned int is_stalling : 1;
     };
 };
 
-/*
- * Flag of priority entry
+/**
+ * Flags to indicate an entry must be priority entry or not. Some APIs
+ * which writing the entries into IOPMP will check this flag
  *   - 0b00: ignore check
  *   - 0b01: must be priority entry
  *   - 0b10: must be non-priority entry
  */
 enum iopmp_prient_flags {
+    /** User sets this flag to indicate the entry's priority doesn't matter */
     IOPMP_PRIENT_ANY = 0,
+    /** User sets this flag to indicate the entry must be priority entry */
     IOPMP_PRIENT_PRIORITY = (1 << 0),
+    /** User sets this flag to indicate the entry must be non-priority entry */
     IOPMP_PRIENT_NON_PRIORITY = (1 << 1),
 };
 
+/**
+ * Structure to represent an IOPMP entry, including the physical address
+ * of protected memory region, permission attributes, per-entry suppression
+ * settings, priority flags, private data, etc
+ */
 struct iopmp_entry {
-    /* ENTRY_ADDR */
+    /** Values of ENTRY_ADDR and ENTRY_ADDRH */
     union {
         struct {
-            uint32_t addrl; /* The physical address[33:2] of memory region */
-            uint32_t addrh; /* The physical address[65:34] of memory region */
+            /** The physical address[33:2] of memory region */
+            uint32_t addrl;
+            /** The physical address[65:34] of memory region */
+            uint32_t addrh;
         };
+        /** The physical address[65:2] of protected memory region */
         uint64_t addr;
     };
 
-    /* ENTRY_CFG */
+    /** Value of ENTRY_CFG */
     union {
         struct {
+            /** ENTRY_CFG.r */
             uint32_t r   : 1;
+            /** ENTRY_CFG.w */
             uint32_t w   : 1;
+            /** ENTRY_CFG.x */
             uint32_t x   : 1;
+            /** ENTRY_CFG.a */
             uint32_t a   : 2;
+            /** ENTRY_CFG.sire */
             uint32_t sire: 1;
+            /** ENTRY_CFG.siwe */
             uint32_t siwe: 1;
+            /** ENTRY_CFG.sixe */
             uint32_t sixe: 1;
+            /** ENTRY_CFG.sere */
             uint32_t sere: 1;
+            /** ENTRY_CFG.sewe */
             uint32_t sewe: 1;
+            /** ENTRY_CFG.sexe */
             uint32_t sexe: 1;
+            /** ENTRY_CFG.rsv */
             uint32_t rsv : 21;
         };
+        /** ENTRY_CFG */
         uint32_t cfg;
     };
 
-    /* Flag of priority/non-priority entry */
+    /** Flag to indicate this is priority or non-priority entry */
     enum iopmp_prient_flags prient_flag;
 
-    /*
+    /**
      * Additional 64-bit data that can be used in specific model.
      *
      * For example, it can be used as SRCMD_PERM(H) in SRCMD_FMT=2, MDCFG_FMT=1
@@ -181,51 +240,69 @@ struct iopmp_entry {
     uint64_t private_data;
 };
 
-/* Indicated the transaction type of an error information */
+/** Indicated the transaction type of the first captured violation */
 enum iopmp_errinfo_ttype {
+    /** Reserved */
     IOPMP_ERRINFO_TTYPE_RSVD       = 0x00,
+    /** Read access */
     IOPMP_ERRINFO_TTYPE_READ       = 0x01,
+    /** Write access/AMO */
     IOPMP_ERRINFO_TTYPE_WRITE      = 0x02,
+    /** Instruction fetch */
     IOPMP_ERRINFO_TTYPE_INST_FETCH = 0x03,
 };
 
-/* Indicated the violation type of an error information */
+/** Indicated the type of violation */
 enum iopmp_errinfo_etype {
+    /** No error */
     IOPMP_ERRINFO_ETYPE_NONE         = 0x00,
+    /** Illegal read access */
     IOPMP_ERRINFO_ETYPE_READ         = 0x01,
+    /** Illegal write access/AMO */
     IOPMP_ERRINFO_ETYPE_WRITE        = 0x02,
+    /** Illegal instruction fetch */
     IOPMP_ERRINFO_ETYPE_INST_FETCH   = 0x03,
+    /** Partial hit on a priority rule */
     IOPMP_ERRINFO_ETYPE_PART_HIT     = 0x04,
+    /** Not hit any rule */
     IOPMP_ERRINFO_ETYPE_NOT_HIT      = 0x05,
+    /** Unknown RRID */
     IOPMP_ERRINFO_ETYPE_UNKNOWN_RRID = 0x06,
+    /** Error due to a stalled transaction */
     IOPMP_ERRINFO_ETYPE_STALL        = 0x07,
+    /** N/A, reserved for future */
     IOPMP_ERRINFO_ETYPE_RESERVED_0   = 0x08,
+    /** N/A, reserved for future */
     IOPMP_ERRINFO_ETYPE_RESERVED_1   = 0x09,
+    /** N/A, reserved for future */
     IOPMP_ERRINFO_ETYPE_RESERVED_2   = 0x0A,
+    /** N/A, reserved for future */
     IOPMP_ERRINFO_ETYPE_RESERVED_3   = 0x0B,
+    /** N/A, reserved for future */
     IOPMP_ERRINFO_ETYPE_RESERVED_4   = 0x0C,
+    /** N/A, reserved for future */
     IOPMP_ERRINFO_ETYPE_RESERVED_5   = 0x0D,
+    /** User-defined error */
     IOPMP_ERRINFO_ETYPE_USER_DEF_0   = 0x0E,
+    /** User-defined error */
     IOPMP_ERRINFO_ETYPE_USER_DEF_1   = 0x0F,
 };
 
-/**
- * @brief Structure as IOPMP error report
- */
+/** Structure represents an IOPMP error report */
 struct iopmp_err_report {
-    /* Error address[65:2] */
+    /** Errored address[65:2] */
     uint64_t addr;
-    /* Error RRID */
+    /** Errored RRID */
     uint32_t rrid;
-    /* Error entry index */
+    /** Indicates the index pointing to the entry that catches the violation */
     uint32_t eid;
-    /* Error transaction type */
+    /** Indicated the transaction type of the first captured violation */
     enum iopmp_errinfo_ttype ttype;
-    /* Error violation type */
+    /** Indicated the type of violation */
     enum iopmp_errinfo_etype etype;
-    /* MSI write error */
+    /** Indicate the write access to trigger an IOPMP originated MSI failed */
     bool msi_werr;
-    /* Subsequent violation */
+    /** Indicate there is a subsequent violation caught in ERR_MFR */
     bool svc;
 };
 
@@ -235,21 +312,39 @@ typedef struct iopmp_entry IOPMP_Entry_t;
 
 typedef struct iopmp_err_report IOPMP_ERR_REPORT_t;
 
-/* Maximum supported RRID when srcmd_fmt=2 */
+/** Maximum supported RRID when srcmd_fmt=2 */
 #define IOPMP_MAX_RRID_SRCMD_FMT_2  32
 
-/* Representation of configuration used in srcmd_fmt=2 */
+/** Representation of configurations used in srcmd_fmt=2 */
 struct iopmp_srcmd_perm_config {
-    /* Which RRIDs' permission be changed */
+    /** Which RRIDs' permission should be changed */
     uint32_t rrid_changed;
-    /* Permission of each RRID */
+    /** Bit position of SRCMD_PERM.r for each RRID */
 #define IOPMP_SRCMD_PERM_R      (1 << 0)
+    /** Bit position of SRCMD_PERM.w for each RRID */
 #define IOPMP_SRCMD_PERM_W      (1 << 1)
+    /** Bit mask of SRCMD_PERM for each RRID */
 #define IOPMP_SRCMD_PERM_MASK   (IOPMP_SRCMD_PERM_W | IOPMP_SRCMD_PERM_R)
+    /**
+     * Desired permissions for each RRID. Each RRID uses one array element.
+     * For example, RRID(0) uses \p rrid_perm[0] and RRID(31) uses
+     * \p rrid_perm[31] . Each \p rrid_perm encodes \p IOPMP_SRCMD_PERM_R and
+     * \p IOPMP_SRCMD_PERM_W
+     */
     uint8_t rrid_perm[IOPMP_MAX_RRID_SRCMD_FMT_2];
 };
 typedef struct iopmp_srcmd_perm_config IOPMP_SRCMD_PERM_CFG_t;
 
+/**
+ * \brief Macro used to set rrid_perm[] in struct iopmp_srcmd_perm_config
+ *
+ * \param[in] cfg       pointer to struct iopmp_srcmd_perm_config
+ * \param[in] rrid      Desired RRID to be set
+ * \param[in] r         Set true to give RRID read permission; false to clear
+ *                      read permission
+ * \param[in] w         Set true to give RRID write permission; false to clear
+ *                      write permission
+ */
 #define IOPMP_SRCMD_PERM_SET(cfg, rrid, r, w)               \
     do {                                                    \
         IOPMP_SRCMD_PERM_CFG_t *__cfg = (cfg);              \
@@ -267,106 +362,162 @@ typedef struct iopmp_srcmd_perm_config IOPMP_SRCMD_PERM_CFG_t;
 /******************************************************************************/
 /* Supported IOPMP implementation ID                                          */
 /******************************************************************************/
+/** Enumerate implementation ID of IOPMP */
 enum iopmp_impid {
+    /** The implementation ID of IOPMP is not specified */
     IOPMP_IMPID_NOT_SPECIFIED = 0xFFFFFFFF,
 };
 
 /******************************************************************************/
 /* MDCFG_FMT and SRCMD_FMT and models                                         */
 /******************************************************************************/
-/** Indicate the SRCMD format */
+/** Enumerate the SRCMD table format */
 enum iopmp_srcmd_fmt {
+    /** Format 0. SRCMD_EN(s) and SRCMD_ENH(s) are available */
     IOPMP_SRCMD_FMT_0,
+    /** Format 1. No SRCMD Table */
     IOPMP_SRCMD_FMT_1,
+    /** Format 2. SRCMD_PERM(m) and SRCMD_PERMH(m) are available */
     IOPMP_SRCMD_FMT_2,
+    /** Reserved */
     IOPMP_SRCMD_FMT_RESERVED,
+    /** Maximum number of SRCMD table formats */
     IOPMP_SRCMD_FMT_MAX,
 };
 
-/** Indicate the MDCFG format */
+/** Enumerate the MDCFG table format */
 enum iopmp_mdcfg_fmt {
+    /** Format 0. MDCFG Table is implemented */
     IOPMP_MDCFG_FMT_0,
+    /** Format 1. No MDCFG Table. HWCFG.md_entry_num is fixed */
     IOPMP_MDCFG_FMT_1,
+    /** Format 2. No MDCFG Table. HWCFG.md_entry_num is programmable */
     IOPMP_MDCFG_FMT_2,
+    /** Reserved */
     IOPMP_MDCFG_FMT_RESERVED,
+    /** Maximum number of MDCFG table formats */
     IOPMP_MDCFG_FMT_MAX,
 };
 
-/** Well-defined IOPMP models */
+/** Enumerate well-defined IOPMP models */
 enum iopmp_model {
-    IOPMP_MODEL_FULL        = 0,    /* srcmd_fmt=0 and mdcfg_fmt=0 */
-    IOPMP_MODEL_RAPID_K     = 1,    /* srcmd_fmt=0 and mdcfg_fmt=1 */
-    IOPMP_MODEL_DYNAMIC_K   = 2,    /* srcmd_fmt=0 and mdcfg_fmt=2 */
-    IOPMP_MODEL_RESERVED_3  = 3,    /* srcmd_fmt=0 and mdcfg_fmt=3 (reserved) */
-    IOPMP_MODEL_ISOLATION   = 4,    /* srcmd_fmt=1 and mdcfg_fmt=0 */
-    IOPMP_MODEL_COMPACT_K   = 5,    /* srcmd_fmt=1 and mdcfg_fmt=1 */
-    IOPMP_MODEL_6           = 6,    /* srcmd_fmt=1 and mdcfg_fmt=2 */
-    IOPMP_MODEL_RESERVED_7  = 7,    /* srcmd_fmt=1 and mdcfg_fmt=3 (reserved) */
-    IOPMP_MODEL_8           = 8,    /* srcmd_fmt=2 and mdcfg_fmt=0 */
-    IOPMP_MODEL_9           = 9,    /* srcmd_fmt=2 and mdcfg_fmt=1 */
-    IOPMP_MODEL_RESERVED_10 = 10,   /* srcmd_fmt=2 and mdcfg_fmt=2 */
-    IOPMP_MODEL_RESERVED_11 = 11,   /* srcmd_fmt=2 and mdcfg_fmt=3 (reserved) */
-    IOPMP_MODEL_RESERVED_12 = 12,   /* srcmd_fmt=3 and mdcfg_fmt=0 (reserved) */
-    IOPMP_MODEL_RESERVED_13 = 13,   /* srcmd_fmt=3 and mdcfg_fmt=1 (reserved) */
-    IOPMP_MODEL_RESERVED_14 = 14,   /* srcmd_fmt=3 and mdcfg_fmt=2 (reserved) */
-    IOPMP_MODEL_RESERVED_15 = 15    /* srcmd_fmt=3 and mdcfg_fmt=3 (reserved) */
+    /** srcmd_fmt = 0 and mdcfg_fmt = 0 */
+    IOPMP_MODEL_FULL        = 0,
+    /** srcmd_fmt = 0 and mdcfg_fmt = 1 */
+    IOPMP_MODEL_RAPID_K     = 1,
+    /** srcmd_fmt = 0 and mdcfg_fmt = 2 */
+    IOPMP_MODEL_DYNAMIC_K   = 2,
+    /** srcmd_fmt = 0 and mdcfg_fmt = 3 (reserved) */
+    IOPMP_MODEL_RESERVED_3  = 3,
+    /** srcmd_fmt = 1 and mdcfg_fmt = 0 */
+    IOPMP_MODEL_ISOLATION   = 4,
+    /** srcmd_fmt = 1 and mdcfg_fmt = 1 */
+    IOPMP_MODEL_COMPACT_K   = 5,
+    /** srcmd_fmt = 1 and mdcfg_fmt = 2 */
+    IOPMP_MODEL_6           = 6,
+    /** srcmd_fmt = 1 and mdcfg_fmt = 3 (reserved) */
+    IOPMP_MODEL_RESERVED_7  = 7,
+    /** srcmd_fmt = 2 and mdcfg_fmt = 0 */
+    IOPMP_MODEL_8           = 8,
+    /** srcmd_fmt = 2 and mdcfg_fmt = 1 */
+    IOPMP_MODEL_9           = 9,
+    /** srcmd_fmt = 2 and mdcfg_fmt = 2 */
+    IOPMP_MODEL_RESERVED_10 = 10,
+    /** srcmd_fmt = 2 and mdcfg_fmt = 3 (reserved) */
+    IOPMP_MODEL_RESERVED_11 = 11,
+    /** srcmd_fmt = 3 and mdcfg_fmt = 0 (reserved) */
+    IOPMP_MODEL_RESERVED_12 = 12,
+    /** srcmd_fmt = 3 and mdcfg_fmt = 1 (reserved) */
+    IOPMP_MODEL_RESERVED_13 = 13,
+    /** srcmd_fmt = 3 and mdcfg_fmt = 2 (reserved) */
+    IOPMP_MODEL_RESERVED_14 = 14,
+    /** srcmd_fmt = 3 and mdcfg_fmt = 3 (reserved) */
+    IOPMP_MODEL_RESERVED_15 = 15
 };
 
-/* The operations of RRIDSCP.op field */
+/** The operations of RRIDSCP.op field */
 enum iopmp_rridscp_op {
+    /** Query */
     IOPMP_RRIDSCP_OP_QUERY = 0,
+    /** Stall transactions associated with selected RRID */
     IOPMP_RRIDSCP_OP_STALL = 1,
+    /** Don’t stall transactions associated with selected RRID */
     IOPMP_RRIDSCP_OP_DONT_STALL = 2,
-    IOPMP_RRIDSCP_OP_MAX
+    /** Reserved */
+    IOPMP_RRIDSCP_OP_RESERVED = 3
 };
 
-/* The states of RRIDSCP.stat field */
+/** The states of RRIDSCP.stat field */
 enum iopmp_rridscp_stat {
+    /** RRIDSCP is not implemented */
     IOPMP_RRIDSCP_STAT_NOT_IMPL = 0,
+    /** Transactions associated with selected RRID are stalled */
     IOPMP_RRIDSCP_STAT_STALLED = 1,
+    /** Transactions associated with selected RRID are not stalled */
     IOPMP_RRIDSCP_STAT_NOT_STALLED = 2,
-    IOPMP_RRIDSCP_STAT_ERR_RRID
+    /** Unimplemented or unselectable RRID */
+    IOPMP_RRIDSCP_STAT_ERR_RRID = 3
 };
 
 /******************************************************************************/
 /* The flags used when calling iopmp_encode_entry()                           */
 /******************************************************************************/
+/** The flags used when calling iopmp_encode_entry() */
 enum iopmp_entry_flags {
-    /* ENTRY_CFG.xwr */
+    /** ENTRY_CFG.r = 1 */
     IOPMP_ENTRY_R = (1UL << 0),
+    /** ENTRY_CFG.w = 1 */
     IOPMP_ENTRY_W = (1UL << 1),
+    /** ENTRY_CFG.x = 1 */
     IOPMP_ENTRY_X = (1UL << 2),
+    /** ENTRY_CFG.r = 1 and ENTRY_CFG.w = 1 */
     IOPMP_ENTRY_RW = (IOPMP_ENTRY_R | IOPMP_ENTRY_W),
+    /** ENTRY_CFG.r = 1 and ENTRY_CFG.x = 1 */
     IOPMP_ENTRY_RX = (IOPMP_ENTRY_R | IOPMP_ENTRY_X),
+    /** ENTRY_CFG.r = 1, ENTRY_CFG.w = 1, and ENTRY_CFG.x = 1 */
     IOPMP_ENTRY_RWX = (IOPMP_ENTRY_R | IOPMP_ENTRY_W | IOPMP_ENTRY_X),
 
-    /* ENTRY_CFG.a */
+    /** ENTRY_CFG.a = OFF */
     IOPMP_ENTRY_A_OFF = (0UL << 3),
+    /** ENTRY_CFG.a = TOR */
     IOPMP_ENTRY_A_TOR = (1UL << 3),
+    /** ENTRY_CFG.a = NA4 */
     IOPMP_ENTRY_A_NA4 = (2UL << 3),
+    /** ENTRY_CFG.a = NAPOT */
     IOPMP_ENTRY_A_NAPOT = (3UL << 3),
+    /** Bit mask of ENTRY_CFG.a field */
     IOPMP_ENTRY_A_MASK = (3UL << 3),
 
-    /* ENTRY_CFG.{sexe, sewe, sere, sixe, siwe, sire} */
-    IOPMP_ENTRY_SIE_NONE = (0b000 << 5),
+    /** ENTRY_CFG.sire = 1 */
     IOPMP_ENTRY_SIRE = (1UL << 5),
+    /** ENTRY_CFG.siwe = 1 */
     IOPMP_ENTRY_SIWE = (1UL << 6),
+    /** ENTRY_CFG.sixe = 1 */
     IOPMP_ENTRY_SIXE = (1UL << 7),
+    /** Bit mask of ENTRY_CFG.sire, ENTRY_CFG.siwe, and ENTRY_CFG.sixe */
     IOPMP_ENTRY_SIE_MASK = (7UL << 5),
-    IOPMP_ENTRY_SEE_NONE = (0b000 << 8),
+    /** ENTRY_CFG.sere = 1 */
     IOPMP_ENTRY_SERE = (1UL << 8),
+    /** ENTRY_CFG.sewe = 1 */
     IOPMP_ENTRY_SEWE = (1UL << 9),
+    /** ENTRY_CFG.sexe = 1 */
     IOPMP_ENTRY_SEXE = (1UL << 10),
+    /** Bit mask of ENTRY_CFG.sere, ENTRY_CFG.sewe, and ENTRY_CFG.sexe */
     IOPMP_ENTRY_SEE_MASK = (7UL << 8),
 
-    /* Additional non-hardware flags used by libiopmp */
-    IOPMP_ENTRY_FORCE_OFF = (1UL << 27),     /* Force ENTRY_CFG.a as OFF */
-    IOPMP_ENTRY_FIRST_TOR = (1UL << 28),     /* ENTRY(0) as TOR */
+    /** [Software flag] Forcefully set ENTRY_CFG.a = OFF */
+    IOPMP_ENTRY_FORCE_OFF = (1UL << 27),
+    /** [Software flag] Forcefully set ENTRY(0).a = TOR */
+    IOPMP_ENTRY_FIRST_TOR = (1UL << 28),
+    /** [Software flag] Forcefully set ENTRY.a = TOR */
     IOPMP_ENTRY_FORCE_TOR = (1UL << 29),
 
+    /** [Software flag] FLag to indicate this entry is priority entry */
     IOPMP_ENTRY_PRIO = (1UL << 30),
+    /** [Software flag] FLag to indicate this entry is non-priority entry */
     IOPMP_ENTRY_NON_PRIO = (1UL << 31),
 
+    /** Bit mask of all software flags */
     IOPMP_ENTRY_SW_FLAGS_MASK = (IOPMP_ENTRY_FORCE_OFF | IOPMP_ENTRY_FIRST_TOR |
                                  IOPMP_ENTRY_FORCE_TOR | IOPMP_ENTRY_PRIO |
                                  IOPMP_ENTRY_NON_PRIO),
@@ -375,300 +526,688 @@ enum iopmp_entry_flags {
 /******************************************************************************/
 /* API Error codes                                                            */
 /******************************************************************************/
-/** libiopmp API Error Code */
+/** The libiopmp API error Code */
 enum iopmp_error {
-    /* Success */
+    /** Success */
     IOPMP_OK                    =  0,
-    /* The operation is not supported by this IOPMP */
+    /** The operation is not supported by this IOPMP */
     IOPMP_ERR_NOT_SUPPORTED     = -1,
-    /* The given index is out-of-bounds */
+    /** The given index is out-of-bounds */
     IOPMP_ERR_OUT_OF_BOUNDS     = -2,
-    /* The register is locked */
+    /** The register is locked */
     IOPMP_ERR_REG_IS_LOCKED     = -3,
-    /* The operation is not allowed */
+    /** The operation is not allowed */
     IOPMP_ERR_NOT_ALLOWED       = -4,
-    /* The result does not exist */
+    /** The result does not exist */
     IOPMP_ERR_NOT_EXIST         = -5,
-    /* The resource is not available */
+    /** The resource is not available */
     IOPMP_ERR_NOT_AVAILABLE     = -6,
-    /* The given parameter is invalid */
+    /** The given parameter is invalid */
     IOPMP_ERR_INVALID_PARAMETER = -7,
-    /* The given priority is invalid */
+    /** The given priority is invalid */
     IOPMP_ERR_INVALID_PRIORITY  = -8,
-    /* The desired value written into WARL field does not match actual value */
+    /** The desired value written into WARL field does not match actual value */
     IOPMP_ERR_ILLEGAL_VALUE     = -9,
 };
 
 /******************************************************************************/
 /* Helper macros and functions to get libiopmp version information            */
 /******************************************************************************/
-/* libiopmp release version */
+/** Major version of libiopmp release version */
 #define LIBIOPMP_VERSION_MAJOR          0
+/** Minor version of libiopmp release version */
 #define LIBIOPMP_VERSION_MINOR          1
+/** Extra version of libiopmp release version */
 #define LIBIOPMP_VERSION_EXTRA          0
 
+/** The bit position of the major version encoded in the IOPMP version number */
 #define LIBIOPMP_VERSION_MAJOR_SHIFT    16
+/** The bit mask of the major version encoded in the IOPMP version number */
 #define LIBIOPMP_VERSION_MAJOR_MASK     0xffff
 
+/** The bit position of the minor version encoded in the IOPMP version number */
 #define LIBIOPMP_VERSION_MINOR_SHIFT    8
+/** The bit mask of the minor version encoded in the IOPMP version number */
 #define LIBIOPMP_VERSION_MINOR_MASK     0xff
 
+/** The bit position of the extra version encoded in the IOPMP version number */
 #define LIBIOPMP_VERSION_EXTRA_SHIFT    0
+/** The bit mask of the extra version encoded in the IOPMP version number */
 #define LIBIOPMP_VERSION_EXTRA_MASK     0xff
 
+/**
+ * \brief The macro to construct the IOPMP version number
+ *
+ * \param[in] __major           The major version
+ * \param[in] __minor           The minor version
+ * \param[in] __extra           The extra version
+ *
+ * \return IOPMP version number
+ */
 #define LIBIOPMP_VERSION(__major, __minor, __extra) \
 ((((__major) & LIBIOPMP_VERSION_MAJOR_MASK) << LIBIOPMP_VERSION_MAJOR_SHIFT) | \
  (((__minor) & LIBIOPMP_VERSION_MINOR_MASK) << LIBIOPMP_VERSION_MINOR_SHIFT) | \
  (((__extra) & LIBIOPMP_VERSION_EXTRA_MASK) << LIBIOPMP_VERSION_EXTRA_SHIFT))
 
-/* Get major version of libiopmp */
-int libiopmp_major_version(void);
-/* Get minor version of libiopmp */
-int libiopmp_minor_version(void);
-/* Get extra version of libiopmp */
-int libiopmp_extra_version(void);
 /**
- * @brief Check given version with libiopmp
+ * \brief Get major version of libiopmp
  *
- * @retval - true if given version is greater than version of libiopmp
- * @retval - false if given version is less than or equal to version of libiopmp
+ * \return The major version of libiopmp
+ */
+int libiopmp_major_version(void);
+
+/**
+ * \brief Get minor version of libiopmp
+ *
+ * \return The minor version of libiopmp
+ */
+int libiopmp_minor_version(void);
+
+/**
+ * \brief Get extra version of libiopmp
+ *
+ * \return The extra version of libiopmp
+ */
+int libiopmp_extra_version(void);
+
+/**
+ * \brief Check given version with libiopmp
+ *
+ * \param[in] major             The major version
+ * \param[in] minor             The minor version
+ * \param[in] extra             The extra version
+ *
+ * \retval 1 if given version is greater than version of libiopmp
+ * \retval 0 if given version is less than or equal to version of libiopmp
  */
 bool libiopmp_check_version(int major, int minor, int extra);
 
 /******************************************************************************/
 /* Helper macros to get/set local variables                                   */
 /******************************************************************************/
+/**
+ * \brief Check if the IOPMP has been initialized by libiopmp
+ *
+ * \param[in] iopmp             The IOPMP instance to be checked
+ *
+ * \retval 1 if the IOPMP has been initialized by libiopmp
+ * \retval 0 if the IOPMP hasn't been initialized by libiopmp
+ */
 static inline bool iopmp_is_initialized(IOPMP_t *iopmp)
 {
     return iopmp && iopmp->init;
 }
 
+/**
+ * \brief Get the base physical address of the IOPMP
+ *
+ * \param[in] iopmp             The IOPMP instance to be got
+ *
+ * \return The base physical address of the IOPMP
+ */
 static inline uintptr_t iopmp_get_base_addr(IOPMP_t *iopmp)
 {
     return iopmp->addr;
 }
 
+/**
+ * \brief Get the base physical address of the IOPMP entry array
+ *
+ * \param[in] iopmp             The IOPMP instance to be got
+ *
+ * \return The base physical address of the IOPMP entry array
+ */
 static inline uintptr_t iopmp_get_base_addr_entry_array(IOPMP_t *iopmp)
 {
     return iopmp->addr_entry_array;
 }
 
+/**
+ * \brief Get the granularity of the IOPMP
+ *
+ * \param[in] iopmp             The IOPMP instance to be got
+ *
+ * \return The granularity of the IOPMP
+ */
 static inline uint32_t iopmp_get_granularity(IOPMP_t *iopmp)
 {
     return iopmp->granularity;
 }
 
-/* Helper macros for getting IOPMP configurations */
+/**
+ * \brief Get HWCFG0.mdcfg_fmt of the IOPMP
+ *
+ * \param[in] iopmp             The IOPMP instance to be got
+ *
+ * \return HWCFG0.mdcfg_fmt of the IOPMP
+ */
 static inline enum iopmp_mdcfg_fmt iopmp_get_mdcfg_fmt(IOPMP_t *iopmp)
 {
     return iopmp->mdcfg_fmt;
 }
 
+/**
+ * \brief Get HWCFG0.srcmd_fmt of the IOPMP
+ *
+ * \param[in] iopmp             The IOPMP instance to be got
+ *
+ * \return HWCFG0.srcmd_fmt of the IOPMP
+ */
 static inline enum iopmp_srcmd_fmt iopmp_get_srcmd_fmt(IOPMP_t *iopmp)
 {
     return iopmp->srcmd_fmt;
 }
 
+/**
+ * \brief Get HWCFG0.tor_en of the IOPMP
+ *
+ * \param[in] iopmp             The IOPMP instance to be got
+ *
+ * \retval 1 if HWCFG0.tor_en = 1
+ * \retval 0 if HWCFG0.tor_en = 0
+ */
 static inline bool iopmp_get_support_tor(IOPMP_t *iopmp)
 {
     return iopmp->tor_en;
 }
 
+/**
+ * \brief Check if the IOPMP supports SPS extension
+ *
+ * \param[in] iopmp             The IOPMP instance to be checked
+ *
+ * \retval 1 if HWCFG0.sps_en = 1 and the SPS operations are implemented
+ * \retval 0 if HWCFG0.sps_en = 0
+ */
 static inline bool iopmp_get_support_sps(IOPMP_t *iopmp)
 {
     return iopmp->sps_en && iopmp->ops_sps;
 }
 
+/**
+ * \brief Check if the IOPMP supports user customized attributes
+ *
+ * \param[in] iopmp             The IOPMP instance to be checked
+ *
+ * \retval 1 if HWCFG0.user_cfg_en = 1
+ * \retval 0 if HWCFG0.user_cfg_en = 0
+ */
 static inline bool iopmp_get_support_user_entry_cfg(IOPMP_t *iopmp)
 {
     return iopmp->user_cfg_en;
 }
 
+/**
+ * \brief Check if HWCFG2.prio_entry is programmable
+ *
+ * \param[in] iopmp             The IOPMP instance to be checked
+ *
+ * \retval 1 if HWCFG0.prient_prog = 1
+ * \retval 0 if HWCFG0.prient_prog = 0
+ */
 static inline bool iopmp_get_support_programmable_prio_entry(IOPMP_t *iopmp)
 {
     return iopmp->prient_prog;
 }
 
+/**
+ * \brief Check if tagging a new RRID on the initiator port is supported
+ *
+ * \param[in] iopmp             The IOPMP instance to be checked
+ *
+ * \retval 1 if HWCFG0.rrid_transl_en = 1
+ * \retval 0 if HWCFG0.rrid_transl_en = 0
+ */
 static inline bool iopmp_get_support_rrid_transl(IOPMP_t *iopmp)
 {
     return iopmp->rrid_transl_en;
 }
 
+/**
+ * \brief Check if HWCFG2.rrid_transl is programmable
+ *
+ * \param[in] iopmp             The IOPMP instance to be checked
+ *
+ * \retval 1 if HWCFG0.rrid_transl_prog = 1
+ * \retval 0 if HWCFG0.rrid_transl_prog = 0
+ */
 static inline bool iopmp_get_rrid_transl_prog(IOPMP_t *iopmp)
 {
     return iopmp->rrid_transl_prog;
 }
 
+/**
+ * \brief Get the value of HWCFG2.rrid_transl
+ *
+ * \param[in] iopmp             The IOPMP instance to be got
+ *
+ * \return HWCFG2.rrid_transl
+ */
 static inline uint16_t iopmp_get_rrid_transl(IOPMP_t *iopmp)
 {
     return iopmp->rrid_transl;
 }
 
+/**
+ * \brief Check if the IOPMP implements the check of an instruction fetch
+ *
+ * \param[in] iopmp             The IOPMP instance to be checked
+ *
+ * \retval 1 if HWCFG0.rrid_transl_prog = 1
+ * \retval 0 if HWCFG0.rrid_transl_prog = 0
+ */
 static inline bool iopmp_get_support_chk_x(IOPMP_t *iopmp)
 {
     return iopmp->chk_x;
 }
 
+/**
+ * \brief Check if the IOPMP always fails on an instruction fetch
+ *
+ * \param[in] iopmp             The IOPMP instance to be checked
+ *
+ * \retval 1 if HWCFG0.no_x = 1
+ * \retval 0 if HWCFG0.no_x = 0
+ */
 static inline bool iopmp_get_no_x(IOPMP_t *iopmp)
 {
     return iopmp->no_x;
 }
 
+/**
+ * \brief Check if the IOPMP always fails on write accesses considered as
+ * as no rule matched
+ *
+ * \param[in] iopmp             The IOPMP instance to be checked
+ *
+ * \retval 1 if HWCFG0.no_w = 1
+ * \retval 0 if HWCFG0.no_w = 0
+ */
 static inline bool iopmp_get_no_w(IOPMP_t *iopmp)
 {
     return iopmp->no_w;
 }
 
+/**
+ * \brief Check if the IOPMP implements stall-related features
+ *
+ * \param[in] iopmp             The IOPMP instance to be checked
+ *
+ * \retval 1 if HWCFG0.stall_en = 1
+ * \retval 0 if HWCFG0.stall_en = 0
+ */
 static inline bool iopmp_get_support_stall(IOPMP_t *iopmp)
 {
     return iopmp->stall_en;
 }
 
+/**
+ * \brief Check if the IOPMP implements interrupt suppression per entry
+ *
+ * \param[in] iopmp             The IOPMP instance to be checked
+ *
+ * \retval 1 if HWCFG0.peis = 1
+ * \retval 0 if HWCFG0.peis = 0
+ */
 static inline bool iopmp_get_support_peis(IOPMP_t *iopmp)
 {
     return iopmp->peis;
 }
 
+/**
+ * \brief Check if the IOPMP implements the error suppression per entry
+ *
+ * \param[in] iopmp             The IOPMP instance to be checked
+ *
+ * \retval 1 if HWCFG0.pees = 1
+ * \retval 0 if HWCFG0.pees = 0
+ */
 static inline bool iopmp_get_support_pees(IOPMP_t *iopmp)
 {
     return iopmp->pees;
 }
 
+/**
+ * \brief Check if the IOPMP implements the Multi-Faults Record Extension
+ *
+ * \param[in] iopmp             The IOPMP instance to be checked
+ *
+ * \retval 1 if HWCFG0.mfr_en = 1
+ * \retval 0 if HWCFG0.mfr_en = 0
+ */
 static inline bool iopmp_get_support_mfr(IOPMP_t *iopmp)
 {
     return iopmp->mfr_en;
 }
 
+/**
+ * \brief Get the supported number of MD in the IOPMP instance
+ *
+ * \param[in] iopmp             The IOPMP instance to be got
+ *
+ * \return HWCFG0.md_num
+ */
 static inline uint32_t iopmp_get_md_num(IOPMP_t *iopmp)
 {
     return iopmp->md_num;
 }
 
+/**
+ * \brief Check if ENTRY_ADDRH(i) and ERR_MSIADDRH (if ERR_CFG.msi_en = 1) are
+ * available
+ *
+ * \param[in] iopmp             The IOPMP instance to be checked
+ *
+ * \retval 1 if HWCFG0.addrh_en = 1
+ * \retval 0 if HWCFG0.addrh_en = 0
+ */
 static inline uint32_t iopmp_get_addrh_en(IOPMP_t *iopmp)
 {
     return iopmp->addrh_en;
 }
 
+/**
+ * \brief Check if the IOPMP checks transactions
+ *
+ * \param[in] iopmp             The IOPMP instance to be checked
+ *
+ * \retval 1 if HWCFG0.enable = 1
+ * \retval 0 if HWCFG0.enable = 0
+ */
 static inline bool iopmp_get_enable(IOPMP_t *iopmp)
 {
     return iopmp->enable;
 }
 
+/**
+ * \brief Get the supported number of RRID in the IOPMP instance
+ *
+ * \param[in] iopmp             The IOPMP instance to be got
+ *
+ * \return HWCFG2.rrid_num
+ */
 static inline uint32_t iopmp_get_rrid_num(IOPMP_t *iopmp)
 {
     return iopmp->rrid_num;
 }
 
+/**
+ * \brief Get the supported number of entries in the IOPMP instance
+ *
+ * \param[in] iopmp             The IOPMP instance to be got
+ *
+ * \return HWCFG2.entry_num
+ */
 static inline uint32_t iopmp_get_entry_num(IOPMP_t *iopmp)
 {
     return iopmp->entry_num;
 }
 
+/**
+ * \brief Get the number of entries matched with priority
+ *
+ * \param[in] iopmp             The IOPMP instance to be got
+ *
+ * \return HWCFG2.prio_entry
+ */
 static inline uint16_t iopmp_get_prio_entry_num(IOPMP_t *iopmp)
 {
     return iopmp->prio_entry_num;
 }
 
+/**
+ * \brief Check if the IOPMP implements stall-related features of MDSTALL(H)
+ *
+ * \param[in] iopmp             The IOPMP instance to be checked
+ *
+ * \retval 1 if MDSTALL(H) are implemented
+ * \retval 0 if MDSTALL(H) are not implemented
+ */
 static inline bool iopmp_get_support_stall_by_md(IOPMP_t *iopmp)
 {
     return iopmp->support_stall_by_md;
 }
 
+/**
+ * \brief Check if the IOPMP implements stall-related features of RRIDSCP
+ *
+ * \param[in] iopmp             The IOPMP instance to be checked
+ *
+ * \retval 1 if RRIDSCP is implemented
+ * \retval 0 if RRIDSCP is not implemented
+ */
 static inline bool iopmp_get_support_stall_by_rrid(IOPMP_t *iopmp)
 {
     return iopmp->support_stall_by_rrid;
 }
 
-/* Helper macro for IOPMP error reactions. */
+/**
+ * \brief Check if the ERR_CFG register has been locked
+ *
+ * \param[in] iopmp             The IOPMP instance to be checked
+ *
+ * \retval 1 if ERR_CFG.l = 1
+ * \retval 0 if ERR_CFG.l = 0
+ */
 static inline bool iopmp_is_err_cfg_locked(IOPMP_t *iopmp)
 {
     return iopmp->err_cfg_lock;
 }
 
+/**
+ * \brief Check if the interrupt of the IOPMP rule violation has been enabled
+ *
+ * \param[in] iopmp             The IOPMP instance to be checked
+ *
+ * \retval 1 if ERR_CFG.ie = 1
+ * \retval 0 if ERR_CFG.ie = 0
+ */
 static inline bool iopmp_get_global_intr(IOPMP_t *iopmp)
 {
     return iopmp->intr_enable;
 }
 
+/**
+ * \brief Check if the IOPMP suppresses error response on a rule violation
+ *
+ * \param[in] iopmp             The IOPMP instance to be checked
+ *
+ * \retval 1 if ERR_CFG.rs = 1
+ * \retval 0 if ERR_CFG.rs = 0
+ */
 static inline bool iopmp_get_global_err_resp(IOPMP_t *iopmp)
 {
     return iopmp->err_resp_suppress;
 }
 
+/**
+ * \brief Check if the IOPMP faults stalled transactions
+ *
+ * \param[in] iopmp             The IOPMP instance to be checked
+ *
+ * \retval 1 if ERR_CFG.stall_violation_en = 1
+ * \retval 0 if ERR_CFG.stall_violation_en = 0
+ */
 static inline bool iopmp_get_stall_violation_en(IOPMP_t *iopmp)
 {
     return iopmp->stall_violation_en;
 }
 
+/**
+ * \brief Check if the IOPMP triggers interrupt by MSI
+ *
+ * \param[in] iopmp             The IOPMP instance to be checked
+ *
+ * \retval 1 if ERR_CFG.msi_en = 1
+ * \retval 0 if ERR_CFG.msi_en = 0
+ */
 static inline bool iopmp_get_msi_en(IOPMP_t *iopmp)
 {
     return iopmp->msi_en;
 }
 
+/**
+ * \brief Get the MSI address to trigger MSI
+ *
+ * \param[in] iopmp             The IOPMP instance to be got
+ *
+ * \return The MSI address to trigger MSI
+ */
 static inline uint64_t iopmp_get_msi_addr(IOPMP_t *iopmp)
 {
     return iopmp->msiaddr64;
 }
 
+/**
+ * \brief Get the data to trigger MSI
+ *
+ * \param[in] iopmp             The IOPMP instance to be got
+ *
+ * \return The data to trigger MSI
+ */
 static inline uint16_t iopmp_get_msi_data(IOPMP_t *iopmp)
 {
     return iopmp->msidata;
 }
 
-/* Helper macros for MDLCK */
+/**
+ * \brief Check if MDLCK register has been locked
+ *
+ * \param[in] iopmp             The IOPMP instance to be checked
+ *
+ * \retval 1 if MDLCK.l = 1
+ * \retval 0 if MDLCK.l = 0
+ */
 static inline bool iopmp_is_mdlck_locked(IOPMP_t *iopmp)
 {
     return iopmp->mdlck_lock;
 }
 
-/* Helper macros for getting locked entries */
+/**
+ * \brief Check if ENTRYLCK register has been locked
+ *
+ * \param[in] iopmp             The IOPMP instance to be checked
+ *
+ * \retval 1 if ENTRYLCK.l = 1
+ * \retval 0 if ENTRYLCK.l = 0
+ */
 static inline bool iopmp_is_entrylck_locked(IOPMP_t *iopmp)
 {
     return iopmp->entrylck_lock;
 }
 
+/**
+ * \brief Get the number of locked IOPMP entries
+ *
+ * \param[in] iopmp             The IOPMP instance to be got
+ *
+ * \return ENTRYLCK.f
+ */
 static inline uint32_t iopmp_get_locked_entry_num(IOPMP_t *iopmp)
 {
     return iopmp->entrylck_f;
 }
 
-/* Helper macros for checking IOPMP error report */
+/**
+ * \brief Get the errored address from the error report
+ *
+ * \param[in] err_report        The pointer to the error report
+ *
+ * \return Errored address[65:2]
+ */
 static inline uint64_t iopmp_err_report_get_addr(IOPMP_ERR_REPORT_t *err_report)
 {
     return err_report->addr;
 }
 
+/**
+ * \brief Get the errored RRID from the error report
+ *
+ * \param[in] err_report        The pointer to the error report
+ *
+ * \return Errored RRID
+ */
 static inline uint32_t iopmp_err_report_get_rrid(IOPMP_ERR_REPORT_t *err_report)
 {
     return err_report->rrid;
 }
 
+/**
+ * \brief Get the index pointing to the entry that catches the violation from
+ * the error report
+ *
+ * \param[in] err_report        The pointer to the error report
+ *
+ * \return The index pointing to the entry that catches the violation
+ */
 static inline uint32_t iopmp_err_report_get_eid(IOPMP_ERR_REPORT_t *err_report)
 {
     return err_report->eid;
 }
 
+/**
+ * \brief Check if the type of violation is "not hit any rule" in the error
+ * report
+ *
+ * \param[in] err_report        The pointer to the error report
+ *
+ * \retval 1 if the type of violation is "not hit any rule"
+ * \retval 0 if the type of violation is not "not hit any rule"
+ */
 static inline bool iopmp_err_report_is_no_hit(IOPMP_ERR_REPORT_t *err_report)
 {
     return err_report->etype == IOPMP_ERRINFO_ETYPE_NOT_HIT;
 }
 
+/**
+ * \brief Check if the type of violation is "partial hit on a priority rule" in
+ * the error report
+ *
+ * \param[in] err_report        The pointer to the error report
+ *
+ * \retval 1 if the type of violation is "partial hit on a priority rule"
+ * \retval 0 if the type of violation is not "partial hit on a priority rule"
+ */
 static inline bool iopmp_err_report_is_part_hit(IOPMP_ERR_REPORT_t *err_report)
 {
     return err_report->etype == IOPMP_ERRINFO_ETYPE_PART_HIT;
 }
 
+/**
+ * \brief Get the transaction type from the error report
+ *
+ * \param[in] err_report        The pointer to the error report
+ *
+ * \return The transaction type
+ */
 static inline enum iopmp_errinfo_ttype
 iopmp_err_report_get_ttype(IOPMP_ERR_REPORT_t *err_report)
 {
     return err_report->ttype;
 }
 
+/**
+ * \brief Check if the write access to trigger an IOPMP originated MSI has
+ * failed in the error report
+ *
+ * \param[in] err_report        The pointer to the error report
+ *
+ * \retval 1 if the write access to trigger an IOPMP originated MSI has failed
+ * \retval 0 if the write access to trigger an IOPMP originated MSI hasn't
+ *         failed
+ */
 static inline bool iopmp_err_report_get_msi_werr(IOPMP_ERR_REPORT_t *err_report)
 {
     return err_report->msi_werr;
 }
 
+/**
+ * \brief Get the type of violation from the error report
+ *
+ * \param[in] err_report        The pointer to the error report
+ *
+ * \return The type of violation
+ */
 static inline enum iopmp_errinfo_etype
 iopmp_err_report_get_etype(IOPMP_ERR_REPORT_t *err_report)
 {
@@ -676,25 +1215,39 @@ iopmp_err_report_get_etype(IOPMP_ERR_REPORT_t *err_report)
 }
 
 /**
- * @brief Get ERR_INFO.svc from the error report
+ * \brief Get ERR_INFO.svc from the error report
  *
- * @param[in] err_report        The pointer to the error report
+ * \param[in] err_report        The pointer to the error report
  *
- * @retval - true if there is a subsequent violation caught in ERR_MFR
- * @retval - false if there is no subsequent violation
+ * \retval 1 if there is a subsequent violation caught in ERR_MFR
+ * \retval 0 if there is no subsequent violation
  */
 static inline bool iopmp_err_report_get_svc(IOPMP_ERR_REPORT_t *err_report)
 {
     return err_report->svc;
 }
 
-/* Helper macros for ENTRY */
-
+/**
+ * \brief Get the physical address[65:2] of protected memory region from the
+ * IOPMP entry structure
+ *
+ * \param[in] entry             The pointer to the IOPMP entry structure
+ *
+ * \return The physical address[65:2] of protected memory region
+ */
 static inline uint64_t iopmp_entry_get_addr(IOPMP_Entry_t *entry)
 {
     return entry->addr;
 }
 
+/**
+ * \brief Get the permissions and attributes of protected memory region from the
+ * IOPMP entry structure
+ *
+ * \param[in] entry             The pointer to the IOPMP entry structure
+ *
+ * \return The permissions and attributes of protected memory region
+ */
 static inline uint32_t iopmp_entry_get_cfg(IOPMP_Entry_t *entry)
 {
     return entry->cfg;
@@ -704,588 +1257,587 @@ static inline uint32_t iopmp_entry_get_cfg(IOPMP_Entry_t *entry)
 /* API for IOPMP                                                              */
 /******************************************************************************/
 /**
- * @brief Initialize IOPMP instance. Read the intial states and prepare the
+ * \brief Initialize the IOPMP instance. Read the intial states and prepare the
  * IOPMP driver operations
  *
- * @param[in] iopmp             The IOPMP instance to be initialized
- * @param[in] addr              The base memory-mapped address of IOPMP
- * @param[in] srcmd_fmt         The SRCMD_FMT of this IOPMP instance
- * @param[in] mdcfg_fmt         The MDCFG_FMT of this IOPMP instance
- * @param[in] impid             The implementation ID of this IOPMP instance
+ * \param[in] iopmp             The IOPMP instance to be initialized
+ * \param[in] addr              The base memory-mapped address of the IOPMP
+ * \param[in] srcmd_fmt         The SRCMD_FMT of this IOPMP instance
+ * \param[in] mdcfg_fmt         The MDCFG_FMT of this IOPMP instance
+ * \param[in] impid             The implementation ID of this IOPMP instance
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_NOT_SUPPORTED if some features are not supported
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if some features are not supported
  */
 enum iopmp_error iopmp_init(IOPMP_t *iopmp, uintptr_t addr, uint8_t srcmd_fmt,
                             uint8_t mdcfg_fmt, uint32_t impid);
 
 /**
- * @brief Get the vendor ID of IOPMP
+ * \brief Get the vendor ID of the IOPMP
  *
- * @param[in] iopmp             The IOPMP instance to be got
- * @param[out] vendor           Pointer to integer to store vendor ID
+ * \param[in] iopmp             The IOPMP instance to be got
+ * \param[out] vendor           Pointer to integer to store vendor ID
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p vendor is NULL
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support get the vendor
- *           ID of IOPMP
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p vendor is NULL
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support get the vendor
+ *         ID of IOPMP
  */
 enum iopmp_error iopmp_get_vendor_id(IOPMP_t *iopmp, uint32_t *vendor);
 
 /**
- * @brief Get the specification version of IOPMP
+ * \brief Get the specification version of the IOPMP
  *
- * @param[in] iopmp             The IOPMP instance to be got
- * @param[out] specver          Pointer to integer to store specification
+ * \param[in] iopmp             The IOPMP instance to be got
+ * \param[out] specver          Pointer to integer to store specification
  *                              version
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p specver is NULL
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support get the
- *           specification version of IOPMP
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p specver is NULL
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support get the
+ *         specification version of the IOPMP
  */
 enum iopmp_error iopmp_get_specver(IOPMP_t *iopmp, uint32_t *specver);
 
 /**
- * @brief Get the implementation ID of IOPMP
+ * \brief Get the implementation ID of the IOPMP
  *
- * @param[in] iopmp             The IOPMP instance to be got
- * @param[out] impid            Pointer to integer to store implementation ID
+ * \param[in] iopmp             The IOPMP instance to be got
+ * \param[out] impid            Pointer to integer to store implementation ID
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p impid is NULL
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support get the
- *           implementation ID of IOPMP
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p impid is NULL
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support get the
+ *         implementation ID of the IOPMP
  */
 enum iopmp_error iopmp_get_impid(IOPMP_t *iopmp, uint32_t *impid);
 
 /**
- * @brief Lock number of priority entry if IOPMP HWCFG0.prient_prog=1
+ * \brief Lock number of priority entry if the IOPMP HWCFG0.prient_prog=1
  *
- * @param[in] iopmp             The IOPMP instance
+ * \param[in] iopmp             The IOPMP instance
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support lock the
- *           number of entries matched with priority
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support lock the
+ *         number of entries matched with priority
  */
 enum iopmp_error iopmp_lock_prio_entry_num(IOPMP_t *iopmp);
 
 /**
- * @brief Lock the RRID tagged to outgoing transactions if IOPMP
+ * \brief Lock the RRID tagged to outgoing transactions if the IOPMP
  * HWCFG0.rrid_transl_prog=1
  *
- * @param[in] iopmp             The IOPMP instance
+ * \param[in] iopmp             The IOPMP instance
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support lock the RRID
- *           tagged to outgoing transactions
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support lock the RRID
+ *         tagged to outgoing transactions
  */
 enum iopmp_error iopmp_lock_rrid_transl(IOPMP_t *iopmp);
 
 /**
- * @brief Enable IOPMP checker
+ * \brief Enable the IOPMP checker
  *
- * @param[in] iopmp             The IOPMP instance to be set
+ * \param[in] iopmp             The IOPMP instance to be set
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support enable the
- *           checker
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support enable the
+ *         checker
  */
 enum iopmp_error iopmp_set_enable(IOPMP_t *iopmp);
 
 /**
- * @brief Set the number of entries matched with priority
+ * \brief Set the number of entries matched with priority
  *
- * @param[in] iopmp             The IOPMP instance to be set
- * @param[in,out] num_entry     Input the number of entries to be matched with
+ * \param[in] iopmp             The IOPMP instance to be set
+ * \param[in,out] num_entry     Input the number of entries to be matched with
  *                              priority. Output WARL value.
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_REG_IS_LOCKED if HWCFG0.prient_prog is 0
- * @retval - IOPMP_ERR_INVALID_PARAMETER if \p num_entry is NULL
- * @retval - IOPMP_ERR_ILLEGAL_VALUE if the written \p num_entry does not match
- *           the actual value. The actual value is output via \p num_entry
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_REG_IS_LOCKED if HWCFG0.prient_prog is 0
+ * \retval IOPMP_ERR_INVALID_PARAMETER if \p num_entry is NULL
+ * \retval IOPMP_ERR_ILLEGAL_VALUE if the written \p num_entry does not match
+ *         the actual value. The actual value is output via \p num_entry
  */
 enum iopmp_error iopmp_set_prio_entry_num(IOPMP_t *iopmp, uint16_t *num_entry);
 
 /**
- * @brief Set the RRID tagged to outgoing transactions
+ * \brief Set the RRID tagged to outgoing transactions
  *
- * @param[in] iopmp             The IOPMP instance to be set
- * @param[in,out] rrid_transl   Input the RRID tagged to outgoing transactions.
+ * \param[in] iopmp             The IOPMP instance to be set
+ * \param[in,out] rrid_transl   Input the RRID tagged to outgoing transactions.
  *                              Output WARL value
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_REG_IS_LOCKED if HWCFG0.rrid_transl_prog is 0
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p rrid_transl is NULL
- * @retval - IOPMP_ERR_ILLEGAL_VALUE if the written \p rrid_transl does not
- *           match the actual value. The actual value is output via
- *           \p rrid_transl
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_REG_IS_LOCKED if HWCFG0.rrid_transl_prog is 0
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p rrid_transl is NULL
+ * \retval IOPMP_ERR_ILLEGAL_VALUE if the written \p rrid_transl does not match
+ *         the actual value. The actual value is output via \p rrid_transl
  */
 enum iopmp_error iopmp_set_rrid_transl(IOPMP_t *iopmp, uint16_t *rrid_transl);
 
 /**
- * @brief Stall the transactions related to given MD bitmap and poll the stall
+ * \brief Stall the transactions related to given MD bitmap and poll the stall
  * status until stalling takes effect if necessary
  *
- * @param[in] iopmp             The IOPMP instance to be set
- * @param[in,out] mds           Input the MD bitmap to be stalled. Output WARL
+ * \param[in] iopmp             The IOPMP instance to be set
+ * \param[in,out] mds           Input the MD bitmap to be stalled. Output WARL
  *                              value
- * @param[in] exempt            Stall transactions with exempt selected MDs
- * @param[in] polling           Set true to poll the stall status until stalling
+ * \param[in] exempt            Stall transactions with exempt selected MDs
+ * \param[in] polling           Set true to poll the stall status until stalling
  *                              takes effect
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support stall
- * @retval - IOPMP_ERR_ILLEGAL_VALUE if the written \p mds does not match the
- *           actual value. The actual value is output via \p mds
- * @retval - IOPMP_ERR_NOT_ALLOWED if MDSTALL has already been written and
- *           libiopmp expects user resumes the transactions first
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support stall
+ * \retval IOPMP_ERR_ILLEGAL_VALUE if the written \p mds does not match the
+ *         actual value. The actual value is output via \p mds
+ * \retval IOPMP_ERR_NOT_ALLOWED if MDSTALL has already been written and
+ *         libiopmp expects user resumes the transactions first
  */
 enum iopmp_error iopmp_stall_transactions_by_mds(IOPMP_t *iopmp, uint64_t *mds,
                                                  bool exempt, bool polling);
 
 /**
- * @brief Resume the stalled transactions previously stalled, and poll the
+ * \brief Resume the stalled transactions previously stalled, and poll the
  * resume status until resuming takes effect if necessary
  *
- * @param[in] iopmp             The IOPMP instance to be resumed
- * @param[in] polling           Set true to poll the resume status until
+ * \param[in] iopmp             The IOPMP instance to be resumed
+ * \param[in] polling           Set true to poll the resume status until
  *                              resuming takes effect
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support stall or
- *           resuming of stall
- * @retval - IOPMP_ERR_ILLEGAL_VALUE if the written \p mds does not match the
- *           actual value
- * @retval - IOPMP_ERR_NOT_ALLOWED if there was no transactions being stalled
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support stall or
+ *         resuming of stall
+ * \retval IOPMP_ERR_ILLEGAL_VALUE if the written \p mds does not match the
+ *         actual value
+ * \retval IOPMP_ERR_NOT_ALLOWED if there was no transactions being stalled
  */
 enum iopmp_error iopmp_resume_transactions(IOPMP_t *iopmp, bool polling);
 
 /**
- * @brief Check if the requested stall transactions takes effect
+ * \brief Check if the requested stall transactions takes effect
  *
- * @param[in] iopmp             The IOPMP instance to be checked
- * @param[in] polling           Set true to poll the stall status until stalling
+ * \param[in] iopmp             The IOPMP instance to be checked
+ * \param[in] polling           Set true to poll the stall status until stalling
  *                              takes effect
  *
- * @retval - 1 if the stall has taken effect
- * @retval - 0 if the stall has not taken effect yet
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support stall
- * @retval - IOPMP_ERR_NOT_EXIST if \p iopmp did not stall any transactions by
- *           iopmp_stall_transactions_by_mds()
+ * \retval 1 if the stall has taken effect
+ * \retval 0 if the stall has not taken effect yet
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support stall
+ * \retval IOPMP_ERR_NOT_EXIST if \p iopmp did not stall any transactions by
+ *         iopmp_stall_transactions_by_mds()
  */
 enum iopmp_error iopmp_transactions_are_stalled(IOPMP_t *iopmp, bool polling);
 
 /**
- * @brief Check if the requested resume transactions takes effect
+ * \brief Check if the requested resume transactions takes effect
  *
- * @param[in] iopmp             The IOPMP instance to be checked
- * @param[in] polling           Set true to poll the resume status until
+ * \param[in] iopmp             The IOPMP instance to be checked
+ * \param[in] polling           Set true to poll the resume status until
  *                              resuming takes effect
  *
- * @retval - 1 if the resuming has taken effect
- * @retval - 0 if the resuming has not taken effect yet
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support stall
- * @retval - IOPMP_ERR_NOT_EXIST if \p iopmp did not resume any transactions by
- *           iopmp_resume_transactions()
+ * \retval 1 if the resuming has taken effect
+ * \retval 0 if the resuming has not taken effect yet
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support stall
+ * \retval IOPMP_ERR_NOT_EXIST if \p iopmp did not resume any transactions by
+ *         iopmp_resume_transactions()
  */
 enum iopmp_error iopmp_transactions_are_resumed(IOPMP_t *iopmp, bool polling);
 
 /**
- * @brief Select or deselect the transactions with specific RRIDs to stall
+ * \brief Select or deselect the transactions with specific RRIDs to stall
  *
- * @param[in] iopmp             The IOPMP instance to be set
- * @param[in,out] rrid          Input the RRID to be stalled. Output WARL value
- * @param[in] select            Set true select or false to deselect
- * @param[out] stat             The pointer to store enum iopmp_rridscp_stat
+ * \param[in] iopmp             The IOPMP instance to be set
+ * \param[in,out] rrid          Input the RRID to be stalled. Output WARL value
+ * \param[in] select            Set true select or false to deselect
+ * \param[out] stat             The pointer to store enum iopmp_rridscp_stat
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p rrid is NULL or invalid
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid is out of bounds
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support stall by RRID
- * @retval - IOPMP_ERR_ILLEGAL_VALUE if the written \p rrid does not match the
- *           actual value. The actual value is output via \p rrid
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p rrid is NULL or invalid
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid is out of bounds
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support stall by RRID
+ * \retval IOPMP_ERR_ILLEGAL_VALUE if the written \p rrid does not match the
+ *         actual value. The actual value is output via \p rrid
  *
- * @note Although this function returns IOPMP_OK, the caller must check \p stat
- * to determine the state of the operation.
- * @note After RRIDSCP is written, the action to stall desired transactions may
- * not take effect immediately in some implementations. To determine whether the
- * action takes effect, one can call iopmp_transactions_are_stalled().
+ * \note Although this function returns IOPMP_OK, the caller must check \p stat
+ *       to determine the state of the operation.
+ * \note After RRIDSCP is written, the action to stall desired transactions may
+ *       not take effect immediately in some implementations. To determine
+ *       whether the action takes effect, one can call
+ *       iopmp_transactions_are_stalled().
  */
 enum iopmp_error iopmp_stall_cherry_pick_rrid(IOPMP_t *iopmp, uint32_t *rrid,
                                               bool select,
                                               enum iopmp_rridscp_stat *stat);
 
 /**
- * @brief Query the stall status of given RRID
+ * \brief Query the stall status of given RRID
  *
- * @param[in] iopmp             The IOPMP instance to be queried
- * @param[in,out] rrid          Input the RRID to be queried. Output WARL value
- * @param[out] stat             The pointer to store enum iopmp_rridscp_stat
+ * \param[in] iopmp             The IOPMP instance to be queried
+ * \param[in,out] rrid          Input the RRID to be queried. Output WARL value
+ * \param[out] stat             The pointer to store enum iopmp_rridscp_stat
  *
- * @retval - positive value for stall status of \p rrid
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid is out of bounds
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p rrid or \p stat is NULL
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support stall by RRID
- *           or querying of stall
+ * \retval Positive value for stall status of \p rrid
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid is out of bounds
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p rrid or \p stat is NULL
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support stall by RRID or
+ *         querying of stall
  *
- * @note Although this function returns IOPMP_OK, the caller must check \p stat
- * to determine the state of the operation.
- * @note After RRIDSCP is written, the action to stall desired transactions may
- * not take effect immediately in some implementations. To determine whether the
- * action takes effect, one can call iopmp_transactions_are_stalled().
+ * \note Although this function returns IOPMP_OK, the caller must check \p stat
+ *       to determine the state of the operation.
+ * \note After RRIDSCP is written, the action to stall desired transactions may
+ *       not take effect immediately in some implementations. To determine
+ *       whether the action takes effect, one can call
+ *       iopmp_transactions_are_stalled().
  */
 enum iopmp_error iopmp_query_stall_stat_by_rrid(IOPMP_t *iopmp, uint32_t *rrid,
                                                 enum iopmp_rridscp_stat *stat);
 
 /**
- * @brief Get locked MDs and MDLCK.l
+ * \brief Get locked MDs and MDLCK.l
  *
- * @param[in] iopmp             The IOPMP instance to be set
- * @param[out] mds              Pointer to integer to store locked MD bitmap
- * @param[out] mdlck_lock       Pointer to integer to store MDLCK.l
+ * \param[in] iopmp             The IOPMP instance to be set
+ * \param[out] mds              Pointer to integer to store locked MD bitmap
+ * \param[out] mdlck_lock       Pointer to integer to store MDLCK.l
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p mds or \p mdlck_lock is
- *           NULL
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p mds or \p mdlck_lock is NULL
  */
 enum iopmp_error iopmp_get_locked_md(IOPMP_t *iopmp, uint64_t *mds,
                                      bool *mdlck_lock);
 
 /**
- * @brief Lock MDs
+ * \brief Lock MDs
  *
- * @param[in] iopmp             The IOPMP instance to be set
- * @param[in,out] mds           Input the MD bitmap to be locked. Output WARL
+ * \param[in] iopmp             The IOPMP instance to be set
+ * \param[in,out] mds           Input the MD bitmap to be locked. Output WARL
  *                              value
- * @param[in] mdlck_lock        Set 1 to lock MDLCK and MDLCKH registers
+ * \param[in] mdlck_lock        Set 1 to lock MDLCK and MDLCKH registers
  *
- * @retval - IOPMP_OK if successes or both \p mds and \p mdlck_lock are 0
- * @retval - IOPMP_ERR_INVALID_PARAMETER if \p mds is NULL
- * @retval - IOPMP_ERR_REG_IS_LOCKED if MDLCK and MDLCKH have already been
- *           locked
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p mds is out-of-bounds
- * @retval - IOPMP_ERR_ILLEGAL_VALUE if the written value does not match the
- *           actual value. The actual values are output in \p mds
+ * \retval IOPMP_OK if successes or both \p mds and \p mdlck_lock are 0
+ * \retval IOPMP_ERR_INVALID_PARAMETER if \p mds is NULL
+ * \retval IOPMP_ERR_REG_IS_LOCKED if MDLCK and MDLCKH have already been locked
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p mds is out-of-bounds
+ * \retval IOPMP_ERR_ILLEGAL_VALUE if the written value does not match the
+ *         actual value. The actual values are output in \p mds
  *
- * @note If MDLCK.l has already been set to 1, this API always expects
+ * \note If MDLCK.l has already been set to 1, this API always expects
  *       \p mdlck_lock be 1.
  */
 enum iopmp_error iopmp_lock_md(IOPMP_t *iopmp, uint64_t *mds, bool mdlck_lock);
 
 /**
- * @brief Lock MDCFG(0) ~ MDCFG(md_num - 1)
+ * \brief Lock MDCFG(0) ~ MDCFG(md_num - 1)
  *
- * @param[in] iopmp             The IOPMP instance to be set
- * @param[in,out] md_num        Input the number of MD to be locked. Output WARL
+ * \param[in] iopmp             The IOPMP instance to be set
+ * \param[in,out] md_num        Input the number of MD to be locked. Output WARL
  *                              value
- * @param[in] lock              Set 1 to lock MDCFGLCK register
+ * \param[in] lock              Set 1 to lock MDCFGLCK register
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_INVALID_PARAMETER if \p md_num is NULL
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if value of \p md_num is out of bounds
- * @retval - IOPMP_ERR_REG_IS_LOCKED if MDCFGLCK has already been locked
- * @retval - IOPMP_ERR_NOT_ALLOWED if \p md_num is not monotonically increased
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not implement MDCFG table
- *           format 0
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_INVALID_PARAMETER if \p md_num is NULL
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if value of \p md_num is out of bounds
+ * \retval IOPMP_ERR_REG_IS_LOCKED if MDCFGLCK has already been locked
+ * \retval IOPMP_ERR_NOT_ALLOWED if \p md_num is not monotonically increased
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not implement MDCFG table
+ *         format 0
  */
 enum iopmp_error iopmp_lock_mdcfg(IOPMP_t *iopmp, uint32_t *md_num, bool lock);
 
 /**
- * @brief Check if MDCFGLCK was locked
+ * \brief Check if MDCFGLCK was locked
  *
- * @param[in] iopmp             The IOPMP instance to be checked
- * @param[out] locked           The pointer to an integer to store MDCFGLCK.l
+ * \param[in] iopmp             The IOPMP instance to be checked
+ * \param[out] locked           The pointer to an integer to store MDCFGLCK.l
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_INVALID_PARAMETER if \p locked is NULL
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not implement MDCFG table
- *           format 0
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_INVALID_PARAMETER if \p locked is NULL
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not implement MDCFG table
+ *         format 0
  */
 enum iopmp_error iopmp_is_mdcfglck_locked(IOPMP_t *iopmp, bool *locked);
 
 /**
- * @brief Get number of MDs whose MDCFG were locked by MDCFGLCK
+ * \brief Get number of MDs whose MDCFG were locked by MDCFGLCK
  *
- * @param[in] iopmp             The IOPMP instance to be checked
- * @param[out] md_num           The pointer to an integer to store MDCFGLCK.f
+ * \param[in] iopmp             The IOPMP instance to be checked
+ * \param[out] md_num           The pointer to an integer to store MDCFGLCK.f
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_INVALID_PARAMETER if \p md_num is NULL
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not implement MDCFG table
- *           format 0
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_INVALID_PARAMETER if \p md_num is NULL
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not implement MDCFG table
+ *         format 0
  */
 enum iopmp_error iopmp_get_locked_mdcfg_num(IOPMP_t *iopmp, uint32_t *md_num);
 
 /**
- * @brief Lock ENTRY_ADDR[0 ~ (entry_num-1)], ENTRY_ADDRH[0 ~ (entry_num-1)],
+ * \brief Lock ENTRY_ADDR[0 ~ (entry_num-1)], ENTRY_ADDRH[0 ~ (entry_num-1)],
  * ENTRY_CFG[0 ~ (entry_num-1)], and ENTRY_USER_CFG[0 ~ (entry_num-1)]
  *
- * @param[in] iopmp             The IOPMP instance to be set
- * @param[in,out] entry_num     Input the number of entry to be locked. Output
+ * \param[in] iopmp             The IOPMP instance to be set
+ * \param[in,out] entry_num     Input the number of entry to be locked. Output
  *                              WARL value
- * @param[in] lock              Set 1 to lock ENTRYLCK register
+ * \param[in] lock              Set 1 to lock ENTRYLCK register
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_INVALID_PARAMETER if \p entry_num is NULL
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if value of \p entry_num is out of bounds
- * @retval - IOPMP_ERR_REG_IS_LOCKED if ENTRYLCK has already been locked
- * @retval - IOPMP_ERR_NOT_ALLOWED if value of \p entry_num is not monotonically
- *           increased
- * @retval - IOPMP_ERR_ILLEGAL_VALUE if the written \p entry_num does not match
- *           the actual value. The actual value is output via \p entry_num
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_INVALID_PARAMETER if \p entry_num is NULL
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if value of \p entry_num is out of bounds
+ * \retval IOPMP_ERR_REG_IS_LOCKED if ENTRYLCK has already been locked
+ * \retval IOPMP_ERR_NOT_ALLOWED if value of \p entry_num is not monotonically
+ *         increased
+ * \retval IOPMP_ERR_ILLEGAL_VALUE if the written \p entry_num does not match
+ *         the actual value. The actual value is output via \p entry_num
  */
 enum iopmp_error iopmp_lock_entries(IOPMP_t *iopmp, uint32_t *entry_num,
                                     bool lock);
 /**
- * @brief Lock fields of ERR_CFG register
+ * \brief Lock fields of ERR_CFG register
  *
- * @param[in] iopmp             The IOPMP instance to be set
+ * \param[in] iopmp             The IOPMP instance to be set
  *
- * @retval - IOPMP_OK if successes
+ * \return IOPMP_OK
  */
 enum iopmp_error iopmp_lock_err_cfg(IOPMP_t *iopmp);
 
 /**
- * @brief Enable/Disable global interrupt
+ * \brief Enable/Disable global interrupt
  *
- * @param[in] iopmp             The IOPMP instance to be set
- * @param[in] enable            1(enable) or 0(disable)
+ * \param[in] iopmp             The IOPMP instance to be set
+ * \param[in] enable            1(enable) or 0(disable)
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_REG_IS_LOCKED if ERR_CFG register is locked
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_REG_IS_LOCKED if ERR_CFG register is locked
  */
 enum iopmp_error iopmp_set_global_intr(IOPMP_t *iopmp, bool enable);
 
 /**
- * @brief Suppress/express global error responses
+ * \brief Suppress/express global error responses
  *
- * @param[in] iopmp             The IOPMP instance to be set
- * @param[in,out] suppress      Input 1(suppress) or 0(express). Output WARL
+ * \param[in] iopmp             The IOPMP instance to be set
+ * \param[in,out] suppress      Input 1(suppress) or 0(express). Output WARL
  *                              value
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p suppress is NULL
- * @retval - IOPMP_ERR_REG_IS_LOCKED if ERR_CFG register is locked
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support configure
- *           global error responses
- * @retval - IOPMP_ERR_ILLEGAL_VALUE if the written \p suppress does not match
- *           the actual value. The actual value is output via \p suppress
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p suppress is NULL
+ * \retval IOPMP_ERR_REG_IS_LOCKED if ERR_CFG register is locked
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support configure global
+ *         error responses
+ * \retval IOPMP_ERR_ILLEGAL_VALUE if the written \p suppress does not match
+ *         the actual value. The actual value is output via \p suppress
  */
 enum iopmp_error iopmp_set_global_err_resp(IOPMP_t *iopmp, bool *suppress);
 
 /**
- * @brief Enable/disable IOPMP trigger message-signaled interrupts on errors
+ * \brief Enable/disable IOPMP trigger message-signaled interrupts on errors
  *
- * @param[in] iopmp             The IOPMP instance to be set
- * @param[in,out] enable        True to enable or false to disable. Output WARL
+ * \param[in] iopmp             The IOPMP instance to be set
+ * \param[in,out] enable        True to enable or false to disable. Output WARL
  *                              value
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support MSI
- * @retval - IOPMP_ERR_REG_IS_LOCKED if ERR_CFG.l=1
- * @retval - IOPMP_ERR_ILLEGAL_VALUE if the written value do not match the
- *           actual value.
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support MSI
+ * \retval IOPMP_ERR_REG_IS_LOCKED if ERR_CFG.l=1
+ * \retval IOPMP_ERR_ILLEGAL_VALUE if the written value do not match the actual
+ *         value
  */
 enum iopmp_error iopmp_set_msi_en(IOPMP_t *iopmp, bool *enable);
 
 /**
- * @brief Set address and data of message-signaled interrupts
+ * \brief Set address and data of message-signaled interrupts
  *
- * @param[in] iopmp             The IOPMP instance to be set
- * @param[in,out] msiaddr64     Input 64-bit MSI address. Output WARL value
- * @param[in,out] msidata       Input 11-bit MSI data. Output WARL value
+ * \param[in] iopmp             The IOPMP instance to be set
+ * \param[in,out] msiaddr64     Input 64-bit MSI address. Output WARL value
+ * \param[in,out] msidata       Input 11-bit MSI data. Output WARL value
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p msiaddr64 or \p msidata is
- *           NULL
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support MSI, or
- *           \p msiaddr64 has high-32 bit but IOPMP does not support addrh_en,
- *           or \p msidata is out-of-bounds
- * @retval - IOPMP_ERR_REG_IS_LOCKED if ERR_CFG.l=1
- * @retval - IOPMP_ERR_ILLEGAL_VALUE if the written values do not match the
- *           actual values. The actual values are output in \p msiaddr64 and
- *           \p msidata
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p msiaddr64 or \p msidata is
+ *         NULL
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support MSI, or
+ *         \p msiaddr64 has high-32 bit but IOPMP does not support addrh_en,
+ *         or \p msidata is out-of-bounds
+ * \retval IOPMP_ERR_REG_IS_LOCKED if ERR_CFG.l=1
+ * \retval IOPMP_ERR_ILLEGAL_VALUE if the written values do not match the
+ *         actual values. The actual values are output in \p msiaddr64 and
+ *         \p msidata
  */
 enum iopmp_error iopmp_set_msi_info(IOPMP_t *iopmp, uint64_t *msiaddr64,
                                     uint16_t *msidata);
 
 /**
- * @brief Check if there is an MSI write error and clear the flag
+ * \brief Check if there is an MSI write error and clear the flag
  *
- * @param[in] iopmp             The IOPMP instance to be checked
- * @param[out] msi_werr         The pointer to flag
+ * \param[in] iopmp             The IOPMP instance to be checked
+ * \param[out] msi_werr         The pointer to flag
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p msi_werr is NULL
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support MSI
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p msi_werr is NULL
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support MSI
  */
 enum iopmp_error iopmp_get_and_clear_msi_werr(IOPMP_t *iopmp, bool *msi_werr);
 
 /**
- * @brief Enable or disable the IOPMP faults stalled transactions
+ * \brief Enable or disable the IOPMP faults stalled transactions
  *
- * @param[in] iopmp             The IOPMP instance to be set
- * @param[in,out] enable        Input 1 to enable, 0 to disable. Output WARL
+ * \param[in] iopmp             The IOPMP instance to be set
+ * \param[in,out] enable        Input 1 to enable, 0 to disable. Output WARL
  *                              value
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support stall
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p enable is NULL
- * @retval - IOPMP_ERR_ILLEGAL_VALUE if \p enable can't be written into \p iopmp
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support stall
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p enable is NULL
+ * \retval IOPMP_ERR_ILLEGAL_VALUE if \p enable can't be written into \p iopmp
  */
 enum iopmp_error iopmp_set_stall_violation_en(IOPMP_t *iopmp, bool *enable);
 
 /**
- * @brief Invalidate the error record by clearing ERR_INFO.v bit
+ * \brief Invalidate the error record by clearing ERR_INFO.v bit
  *
- * @param[in] iopmp             The IOPMP instance to be invalidated
+ * \param[in] iopmp             The IOPMP instance to be invalidated
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support clear error
- *           interrupt pending bit
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support clear error
+ *         interrupt pending bit
  */
 enum iopmp_error iopmp_invalidate_error(IOPMP_t *iopmp);
 
 /**
- * @brief Capture an IOPMP error information
+ * \brief Capture an IOPMP error information
  *
- * @param[in] iopmp             The IOPMP instance to be captured
- * @param[out] err_report       The pointer to IOPMP error report structure
- * @param[in] invalidate        Flag to clear V bit after reading error report
+ * \param[in] iopmp             The IOPMP instance to be captured
+ * \param[out] err_report       The pointer to IOPMP error report structure
+ * \param[in] invalidate        Flag to clear V bit after reading error report
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p err_report is NULL
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support capture error
- * @retval - IOPMP_ERR_NOT_EXIST if there is no an pending error
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p err_report is NULL
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support capture error
+ * \retval IOPMP_ERR_NOT_EXIST if there is no an pending error
  */
 enum iopmp_error iopmp_capture_error(IOPMP_t *iopmp,
                                      IOPMP_ERR_REPORT_t *err_report,
                                      bool invalidate);
 
 /**
- * @brief Get subsequent violation window, if IOPMP supports MFR extension
+ * \brief Get subsequent violation window, if IOPMP supports MFR extension
  *
- * @param[in] iopmp             The IOPMP instance to be allocated
- * @param[in,out] svi           When calling, user can specify start index of
+ * \param[in] iopmp             The IOPMP instance to be allocated
+ * \param[in,out] svi           When calling, user can specify start index of
  *                              search windows. When this function returns with
  *                              IOPMP_OK, svi indicates the index of window
  *                              which has subsequent violation
- * @param[out] svw              When this function returns with IOPMP_OK, svw
+ * \param[out] svw              When this function returns with IOPMP_OK, svw
  *                              indicates the content of window which has
  *                              subsequent violation
  *
- * @retval - IOPMP_OK if at least one subsequent violation is found
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support MFR extension
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p svi or \p svw is NULL
- * @retval - IOPMP_ERR_NOT_EXIST if there is no any subsequent violation
+ * \retval IOPMP_OK if at least one subsequent violation is found
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support MFR extension
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p svi or \p svw is NULL
+ * \retval IOPMP_ERR_NOT_EXIST if there is no any subsequent violation
  */
 enum iopmp_error iopmp_mfr_get_sv_window(IOPMP_t *iopmp, uint16_t *svi,
                                          uint16_t *svw);
 
 /**
- * @brief Lock SRCMD_EN(rrid), SRCMD_ENH(rrid), SRCMD_R(rrid), SRCMD_RH(rrid),
+ * \brief Lock SRCMD_EN(rrid), SRCMD_ENH(rrid), SRCMD_R(rrid), SRCMD_RH(rrid),
  * SRCMD_W(rrid), and SRCMD_WH(rrid) if any
  *
- * @param[in] iopmp             The IOPMP instance to be set
- * @param[in] rrid              The RRID to be locked
+ * \param[in] iopmp             The IOPMP instance to be set
+ * \param[in] rrid              The RRID to be locked
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp SRCMD_FMT!=0
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid is out of bounds
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp SRCMD_FMT!=0
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid is out of bounds
  *
- * @note This operation is only supported by SRCMD_FMT=0
+ * \note This operation is only supported by SRCMD_FMT=0
  */
 enum iopmp_error iopmp_lock_srcmd_table_fmt_0(IOPMP_t *iopmp, uint32_t rrid);
 
 /**
- * @brief Check if SRCMD_EN(rrid), SRCMD_ENH(rrid), SRCMD_R(rrid),
+ * \brief Check if SRCMD_EN(rrid), SRCMD_ENH(rrid), SRCMD_R(rrid),
  * SRCMD_RH(rrid), SRCMD_W(rrid), and SRCMD_WH(rrid) if any, have been locked
  *
- * @param[in] iopmp             The IOPMP instance to be got
- * @param[in] rrid              The RRID to be got
- * @param[out] locked           The pointer to an integer to store SRCMD_EN.l
+ * \param[in] iopmp             The IOPMP instance to be got
+ * \param[in] rrid              The RRID to be got
+ * \param[out] locked           The pointer to an integer to store SRCMD_EN.l
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp SRCMD_FMT!=0
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid is out of bounds
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p locked is NULL
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp SRCMD_FMT!=0
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid is out of bounds
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p locked is NULL
  *
- * @note This operation is only supported by SRCMD_FMT=0
+ * \note This operation is only supported by SRCMD_FMT=0
  */
 enum iopmp_error iopmp_is_srcmd_table_fmt_0_locked(IOPMP_t *iopmp,
                                                    uint32_t rrid,
                                                    bool *locked);
 
 /**
- * @brief Lock SRCMD_PERM(mdidx) and SRCMD_PERMH(mdidx)
+ * \brief Lock SRCMD_PERM(mdidx) and SRCMD_PERMH(mdidx)
  *
- * @param[in] iopmp             The IOPMP instance to be set
- * @param[in] mdidx             The index of MD to be locked
+ * \param[in] iopmp             The IOPMP instance to be set
+ * \param[in] mdidx             The index of MD to be locked
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp SRCMD_FMT!=2
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid is out of bounds
- * @retval - IOPMP_ERR_REG_IS_LOCKED if MDLCK has been locked
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp SRCMD_FMT!=2
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid is out of bounds
+ * \retval IOPMP_ERR_REG_IS_LOCKED if MDLCK has been locked
  *
- * @note This operation is only supported by SRCMD_FMT=2
+ * \note This operation is only supported by SRCMD_FMT=2
  */
 enum iopmp_error iopmp_lock_srcmd_table_fmt_2(IOPMP_t *iopmp, uint32_t mdidx);
 
 /**
- * @brief Check if SRCMD_PERM(mdidx) and SRCMD_PERMH(mdidx) have been locked
+ * \brief Check if SRCMD_PERM(mdidx) and SRCMD_PERMH(mdidx) have been locked
  *
- * @param[in] iopmp             The IOPMP instance to be got
- * @param[in] mdidx             The index of MD to be got
- * @param[out] locked           The pointer to an integer to store SRCMD_EN.l
+ * \param[in] iopmp             The IOPMP instance to be got
+ * \param[in] mdidx             The index of MD to be got
+ * \param[out] locked           The pointer to an integer to store SRCMD_EN.l
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp SRCMD_FMT!=2
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p mdidx is out of bounds
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p locked is NULL
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp SRCMD_FMT!=2
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p mdidx is out of bounds
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p locked is NULL
  *
- * @note This operation is only supported by SRCMD_FMT=2
+ * \note This operation is only supported by SRCMD_FMT=2
  */
 enum iopmp_error iopmp_is_srcmd_table_fmt_2_locked(IOPMP_t *iopmp,
                                                    uint32_t mdidx,
                                                    bool *locked);
 
 /**
- * @brief Get the associated MD bitmap and lock bit of given RRID
+ * \brief Get the associated MD bitmap and lock bit of given RRID
  *
- * @param[in] iopmp             The IOPMP instance to be got
- * @param[in] rrid              The RRID to be got
- * @param[out] mds              The pointer to an integer to store SRCMD_EN.md
- * @param[out] lock             The pointer to an integer to store SRCMD_EN.l
+ * \param[in] iopmp             The IOPMP instance to be got
+ * \param[in] rrid              The RRID to be got
+ * \param[out] mds              The pointer to an integer to store SRCMD_EN.md
+ * \param[out] lock             The pointer to an integer to store SRCMD_EN.l
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid is out of bounds
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p lock or \p md is NULL
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid is out of bounds
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p lock or \p md is NULL
  */
 enum iopmp_error iopmp_get_rrid_md_association(IOPMP_t *iopmp, uint32_t rrid,
                                                uint64_t *mds, bool *lock);
 
 /**
- * @brief Associate/Disassociate the given RRID with the given MD bitmap
+ * \brief Associate/Disassociate the given RRID with the given MD bitmap
  *
- * @param[in] iopmp             The IOPMP instance to be set
- * @param[in] rrid              The RRID to be set
- * @param[in] mds_set           The desired MDs to be associated with \p rrid
- * @param[in] mds_clr           The desired MDs to be disassociated with \p rrid
- * @param[out] mds              The pointer to an integer to store WARL value of
+ * \param[in] iopmp             The IOPMP instance to be set
+ * \param[in] rrid              The RRID to be set
+ * \param[in] mds_set           The desired MDs to be associated with \p rrid
+ * \param[in] mds_clr           The desired MDs to be disassociated with \p rrid
+ * \param[out] mds              The pointer to an integer to store WARL value of
  *                              SRCMD_EN.md after setting
- * @param[in] lock              Set 1 to lock SRCMD_EN[rrid]
+ * \param[in] lock              Set 1 to lock SRCMD_EN[rrid]
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp SRCMD_FMT!=0
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid or \p mds_set or
- *           \p mds_clr is out of bounds
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p mds is NULL
- * @retval - IOPMP_ERR_REG_IS_LOCKED if SRCMD_EN[rrid] has been locked or some
- *           of MDs are locked by MDLCK
- * @retval - IOPMP_ERR_ILLEGAL_VALUE if the written \p mds does not match the
- *           actual value
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp SRCMD_FMT!=0
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid or \p mds_set or \p mds_clr
+ *         is out of bounds
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p mds is NULL
+ * \retval IOPMP_ERR_REG_IS_LOCKED if SRCMD_EN[rrid] has been locked or some or
+ *         MDs are locked by MDLCK
+ * \retval IOPMP_ERR_ILLEGAL_VALUE if the written \p mds does not match the
+ *         actual value
  */
 enum iopmp_error iopmp_set_rrid_md_association(IOPMP_t *iopmp, uint32_t rrid,
                                                uint64_t mds_set,
@@ -1294,64 +1846,62 @@ enum iopmp_error iopmp_set_rrid_md_association(IOPMP_t *iopmp, uint32_t rrid,
                                                bool lock);
 
 /**
- * @brief (srcmd_fmt=2 only) Set single RRID's r/w permissions to MD
+ * \brief (srcmd_fmt=2 only) Set single RRID's r/w permissions to MD
  *
- * @param[in] iopmp             The IOPMP instance to be set
- * @param[in] rrid              The RRID to be set
- * @param[in] mdidx             The desired MD to be given permission
- * @param[in,out] r             Set true to give the read permission to \p rrid
+ * \param[in] iopmp             The IOPMP instance to be set
+ * \param[in] rrid              The RRID to be set
+ * \param[in] mdidx             The desired MD to be given permission
+ * \param[in,out] r             Set true to give the read permission to \p rrid
  *                              Output WARL value
- * @param[in,out] w             Set true to give the write permission to \p rrid
+ * \param[in,out] w             Set true to give the write permission to \p rrid
  *                              Output WARL value
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not implement SRCMD table
- *           format 2
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid or \p mdidx is out of
- *           bounds
- * @retval - IOPMP_ERR_REG_IS_LOCKED if MD( \p mdidx ) has been locked by MDLCK
- * @retval - IOPMP_ERR_ILLEGAL_VALUE if the written \p r or \p w do not match
- *           the actual values
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not implement SRCMD table
+ *         format 2
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid or \p mdidx is out of bounds
+ * \retval IOPMP_ERR_REG_IS_LOCKED if MD( \p mdidx ) has been locked by MDLCK
+ * \retval IOPMP_ERR_ILLEGAL_VALUE if the written \p r or \p w do not match the
+ *         actual values
  */
 enum iopmp_error iopmp_set_md_permission(IOPMP_t *iopmp, uint32_t rrid,
                                          uint32_t mdidx, bool *r, bool *w);
 
 /**
- * @brief (srcmd_fmt=2 only) Set multiple RRID's r/w permissions to MD
+ * \brief (srcmd_fmt=2 only) Set multiple RRID's r/w permissions to MD
  *
- * @param[in] iopmp             The IOPMP instance to be set
- * @param[in] mdidx             The desired MD to be given permission
- * @param[in] cfg               The configuration structure for SRCMD format 2
+ * \param[in] iopmp             The IOPMP instance to be set
+ * \param[in] mdidx             The desired MD to be given permission
+ * \param[in] cfg               The configuration structure for SRCMD format 2
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not implement SRCMD table
- *           format 2
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p mdidx is out of bounds
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p cfg is NULL
- * @retval - IOPMP_ERR_REG_IS_LOCKED if MD( \p mdidx ) has been locked by MDLCK
- * @retval - IOPMP_ERR_ILLEGAL_VALUE if the written permissions in \p cfg do not
- *           match the actual values
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not implement SRCMD table
+ *         format 2
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p mdidx is out of bounds
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p cfg is NULL
+ * \retval IOPMP_ERR_REG_IS_LOCKED if MD( \p mdidx ) has been locked by MDLCK
+ * \retval IOPMP_ERR_ILLEGAL_VALUE if the written permissions in \p cfg do not
+ *         match the actual values
  */
 enum iopmp_error iopmp_set_md_permission_multi(IOPMP_t *iopmp, uint32_t mdidx,
                                                IOPMP_SRCMD_PERM_CFG_t *cfg);
 
 /**
- * @brief (SPS only) Set RRID's read permission to MDs
+ * \brief (SPS only) Set RRID's read permission to MDs
  *
- * @param[in] iopmp             The IOPMP instance
- * @param[in] rrid              The RRID to be set
- * @param[in] mds_set           The desired MDs to set permission to \p rrid
- * @param[in] mds_clr           The desired MDs to clear permission to \p rrid
- * @param[out] mds              The pointer to an integer to store WARL value of
+ * \param[in] iopmp             The IOPMP instance
+ * \param[in] rrid              The RRID to be set
+ * \param[in] mds_set           The desired MDs to set permission to \p rrid
+ * \param[in] mds_clr           The desired MDs to clear permission to \p rrid
+ * \param[out] mds              The pointer to an integer to store WARL value of
  *                              SRCMD_R.md after setting
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not implement SPS
- *           extension
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid or \p mds is out of bounds
- * @retval - IOPMP_ERR_REG_IS_LOCKED if register has been locked by SRCMD_EN.l
- * @retval - IOPMP_ERR_ILLEGAL_VALUE if the written \p mds does not match the
- *           actual values
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not implement SPS extension
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid or \p mds is out of bounds
+ * \retval IOPMP_ERR_REG_IS_LOCKED if register has been locked by SRCMD_EN.l
+ * \retval IOPMP_ERR_ILLEGAL_VALUE if the written \p mds does not match the
+ *         actual values
  */
 enum iopmp_error iopmp_sps_set_rrid_md_read(IOPMP_t *iopmp, uint32_t rrid,
                                             uint64_t mds_set,
@@ -1359,38 +1909,36 @@ enum iopmp_error iopmp_sps_set_rrid_md_read(IOPMP_t *iopmp, uint32_t rrid,
                                             uint64_t *mds);
 
 /**
- * @brief (SPS only) Get RRID's read permission to MDs
+ * \brief (SPS only) Get RRID's read permission to MDs
  *
- * @param[in] iopmp             The IOPMP instance
- * @param[in] rrid              The RRID to be checked
- * @param[out] mds              Pointer to variable to output permission
+ * \param[in] iopmp             The IOPMP instance
+ * \param[in] rrid              The RRID to be checked
+ * \param[out] mds              Pointer to variable to output permission
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not implement SPS
- *           extension
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid is out of bounds
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p mds is NULL
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not implement SPS extension
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid is out of bounds
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p mds is NULL
  */
 enum iopmp_error iopmp_sps_get_rrid_md_read(IOPMP_t *iopmp, uint32_t rrid,
                                             uint64_t *mds);
 
 /**
- * @brief (SPS only) Set RRID's write permission to MDs
+ * \brief (SPS only) Set RRID's write permission to MDs
  *
- * @param[in] iopmp             The IOPMP instance
- * @param[in] rrid              The RRID to be set
- * @param[in] mds_set           The desired MDs to set permission to \p rrid
- * @param[in] mds_clr           The desired MDs to clear permission to \p rrid
- * @param[out] mds              The pointer to an integer to store WARL value of
+ * \param[in] iopmp             The IOPMP instance
+ * \param[in] rrid              The RRID to be set
+ * \param[in] mds_set           The desired MDs to set permission to \p rrid
+ * \param[in] mds_clr           The desired MDs to clear permission to \p rrid
+ * \param[out] mds              The pointer to an integer to store WARL value of
  *                              SRCMD_W.md after setting
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not implement SPS
- *           extension
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid or \p mds is out of bounds
- * @retval - IOPMP_ERR_REG_IS_LOCKED if register has been locked by SRCMD_EN.l
- * @retval - IOPMP_ERR_ILLEGAL_VALUE if the written \p mds does not match the
- *           actual values
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not implement SPS extension
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid or \p mds is out of bounds
+ * \retval IOPMP_ERR_REG_IS_LOCKED if register has been locked by SRCMD_EN.l
+ * \retval IOPMP_ERR_ILLEGAL_VALUE if the written \p mds does not match the
+ *         actual values
  */
 enum iopmp_error iopmp_sps_set_rrid_md_write(IOPMP_t *iopmp, uint32_t rrid,
                                              uint64_t mds_set,
@@ -1398,43 +1946,41 @@ enum iopmp_error iopmp_sps_set_rrid_md_write(IOPMP_t *iopmp, uint32_t rrid,
                                              uint64_t *mds);
 
 /**
- * @brief (SPS only) Get RRID's write permission to MDs
+ * \brief (SPS only) Get RRID's write permission to MDs
  *
- * @param[in] iopmp             The IOPMP instance
- * @param[in] rrid              The RRID to be checked
- * @param[out] mds              Pointer to variable to output permission
+ * \param[in] iopmp             The IOPMP instance
+ * \param[in] rrid              The RRID to be checked
+ * \param[out] mds              Pointer to variable to output permission
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not implement SPS
- *           extension
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid is out of bounds
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p mds is NULL
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not implement SPS extension
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid is out of bounds
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p mds is NULL
  */
 enum iopmp_error iopmp_sps_get_rrid_md_write(IOPMP_t *iopmp, uint32_t rrid,
                                              uint64_t *mds);
 
 /**
- * @brief (SPS only) Set RRID's read and write permission to MDs
+ * \brief (SPS only) Set RRID's read and write permission to MDs
  *
- * @param[in] iopmp             The IOPMP instance
- * @param[in] rrid              The RRID to be set
- * @param[in] mds_set_r         The desired MDs to set R permission to \p rrid
- * @param[in] mds_clr_r         The desired MDs to clear R permission to \p rrid
- * @param[in] mds_set_w         The desired MDs to set W permission to \p rrid
- * @param[in] mds_clr_w         The desired MDs to clear W permission to \p rrid
- * @param[out] mds_r            The pointer to an integer to store WARL value of
+ * \param[in] iopmp             The IOPMP instance
+ * \param[in] rrid              The RRID to be set
+ * \param[in] mds_set_r         The desired MDs to set R permission to \p rrid
+ * \param[in] mds_clr_r         The desired MDs to clear R permission to \p rrid
+ * \param[in] mds_set_w         The desired MDs to set W permission to \p rrid
+ * \param[in] mds_clr_w         The desired MDs to clear W permission to \p rrid
+ * \param[out] mds_r            The pointer to an integer to store WARL value of
  *                              SRCMD_R.md after setting
- * @param[out] mds_w            The pointer to an integer to store WARL value of
+ * \param[out] mds_w            The pointer to an integer to store WARL value of
  *                              SRCMD_W.md after setting
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not implement SPS
- *           extension
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid or \p mds_r or \p mds_w is
- *           out of bounds
- * @retval - IOPMP_ERR_REG_IS_LOCKED if register has been locked by SRCMD_EN.l
- * @retval - IOPMP_ERR_ILLEGAL_VALUE if the written \p mds_r or \p mds_w does
- *           not match the actual values
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not implement SPS extension
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid or \p mds_r or \p mds_w is
+ *         out of bounds
+ * \retval IOPMP_ERR_REG_IS_LOCKED if register has been locked by SRCMD_EN.l
+ * \retval IOPMP_ERR_ILLEGAL_VALUE if the written \p mds_r or \p mds_w does
+ *         not match the actual values
  */
 enum iopmp_error iopmp_sps_set_rrid_md_rw(IOPMP_t *iopmp, uint32_t rrid,
                                           uint64_t mds_set_r,
@@ -1445,61 +1991,59 @@ enum iopmp_error iopmp_sps_set_rrid_md_rw(IOPMP_t *iopmp, uint32_t rrid,
                                           uint64_t *mds_w);
 
 /**
- * @brief (SPS only) Get RRID's read and write permission to multiple MDs
+ * \brief (SPS only) Get RRID's read and write permission to multiple MDs
  *
- * @param[in] iopmp             The IOPMP instance
- * @param[in] rrid              The RRID to be set
- * @param[out] mds_r            Pointer to variable to output read permission
- * @param[out] mds_w            Pointer to variable to output write permission
+ * \param[in] iopmp             The IOPMP instance
+ * \param[in] rrid              The RRID to be set
+ * \param[out] mds_r            Pointer to variable to output read permission
+ * \param[out] mds_w            Pointer to variable to output write permission
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not implement SPS
- *           extension
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid is out of bounds
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p mds_r or \p mds_w is NULL
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not implement SPS extension
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid is out of bounds
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p mds_r or \p mds_w is NULL
  */
 enum iopmp_error iopmp_sps_get_rrid_md_rw(IOPMP_t *iopmp, uint32_t rrid,
                                           uint64_t *mds_r, uint64_t *mds_w);
 
 /**
- * @brief Get start index and number of the entries belong to MD[mdidx]
+ * \brief Get start index and number of the entries belong to MD[mdidx]
  *
- * @param[in] iopmp             The IOPMP instance to be got
- * @param[in] mdidx             The index of target MD
- * @param[out] entry_idx_start  The pointer to an integer to return start index
- * @param[out] num_entry        The pointer to an integer to return number of
+ * \param[in] iopmp             The IOPMP instance to be got
+ * \param[in] mdidx             The index of target MD
+ * \param[out] entry_idx_start  The pointer to an integer to return start index
+ * \param[out] num_entry        The pointer to an integer to return number of
  *                              entry
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p mdidx is out of bounds
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p entry_idx_start or
- *           \p num_entry is NULL
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p mdidx is out of bounds
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p entry_idx_start or
+ *         \p num_entry is NULL
  */
 enum iopmp_error iopmp_get_md_entry_association(IOPMP_t *iopmp, uint32_t mdidx,
                                                 uint32_t *entry_idx_start,
                                                 uint32_t *num_entry);
 
 /**
- * @brief Associate given entries with given multiple MDs
+ * \brief Associate given entries with given multiple MDs
  *
- * @param[in] iopmp             The IOPMP instance to be set
- * @param[in] mdidx_start       The start index of target MDs
- * @param[in,out] num_entries   Input the number of entries to be associated.
+ * \param[in] iopmp             The IOPMP instance to be set
+ * \param[in] mdidx_start       The start index of target MDs
+ * \param[in,out] num_entries   Input the number of entries to be associated.
  *                              Output actual number of entries be associated.
- * @param[in] md_num            The number of target MDs to be set
+ * \param[in] md_num            The number of target MDs to be set
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_NOT_ALLOWED if \p iopmp MDCFG format is not 0
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p num_entries is NULL
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p mdidx_start or \p md_num is out
- *           of bounds
- * @retval - IOPMP_ERR_REG_IS_LOCKED if MDCFG of given \p mdidx_start has been
- *           locked by MDCFGLCK.f
- * @retval - IOPMP_ERR_ILLEGAL_VALUE if the written \p num_entries does not
- *           match the actual value. The actual value is output in
- *           \p num_entries
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_ALLOWED if \p iopmp MDCFG format is not 0
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p num_entries is NULL
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p mdidx_start or \p md_num is out
+ *         of bounds
+ * \retval IOPMP_ERR_REG_IS_LOCKED if MDCFG of given \p mdidx_start has been
+ *         locked by MDCFGLCK.f
+ * \retval IOPMP_ERR_ILLEGAL_VALUE if the written \p num_entries does not
+ *         match the actual value. The actual value is output in \p num_entries
  *
- * @note This function must be called only when IOPMP MDCFG format is 0
+ * \note This function must be called only when IOPMP MDCFG format is 0
  */
 enum iopmp_error iopmp_set_md_entry_association_multi(IOPMP_t *iopmp,
                                                       uint32_t mdidx_start,
@@ -1507,24 +2051,24 @@ enum iopmp_error iopmp_set_md_entry_association_multi(IOPMP_t *iopmp,
                                                       uint32_t md_num);
 
 /**
- * @brief Associate given entries with given MD(mdidx)
+ * \brief Associate given entries with given MD(mdidx)
  *
- * @param[in] iopmp             The IOPMP instance to be set
- * @param[in] mdidx             The index of target MD
- * @param[in,out] num_entry     Input the number of entries to be associated.
+ * \param[in] iopmp             The IOPMP instance to be set
+ * \param[in] mdidx             The index of target MD
+ * \param[in,out] num_entry     Input the number of entries to be associated.
  *                              Output actual number of entries be associated.
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_NOT_ALLOWED if \p iopmp MDCFG format is not 0
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p num_entry is NULL
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p mdidx or \p num_entry is out of
- *           bounds
- * @retval - IOPMP_ERR_REG_IS_LOCKED if MDCFG of given \p mdidx has been locked
- *           by MDCFGLCK.f
- * @retval - IOPMP_ERR_ILLEGAL_VALUE if the written \p num_entry does not match
- *           the actual value. The actual value is output in \p num_entry
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_ALLOWED if \p iopmp MDCFG format is not 0
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p num_entry is NULL
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p mdidx or \p num_entry is out of
+ *         bounds
+ * \retval IOPMP_ERR_REG_IS_LOCKED if MDCFG of given \p mdidx has been locked
+ *         by MDCFGLCK.f
+ * \retval IOPMP_ERR_ILLEGAL_VALUE if the written \p num_entry does not match
+ *         the actual value. The actual value is output in \p num_entry
  *
- * @note This function must be called only when IOPMP MDCFG format is 0
+ * \note This function must be called only when IOPMP MDCFG format is 0
  */
 static inline
 enum iopmp_error iopmp_set_md_entry_association(IOPMP_t *iopmp, uint32_t mdidx,
@@ -1534,84 +2078,83 @@ enum iopmp_error iopmp_set_md_entry_association(IOPMP_t *iopmp, uint32_t mdidx,
 }
 
 /**
- * @brief Get value of md_entry_num if IOPMP model is xxx-K
+ * \brief Get value of HWCFG0.md_entry_num if IOPMP model is xxx-K
  *
- * @param[in] iopmp             The IOPMP instance to be got
- * @param[out] md_entry_num     The pointer to an integer to return value
+ * \param[in] iopmp             The IOPMP instance to be got
+ * \param[out] md_entry_num     The pointer to an integer to return value
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p md_entry_num is NULL
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p md_entry_num is NULL
  */
 enum iopmp_error iopmp_get_md_entry_num(IOPMP_t *iopmp, uint32_t *md_entry_num);
 
 /**
- * @brief Program value of md_entry_num
+ * \brief Program value of HWCFG0.md_entry_num
  *
- * @param[in] iopmp             The IOPMP instance to be programmed
- * @param[in,out] md_entry_num  Input the drsired value of md_entry_num. Output
+ * \param[in] iopmp             The IOPMP instance to be programmed
+ * \param[in,out] md_entry_num  Input the drsired value of md_entry_num. Output
  *                              WARL value.
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_NOT_ALLOWED if IOPMP MDCFG format is not 2
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p md_entry_num is NULL
- * @retval - IOPMP_ERR_REG_IS_LOCKED if IOPMP has been enabled
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p md_entry_num is out-of-bounds
- * @retval - IOPMP_ERR_ILLEGAL_VALUE if the written \p md_entry_num does not
- *           match the actual value. The actual value is output in
- *           \p md_entry_num
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_ALLOWED if IOPMP MDCFG format is not 2
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p md_entry_num is NULL
+ * \retval IOPMP_ERR_REG_IS_LOCKED if IOPMP has been enabled
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p md_entry_num is out-of-bounds
+ * \retval IOPMP_ERR_ILLEGAL_VALUE if the written \p md_entry_num does not
+ *         match the actual value. The actual value is output in \p md_entry_num
  *
- * @note This function must be called only when IOPMP's MDCFG_FMT=2
+ * \note This function must be called only when IOPMP's MDCFG_FMT=2
  */
 enum iopmp_error iopmp_set_md_entry_num(IOPMP_t *iopmp, uint32_t *md_entry_num);
 
 /**
- * @brief Encode IOPMP entry from given memory region and flags
+ * \brief Encode IOPMP entry from given memory region and flags
  *
- * @param[in] iopmp             The IOPMP instance
- * @param[out] entries          The array of entry to be output
- * @param[in] num_entry         Number of entries in \p entries
- * @param[in] addr              Address of the memory region
- * @param[in] size              Size of the memory region
- * @param[in] flags             Flags of the entry for this memory region
- * @param[in] private_data      Private data that can be used in specific model
+ * \param[in] iopmp             The IOPMP instance
+ * \param[out] entries          The array of entry to be output
+ * \param[in] num_entry         Number of entries in \p entries
+ * \param[in] addr              Address of the memory region
+ * \param[in] size              Size of the memory region
+ * \param[in] flags             Flags of the entry for this memory region
+ * \param[in] private_data      Private data that can be used in specific model
  *
- * @retval - 1 if successes and the memory region is encoded as NAPOT entry or
- *           as TOR entry 0
- * @retval - 2 if successes and the memory region is encoded as two TOR entries
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p entries is NULL or
- *           \p num_entry is 0 or \p size is 0 or \p addr or \p size is not
- *           aligned to IOPMP granularity
- * @retval - IOPMP_ERR_NOT_SUPPORTED if memory region should be encoded as TOR
- *           entry, but \p iopmp does not support TOR entry; or \p flags contain
- *           unsupported hardware features such as per-entry interrupt/error
- *           suppression
- * @retval - IOPMP_ERR_NOT_ALLOWED if memory region should be encoded as TOR,
- *           but only one entry in given \p entries ; or if given \p flags
- *           include IOPMP_ENTRY_FIRST_TOR but the \p addr is not 0
+ * \retval 1 if successes and the memory region is encoded as NAPOT entry or as
+ *         TOR entry 0
+ * \retval 2 if successes and the memory region is encoded as two TOR entries
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p entries is NULL or
+ *         \p num_entry is 0 or \p size is 0 or \p addr or \p size is not
+ *         aligned to IOPMP granularity
+ * \retval IOPMP_ERR_NOT_SUPPORTED if memory region should be encoded as TOR
+ *         entry, but \p iopmp does not support TOR entry; or \p flags contain
+ *         unsupported hardware features such as per-entry interrupt/error
+ *         suppression
+ * \retval IOPMP_ERR_NOT_ALLOWED if memory region should be encoded as TOR, but
+ *         only one entry in given \p entries ; or if given \p flags include
+ *         IOPMP_ENTRY_FIRST_TOR but the \p addr is not 0
  *
- * @note Caller is responsible for providing the permission bits and per-entry
+ * \note Caller is responsible for providing the permission bits and per-entry
  *       interrupt/error suppression bits via \p flags parameter.
- * @note The address-matching mode of the entry will be determined by this API.
+ * \note The address-matching mode of the entry will be determined by this API.
  *       Caller doesn't need to provide the address matching mode via \p flags
  *       parameter, such as IOPMP_ENTRY_A_TOR or IOPMP_ENTRY_A_NAPOT. Caller can
  *       check the address-matching mode by entry->a field after returning from
  *       this API.
- * @note If caller wants to encode the the entry as "OFF" address-matching mode,
+ * \note If caller wants to encode the the entry as "OFF" address-matching mode,
  *       caller must provide IOPMP_ENTRY_FORCE_OFF via \p flags parameter.
- * @note In general, a TOR region will be encoded into two entries. However, the
+ * \note In general, a TOR region will be encoded into two entries. However, the
  *       specification permits the PMP entry 0 having TOR address-matching mode.
  *       In this case, caller must provide IOPMP_ENTRY_FIRST_TOR via \p flags
  *       parameter. The API returns 1 whereas the entry is encoded as TOR
  *       address-matching mode.
- * @note If caller wants to encode TOR entries on an NAPOT-able region, caller
+ * \note If caller wants to encode TOR entries on an NAPOT-able region, caller
  *       must provide IOPMP_ENTRY_FORCE_TOR via \p flags parameter.
- * @note If caller wants to specify the entry is whether a priority entry or a
+ * \note If caller wants to specify the entry is whether a priority entry or a
  *       non-priority entry, caller can provide IOPMP_ENTRY_PRIO or
  *       IOPMP_ENTRY_NON_PRIO via \p flags parameter. The iopmp_set_entries()
  *       and similar APIs will check the priority on the entry. If the caller
  *       provides neither of them, the iopmp_set_entries() and similar APIs
  *       won't check the priority on the entry.
- * @note Currently, the \p private_data is used in a specific model with SRCMD
+ * \note Currently, the \p private_data is used in a specific model with SRCMD
  *       format 2 and MDCFG format 1 and HWCFG0.md_entry_num=0 configurations.
  *       In this case, the \p private_data encodes {SRCMD_PERM(H) | SRCMD_PERM}
  *       for the entry associated with a single MD.
@@ -1623,22 +2166,22 @@ enum iopmp_error iopmp_encode_entry(IOPMP_t *iopmp, struct iopmp_entry *entries,
                                     uint64_t private_data);
 
 /**
- * @brief Set the entries belong to given MD[mdidx] to IOPMP
+ * \brief Set the entries belong to given MD to IOPMP
  *
- * @param[in] iopmp             The IOPMP instance to be written
- * @param[in] mdidx             The index of target MD
- * @param[in] entry_array       The array of entries
- * @param[in] idx_start         The local index of entry in target MD
- * @param[in] num_entry         The number of entries to be set
+ * \param[in] iopmp             The IOPMP instance to be written
+ * \param[in] mdidx             The index of target MD
+ * \param[in] entry_array       The array of entries
+ * \param[in] idx_start         The local index of entry in target MD
+ * \param[in] num_entry         The number of entries to be set
  *
- * @retval - IOPMP_OK on success
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p entry_array is NULL or
- *           \p num_entry is 0
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p mdidx, \p idx_start or
- *           \p num_entry is out of bounds
- * @retval - IOPMP_ERR_INVALID_PRIORITY if priority of entry is invalid
- * @retval - IOPMP_ERR_REG_IS_LOCKED if entries from \p idx_start have been
- *           locked by ENTRYLCK.f
+ * \retval IOPMP_OK on success
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p entry_array is NULL or
+ *         \p num_entry is 0
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p mdidx, \p idx_start or
+ *         \p num_entry is out of bounds
+ * \retval IOPMP_ERR_INVALID_PRIORITY if priority of entry is invalid
+ * \retval IOPMP_ERR_REG_IS_LOCKED if entries from \p idx_start have been locked
+ *         by ENTRYLCK.f
  */
 enum iopmp_error iopmp_set_entries_to_md(IOPMP_t *iopmp, uint32_t mdidx,
                                          const struct iopmp_entry *entry_array,
@@ -1646,21 +2189,21 @@ enum iopmp_error iopmp_set_entries_to_md(IOPMP_t *iopmp, uint32_t mdidx,
                                          uint32_t num_entry);
 
 /**
- * @brief Set single entry belong to given MD[mdidx] to IOPMP
+ * \brief Set single entry belong to given MD to IOPMP
  *
- * @param[in] iopmp             The IOPMP instance to be written
- * @param[in] mdidx             The index of target MD
- * @param[in] entry             The pointer to the entry
- * @param[in] idx               The local index of entry in target MD
+ * \param[in] iopmp             The IOPMP instance to be written
+ * \param[in] mdidx             The index of target MD
+ * \param[in] entry             The pointer to the entry
+ * \param[in] idx               The local index of entry in target MD
  *
- * @retval - IOPMP_OK on success
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p entry_array is NULL or
- *           \p num_entry is 0
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p mdidx, \p idx_start or
- *           \p num_entry is out of bounds
- * @retval - IOPMP_ERR_INVALID_PRIORITY if priority of entry is invalid
- * @retval - IOPMP_ERR_REG_IS_LOCKED if entries from \p idx_start have been
- *           locked by ENTRYLCK.f
+ * \retval IOPMP_OK on success
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p entry_array is NULL or
+ *         \p num_entry is 0
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p mdidx, \p idx_start or
+ *         \p num_entry is out of bounds
+ * \retval IOPMP_ERR_INVALID_PRIORITY if priority of entry is invalid
+ * \retval IOPMP_ERR_REG_IS_LOCKED if entries from \p idx_start have been locked
+ *         by ENTRYLCK.f
  */
 static inline
 enum iopmp_error iopmp_set_entry_to_md(IOPMP_t *iopmp, uint32_t mdidx,
@@ -1671,19 +2214,19 @@ enum iopmp_error iopmp_set_entry_to_md(IOPMP_t *iopmp, uint32_t mdidx,
 }
 
 /**
- * @brief Get the entries belong to given MD[mdidx] from IOPMP
+ * \brief Get the entries belong to given MD from IOPMP
  *
- * @param[in] iopmp             The IOPMP instance to be read
- * @param[in] mdidx             The index of target MD
- * @param[out] entry_array      The array of entries
- * @param[in] idx_start         The local start index of entries in target MD
- * @param[in] num_entry         The number of entries to be read
+ * \param[in] iopmp             The IOPMP instance to be read
+ * \param[in] mdidx             The index of target MD
+ * \param[out] entry_array      The array of entries
+ * \param[in] idx_start         The local start index of entries in target MD
+ * \param[in] num_entry         The number of entries to be read
  *
- * @retval - IOPMP_OK on success
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p entry_array is NULL or
- *           \p num_entry is 0
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p mdidx, \p idx_start or
- *           \p num_entry is out of bounds
+ * \retval IOPMP_OK on success
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p entry_array is NULL or
+ *         \p num_entry is 0
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p mdidx, \p idx_start or
+ *         \p num_entry is out of bounds
  */
 enum iopmp_error iopmp_get_entries_from_md(IOPMP_t *iopmp, uint32_t mdidx,
                                            struct iopmp_entry *entry_array,
@@ -1691,18 +2234,18 @@ enum iopmp_error iopmp_get_entries_from_md(IOPMP_t *iopmp, uint32_t mdidx,
                                            uint32_t num_entry);
 
 /**
- * @brief Get single entry belong to given MD[mdidx] from IOPMP
+ * \brief Get single entry belong to given MD from IOPMP
  *
- * @param[in] iopmp             The IOPMP instance to be read
- * @param[in] mdidx             The index of target MD
- * @param[out] entry            The pointer to the entry
- * @param[in] idx               The local start index of entries in target MD
+ * \param[in] iopmp             The IOPMP instance to be read
+ * \param[in] mdidx             The index of target MD
+ * \param[out] entry            The pointer to the entry
+ * \param[in] idx               The local start index of entries in target MD
  *
- * @retval - IOPMP_OK on success
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p entry_array is NULL or
- *           \p num_entry is 0
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p mdidx, \p idx_start or
- *           \p num_entry is out of bounds
+ * \retval IOPMP_OK on success
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p entry_array is NULL or
+ *         \p num_entry is 0
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p mdidx, \p idx_start or
+ *         \p num_entry is out of bounds
  */
 static inline
 enum iopmp_error iopmp_get_entry_from_md(IOPMP_t *iopmp, uint32_t mdidx,
@@ -1713,35 +2256,35 @@ enum iopmp_error iopmp_get_entry_from_md(IOPMP_t *iopmp, uint32_t mdidx,
 }
 
 /**
- * @brief Get the global entries from IOPMP
+ * \brief Get the global entries from IOPMP
  *
- * @param[in] iopmp             The IOPMP instance to be read
- * @param[out] entry_array      The array of entries
- * @param[in] idx_start         The global start index of target entries
- * @param[in] num_entry         The number of entries to be read
+ * \param[in] iopmp             The IOPMP instance to be read
+ * \param[out] entry_array      The array of entries
+ * \param[in] idx_start         The global start index of target entries
+ * \param[in] num_entry         The number of entries to be read
  *
- * @retval - IOPMP_OK on success
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p entry_array is NULL or
- *           \p num_entry is 0
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p idx_start or \p num_entry is
- *           out of bounds
+ * \retval IOPMP_OK on success
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p entry_array is NULL or
+ *         \p num_entry is 0
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p idx_start or \p num_entry is out
+ *         of bounds
  */
 enum iopmp_error iopmp_get_entries(IOPMP_t *iopmp,
                                    struct iopmp_entry *entry_array,
                                    uint32_t idx_start, uint32_t num_entry);
 
 /**
- * @brief Get single global entry from IOPMP
+ * \brief Get single global entry from IOPMP
  *
- * @param[in] iopmp             The IOPMP instance to be read
- * @param[out] entry            The pointer to the entry
- * @param[in] idx               The global start index of target entries
+ * \param[in] iopmp             The IOPMP instance to be read
+ * \param[out] entry            The pointer to the entry
+ * \param[in] idx               The global start index of target entries
  *
- * @retval - IOPMP_OK on success
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p entry_array is NULL or
- *           \p num_entry is 0
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p idx_start or \p num_entry is
- *           out of bounds
+ * \retval IOPMP_OK on success
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p entry_array is NULL or
+ *         \p num_entry is 0
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p idx_start or \p num_entry is out
+ *         of bounds
  */
 static inline
 enum iopmp_error iopmp_get_entry(IOPMP_t *iopmp, struct iopmp_entry *entry,
@@ -1751,41 +2294,41 @@ enum iopmp_error iopmp_get_entry(IOPMP_t *iopmp, struct iopmp_entry *entry,
 }
 
 /**
- * @brief Set the global entries into IOPMP
+ * \brief Set the global entries into IOPMP
  *
- * @param[in] iopmp             The IOPMP instance to be written
- * @param[in] entry_array       The array of entries
- * @param[in] idx_start         The global start index of target entries
- * @param[in] num_entry         The number of entries to be written
+ * \param[in] iopmp             The IOPMP instance to be written
+ * \param[in] entry_array       The array of entries
+ * \param[in] idx_start         The global start index of target entries
+ * \param[in] num_entry         The number of entries to be written
  *
- * @retval - IOPMP_OK on success
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p entry_array is NULL or
- *           \p num_entry is 0
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p idx_start or \p num_entry is
- *           out of bounds
- * @retval - IOPMP_ERR_INVALID_PRIORITY if priority of entry is invalid
- * @retval - IOPMP_ERR_REG_IS_LOCKED if entries from \p idx_start have been
- *           locked by ENTRYLCK.f
+ * \retval IOPMP_OK on success
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p entry_array is NULL or
+ *         \p num_entry is 0
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p idx_start or \p num_entry is out
+ *         of bounds
+ * \retval IOPMP_ERR_INVALID_PRIORITY if priority of entry is invalid
+ * \retval IOPMP_ERR_REG_IS_LOCKED if entries from \p idx_start have been locked
+ *         by ENTRYLCK.f
  */
 enum iopmp_error iopmp_set_entries(IOPMP_t *iopmp,
                                    const struct iopmp_entry *entry_array,
                                    uint32_t idx_start, uint32_t num_entry);
 
 /**
- * @brief Set single global entry into IOPMP
+ * \brief Set single global entry into IOPMP
  *
- * @param[in] iopmp             The IOPMP instance to be written
- * @param[in] entry             The pointer to the entry
- * @param[in] idx               The global start index of target entries
+ * \param[in] iopmp             The IOPMP instance to be written
+ * \param[in] entry             The pointer to the entry
+ * \param[in] idx               The global start index of target entries
  *
- * @retval - IOPMP_OK on success
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p entry_array is NULL or
- *           \p num_entry is 0
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p idx_start or \p num_entry is
- *           out of bounds
- * @retval - IOPMP_ERR_INVALID_PRIORITY if priority of entry is invalid
- * @retval - IOPMP_ERR_REG_IS_LOCKED if entries from \p idx_start have been
- *           locked by ENTRYLCK.f
+ * \retval IOPMP_OK on success
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p entry_array is NULL or
+ *         \p num_entry is 0
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p idx_start or \p num_entry is out
+ *         of bounds
+ * \retval IOPMP_ERR_INVALID_PRIORITY if priority of entry is invalid
+ * \retval IOPMP_ERR_REG_IS_LOCKED if entries from \p idx_start have been locked
+ *         by ENTRYLCK.f
  */
 static inline
 enum iopmp_error iopmp_set_entry(IOPMP_t *iopmp,
@@ -1796,44 +2339,44 @@ enum iopmp_error iopmp_set_entry(IOPMP_t *iopmp,
 }
 
 /**
- * @brief Clear IOPMP entries in MD
+ * \brief Clear IOPMP entries in MD
  *
- * @param[in] iopmp             The IOPMP instance
- * @param[in] mdidx             The index of target MD
+ * \param[in] iopmp             The IOPMP instance
+ * \param[in] mdidx             The index of target MD
  *
- * @retval - IOPMP_OK on success
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p mdidx is out of bounds
- * @retval - IOPMP_ERR_REG_IS_LOCKED if entries in MD \p mdidx have been locked
- *           by ENTRYLCK.f
+ * \retval IOPMP_OK on success
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p mdidx is out of bounds
+ * \retval IOPMP_ERR_REG_IS_LOCKED if entries in MD \p mdidx have been locked by
+ *         ENTRYLCK.f
  */
 enum iopmp_error iopmp_clear_entries_in_md(IOPMP_t *iopmp, uint32_t mdidx);
 
 /**
- * @brief Clear IOPMP entries
+ * \brief Clear IOPMP entries
  *
- * @param[in] iopmp             The IOPMP instance
- * @param[in] idx_start         The global start index of target entries
- * @param[in] num_entry         The number of entries to be cleared
+ * \param[in] iopmp             The IOPMP instance
+ * \param[in] idx_start         The global start index of target entries
+ * \param[in] num_entry         The number of entries to be cleared
  *
- * @retval - IOPMP_OK on success
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p idx_start or \p num_entry is
- *           out of bounds
- * @retval - IOPMP_ERR_REG_IS_LOCKED if some of entries have been locked by
- *           ENTRYLCK.f
+ * \retval IOPMP_OK on success
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p idx_start or \p num_entry is out
+ *         of bounds
+ * \retval IOPMP_ERR_REG_IS_LOCKED if some of entries have been locked by
+ *         ENTRYLCK.f
  */
 enum iopmp_error iopmp_clear_entries(IOPMP_t *iopmp, uint32_t idx_start,
                                      uint32_t num_entry);
 
 /**
- * @brief Clear single global entry
+ * \brief Clear single global entry
  *
- * @param[in] iopmp             The IOPMP instance
- * @param[in] idx               The global index of target entry
+ * \param[in] iopmp             The IOPMP instance
+ * \param[in] idx               The global index of target entry
  *
- * @retval - IOPMP_OK on success
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p idx is out of bounds
- * @retval - IOPMP_ERR_REG_IS_LOCKED if some of entries have been locked by
- *           ENTRYLCK.f
+ * \retval IOPMP_OK on success
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p idx is out of bounds
+ * \retval IOPMP_ERR_REG_IS_LOCKED if some of entries have been locked by
+ *         ENTRYLCK.f
  */
 static inline enum iopmp_error iopmp_clear_entry(IOPMP_t *iopmp, uint32_t idx)
 {
@@ -1841,17 +2384,17 @@ static inline enum iopmp_error iopmp_clear_entry(IOPMP_t *iopmp, uint32_t idx)
 }
 
 /**
- * @brief Get the MD bitmap that given index range of IOPMP entries belong to
+ * \brief Get the MD bitmap that given index range of IOPMP entries belong to
  *
- * @param[in] iopmp             The IOPMP instance
- * @param[in] idx_start         The global start index of target entries
- * @param[in] num_entry         The number of entries to be checked
- * @param[out] mds              Pointer to integer to store MD bitmap
+ * \param[in] iopmp             The IOPMP instance
+ * \param[in] idx_start         The global start index of target entries
+ * \param[in] num_entry         The number of entries to be checked
+ * \param[out] mds              Pointer to integer to store MD bitmap
  *
- * @retval - IOPMP_OK on success
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p idx_start or \p num_entry is
- *           out of bounds
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p mds is NULL
+ * \retval IOPMP_OK on success
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p idx_start or \p num_entry is out
+ *         of bounds
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p mds is NULL
  */
 enum iopmp_error iopmp_entries_get_belong_md(IOPMP_t *iopmp, uint32_t idx_start,
                                              uint32_t num_entry, uint64_t *mds);

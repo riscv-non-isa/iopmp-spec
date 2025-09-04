@@ -61,12 +61,12 @@ bool libiopmp_check_version(int major, int minor, int extra)
 }
 
 /**
- * @brief Check if the model of IOPMP is Rapid-K, Dynamic-K, or Compact-K
+ * \brief Check if the model of IOPMP is Rapid-K, Dynamic-K, or Compact-K
  *
- * @param[in] iopmp             The IOPMP instance to be checked
+ * \param[in] iopmp             The IOPMP instance to be checked
  *
- * @retval - true if model is xxx-K
- * @retval - false if model is not xxx-K
+ * \retval 1 if model is xxx-K
+ * \retval 0 if model is not xxx-K
  */
 static bool __is_k_model(IOPMP_t *iopmp)
 {
@@ -308,19 +308,19 @@ enum iopmp_error iopmp_transactions_are_resumed(IOPMP_t *iopmp, bool polling)
 }
 
 /**
- * @brief Write RRIDSCP with given op and return the stat
+ * \brief Write RRIDSCP with given op and return the stat
  *
- * @param[in] iopmp             The IOPMP instance to be set
- * @param[in,out] rrid          Input the RRID to be stalled. Output WARL value
- * @param[in] op                The desired operation of RRIDSCP
- * @param[out] stat             The pointer to store enum iopmp_rridscp_stat
+ * \param[in] iopmp             The IOPMP instance to be set
+ * \param[in,out] rrid          Input the RRID to be stalled. Output WARL value
+ * \param[in] op                The desired operation of RRIDSCP
+ * \param[out] stat             The pointer to store enum iopmp_rridscp_stat
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p rrid is NULL or invalid
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid is out of bounds
- * @retval - IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support stall by RRID
- * @retval - IOPMP_ERR_ILLEGAL_VALUE if the written \p rrid does not match the
- *           actual value. The actual value is output via \p rrid
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p rrid is NULL or invalid
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid is out of bounds
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support stall by RRID
+ * \retval IOPMP_ERR_ILLEGAL_VALUE if the written \p rrid does not match the
+ *         actual value. The actual value is output via \p rrid
  */
 static enum iopmp_error __iopmp_set_rridscp(IOPMP_t *iopmp, uint32_t *rrid,
                                             enum iopmp_rridscp_op op,
@@ -955,24 +955,24 @@ enum iopmp_error iopmp_set_md_permission_multi(IOPMP_t *iopmp, uint32_t mdidx,
 }
 
 /**
- * @brief (SPS only) Set RRID's read/write permission to MDs
+ * \brief (SPS only) Set RRID's read/write permission to MDs
  *
- * @param[in] iopmp             The IOPMP instance
- * @param[in] rrid              The RRID to be set
- * @param[in] mds_set           The desired MDs to set permission to \p rrid
- * @param[in] mds_clr           The desired MDs to clear permission to \p rrid
- * @param[out] mds              The pointer to an integer to store WARL value of
+ * \param[in] iopmp             The IOPMP instance
+ * \param[in] rrid              The RRID to be set
+ * \param[in] mds_set           The desired MDs to set permission to \p rrid
+ * \param[in] mds_clr           The desired MDs to clear permission to \p rrid
+ * \param[out] mds              The pointer to an integer to store WARL value of
  *                              SRCMD_{R|W}.md after setting
- * @param[in] fp_get_srcmd_rw_64    The function pointer to SPS operation to get
+ * \param[in] fp_get_srcmd_rw_64    The function pointer to SPS operation to get
  *                                  value of SRCMD_{R|W}
- * @param[in] fp_set_srcmd_rw_64    The function pointer to SPS operation to set
+ * \param[in] fp_set_srcmd_rw_64    The function pointer to SPS operation to set
  *                                  value of SRCMD_{R|W}
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid or \p mds is out of bounds
- * @retval - IOPMP_ERR_REG_IS_LOCKED if register has been locked by SRCMD_EN.l
- * @retval - IOPMP_ERR_ILLEGAL_VALUE if the written \p mds does not match the
- *           actual values
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid or \p mds is out of bounds
+ * \retval IOPMP_ERR_REG_IS_LOCKED if register has been locked by SRCMD_EN.l
+ * \retval IOPMP_ERR_ILLEGAL_VALUE if the written \p mds does not match the
+ *         actual values
  */
 static enum iopmp_error __sps_set(
     IOPMP_t *iopmp, uint32_t rrid, uint64_t mds_set, uint64_t mds_clr,
@@ -1017,17 +1017,17 @@ static enum iopmp_error __sps_set(
 }
 
 /**
- * @brief (SPS only) Get RRID's read/write permission to MDs
+ * \brief (SPS only) Get RRID's read/write permission to MDs
  *
- * @param[in] iopmp             The IOPMP instance
- * @param[in] rrid              The RRID to be checked
- * @param[out] mds              Pointer to variable to output permission
- * @param[in] fp_get_srcmd_rw_64    The function pointer to SPS operation to get
+ * \param[in] iopmp             The IOPMP instance
+ * \param[in] rrid              The RRID to be checked
+ * \param[out] mds              Pointer to variable to output permission
+ * \param[in] fp_get_srcmd_rw_64    The function pointer to SPS operation to get
  *                                  value of SRCMD_{R|W}
  *
- * @retval - IOPMP_OK if successes
- * @retval - IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid is out of bounds
- * @retval - IOPMP_ERR_INVALID_PARAMETER if given \p mds is NULL
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid is out of bounds
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p mds is NULL
  */
 static
 enum iopmp_error __sps_get(IOPMP_t *iopmp, uint32_t rrid, uint64_t *mds,
@@ -1276,17 +1276,17 @@ enum iopmp_error iopmp_set_md_entry_num(IOPMP_t *iopmp, uint32_t *md_entry_num)
 }
 
 /**
- * @brief Encode IOPMP NAPOT entry from given memory region and flags
+ * \brief Encode IOPMP NAPOT entry from given memory region and flags
  *
- * @param[in] iopmp             The IOPMP instance
- * @param[out] entry            The entry to be output
- * @param[in] addr              Address of the memory region
- * @param[in] size              Size of the memory region
- * @param[in] hw_flags          HW flags of the entry for this memory region
- * @param[in] sw_flags          SW flags of the entry for this memory region
- * @param[in] private_data      Private data that can be used in specific model
+ * \param[in] iopmp             The IOPMP instance
+ * \param[out] entry            The entry to be output
+ * \param[in] addr              Address of the memory region
+ * \param[in] size              Size of the memory region
+ * \param[in] hw_flags          HW flags of the entry for this memory region
+ * \param[in] sw_flags          SW flags of the entry for this memory region
+ * \param[in] private_data      Private data that can be used in specific model
  *
- * @retval - 1 if successes and the memory region is encoded as NAPOT entry
+ * \return 1
  */
 static int __encode_entry_pow2(IOPMP_t *iopmp, struct iopmp_entry *entry,
                                uint64_t addr, uint64_t size,
@@ -1320,24 +1320,24 @@ static int __encode_entry_pow2(IOPMP_t *iopmp, struct iopmp_entry *entry,
 }
 
 /**
- * @brief Encode IOPMP TOR entries from given memory region and flags
+ * \brief Encode IOPMP TOR entries from given memory region and flags
  *
- * @param[in] iopmp             The IOPMP instance
- * @param[out] entries          The array of entry to be output
- * @param[in] num_entry         Number of entries in \p entries
- * @param[in] addr              Address of the memory region
- * @param[in] size              Size of the memory region
- * @param[in] hw_flags          HW flags of the entry for this memory region
- * @param[in] sw_flags          SW flags of the entry for this memory region
- * @param[in] private_data      Private data that can be used in specific model
+ * \param[in] iopmp             The IOPMP instance
+ * \param[out] entries          The array of entry to be output
+ * \param[in] num_entry         Number of entries in \p entries
+ * \param[in] addr              Address of the memory region
+ * \param[in] size              Size of the memory region
+ * \param[in] hw_flags          HW flags of the entry for this memory region
+ * \param[in] sw_flags          SW flags of the entry for this memory region
+ * \param[in] private_data      Private data that can be used in specific model
  *
- * @retval - 1 if successes and the memory region is encoded as first TOR entry
- * @retval - 2 if successes and the memory region is encoded as two TOR entries
+ * \retval 1 if successes and the memory region is encoded as first TOR entry
+ * \retval 2 if successes and the memory region is encoded as two TOR entries
  */
 static int __encode_entry_tor(IOPMP_t *iopmp, struct iopmp_entry *entries,
                               uint64_t addr, uint64_t size,
-                               enum iopmp_entry_flags hw_flags,
-                               enum iopmp_entry_flags sw_flags,
+                              enum iopmp_entry_flags hw_flags,
+                              enum iopmp_entry_flags sw_flags,
                               uint64_t private_data)
 {
     uint32_t entry_cfg0;
@@ -1386,12 +1386,12 @@ static int __encode_entry_tor(IOPMP_t *iopmp, struct iopmp_entry *entries,
 }
 
 /**
- * @brief Check if given value is power of 2
+ * \brief Check if given value is power of 2
  *
- * @param[in] val               The value to be checked
+ * \param[in] val               The value to be checked
  *
- * @retval - true if it is power of 2
- * @retval - false if it is not power of 2
+ * \retval 1 if it is power of 2
+ * \retval 0 if it is not power of 2
  */
 static inline bool ispow2(uint64_t val)
 {
@@ -1399,13 +1399,13 @@ static inline bool ispow2(uint64_t val)
 }
 
 /**
- * @brief Check if given memory region is NAPOT
+ * \brief Check if given memory region is NAPOT
  *
- * @param[in] addr              The base address of the memory region
- * @param[in] size              The size(in bytes) of the memory region
+ * \param[in] addr              The base address of the memory region
+ * \param[in] size              The size(in bytes) of the memory region
  *
- * @retval - true if it is NAPOT
- * @retval - false if it is not NAPOT
+ * \retval 1 if it is NAPOT
+ * \retval 0 if it is not NAPOT
  */
 static inline bool is_napot(uint64_t addr, uint64_t size)
 {
@@ -1475,15 +1475,15 @@ enum iopmp_error iopmp_encode_entry(IOPMP_t *iopmp, struct iopmp_entry *entries,
 }
 
 /**
- * @brief Sanity check on priority of entries
+ * \brief Sanity check on priority of entries
  *
- * @param[in] iopmp             The IOPMP instance
- * @param[in] entry_array       The array of entries
- * @param[in] idx_start         The global start index of target entries
- * @param[in] num_entry         The number of entries to be checked
+ * \param[in] iopmp             The IOPMP instance
+ * \param[in] entry_array       The array of entries
+ * \param[in] idx_start         The global start index of target entries
+ * \param[in] num_entry         The number of entries to be checked
  *
- * @retval - true on success
- * @retval - false on error
+ * \retval 1 on success
+ * \retval 0 on error
  */
 static bool __check_entry_priority(IOPMP_t *iopmp,
                                    const struct iopmp_entry *entry_array,
@@ -1657,15 +1657,15 @@ enum iopmp_error iopmp_clear_entries_in_md(IOPMP_t *iopmp, uint32_t mdidx)
 }
 
 /**
- * @brief Check if given index range of IOPMP entries belong to the MD(mdidx)
+ * \brief Check if given index range of IOPMP entries belong to the MD(mdidx)
  *
- * @param[in] iopmp             The IOPMP instance
- * @param[in] mdidx             The index of target MD
- * @param[in] idx_start         The global start index of target entries
- * @param[in] num_entry         The number of entries to be checked
+ * \param[in] iopmp             The IOPMP instance
+ * \param[in] mdidx             The index of target MD
+ * \param[in] idx_start         The global start index of target entries
+ * \param[in] num_entry         The number of entries to be checked
  *
- * @retval - true if some of given IOPMP entries belong to the MD(mdidx)
- * @retval - false if the given IOPMP entries do not belong to the MD(mdidx)
+ * \retval 1 if some of given IOPMP entries belong to the MD(mdidx)
+ * \retval 0 if the given IOPMP entries do not belong to the MD(mdidx)
  */
 static bool __entries_intersect_with_md(IOPMP_t *iopmp, uint32_t mdidx,
                                         uint32_t idx_start, uint32_t num_entry)
