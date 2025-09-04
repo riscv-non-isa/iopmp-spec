@@ -521,8 +521,7 @@ static inline bool iopmp_get_no_w(IOPMP_t *iopmp)
 
 static inline bool iopmp_get_support_stall(IOPMP_t *iopmp)
 {
-    return iopmp->stall_en ||
-           iopmp->support_stall_by_md || iopmp->support_stall_by_rrid;
+    return iopmp->stall_en;
 }
 
 static inline bool iopmp_get_support_peis(IOPMP_t *iopmp)
