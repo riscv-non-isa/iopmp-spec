@@ -613,6 +613,36 @@ enum iopmp_error iopmp_set_msi_en(IOPMP_t *iopmp, bool *enable)
     return ret;
 }
 
+enum iopmp_error iopmp_get_msi_addr(IOPMP_t *iopmp, uint64_t *msiaddr64)
+{
+    assert(iopmp_is_initialized(iopmp));
+
+    if (!iopmp->msi_en)
+        return IOPMP_ERR_NOT_SUPPORTED;
+
+    if (!msiaddr64)
+        return IOPMP_ERR_INVALID_PARAMETER;
+
+    *msiaddr64 = iopmp->msiaddr64;
+
+    return IOPMP_OK;
+}
+
+enum iopmp_error iopmp_get_msi_data(IOPMP_t *iopmp, uint16_t *msidata)
+{
+    assert(iopmp_is_initialized(iopmp));
+
+    if (!iopmp->msi_en)
+        return IOPMP_ERR_NOT_SUPPORTED;
+
+    if (!msidata)
+        return IOPMP_ERR_INVALID_PARAMETER;
+
+    *msidata = iopmp->msidata;
+
+    return IOPMP_OK;
+}
+
 enum iopmp_error iopmp_set_msi_info(IOPMP_t *iopmp, uint64_t *msiaddr64,
                                     uint16_t *msidata)
 {

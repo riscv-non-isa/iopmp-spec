@@ -77,7 +77,11 @@ struct iopmp_instance {
     /** Cache of ENTRYLCK.f */
     uint16_t entrylck_f;
 
-    /** Cache of {ERR_MSIADDRH, ERR_MSIADDR} */
+    /**
+     * Cache of {ERR_MSIADDRH, ERR_MSIADDR}. If HWCFG0.addrh_en=0, this member
+     * contains bits 33 to 2 of the MSI address. If HWCFG0.addrh_en=1, this
+     * member contains bits 63 to 0 of the MSI address
+     */
     uint64_t msiaddr64;
     /** Cache of ERR_CFG.msidata */
     uint16_t msidata;
@@ -1047,30 +1051,6 @@ static inline bool iopmp_get_msi_en(IOPMP_t *iopmp)
 }
 
 /**
- * \brief Get the MSI address to trigger MSI
- *
- * \param[in] iopmp             The IOPMP instance to be got
- *
- * \return The MSI address to trigger MSI
- */
-static inline uint64_t iopmp_get_msi_addr(IOPMP_t *iopmp)
-{
-    return iopmp->msiaddr64;
-}
-
-/**
- * \brief Get the data to trigger MSI
- *
- * \param[in] iopmp             The IOPMP instance to be got
- *
- * \return The data to trigger MSI
- */
-static inline uint16_t iopmp_get_msi_data(IOPMP_t *iopmp)
-{
-    return iopmp->msidata;
-}
-
-/**
  * \brief Check if MDLCK register has been locked
  *
  * \param[in] iopmp             The IOPMP instance to be checked
@@ -1641,6 +1621,35 @@ enum iopmp_error iopmp_set_global_err_resp(IOPMP_t *iopmp, bool *suppress);
  *         value
  */
 enum iopmp_error iopmp_set_msi_en(IOPMP_t *iopmp, bool *enable);
+
+/**
+ * \brief Get the address to trigger message-signaled interrupts
+ *
+ * \param[in] iopmp             The IOPMP instance to be got
+ * \param[out] msiaddr64        Pointer to 64-bit integer to store MSI address
+ *
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support MSI
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p msiaddr64 is NULL
+ *
+ * \note If HWCFG0.addrh_en=0, the \p msiaddr64 contains bits 33 to 2 of the MSI
+ *       address
+ * \note If HWCFG0.addrh_en=1, the \p msiaddr64 contains bits 63 to 0 of the MSI
+ *       address
+ */
+enum iopmp_error iopmp_get_msi_addr(IOPMP_t *iopmp, uint64_t *msiaddr64);
+
+/**
+ * \brief Get the data to trigger message-signaled interrupts
+ *
+ * \param[in] iopmp             The IOPMP instance to be got
+ * \param[out] msidata          Pointer to 16-bit integer to store MSI data
+ *
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support MSI
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p msidata is NULL
+ */
+enum iopmp_error iopmp_get_msi_data(IOPMP_t *iopmp, uint16_t *msidata);
 
 /**
  * \brief Set address and data of message-signaled interrupts
