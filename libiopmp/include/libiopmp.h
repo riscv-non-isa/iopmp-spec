@@ -319,48 +319,51 @@ typedef struct iopmp_err_report IOPMP_ERR_REPORT_t;
 /** Maximum supported RRID when srcmd_fmt=2 */
 #define IOPMP_MAX_RRID_SRCMD_FMT_2  32
 
-/** Representation of configurations used in srcmd_fmt=2 */
+/**
+ * \brief Configuration used in srcmd_fmt=2 to set SRCMD_PERM(H)
+ *
+ * \note User should call the following macros or APIs to update this structure:
+ *       - iopmp_set_srcmd_perm_cfg() to update single RRID
+ *       - iopmp_set_srcmd_perm_cfg_nocheck() to update single RRID
+ *       - IOPMP_SRCMD_PERM_CFG_SET_DIRECT() to directly set multiple RRIDs
+ */
 struct iopmp_srcmd_perm_config {
-    /** Which RRIDs' permission should be changed */
-    uint32_t rrid_changed;
-    /** Bit position of SRCMD_PERM.r for each RRID */
+/** Bit position of SRCMD_PERM.r for each RRID */
 #define IOPMP_SRCMD_PERM_R      (1 << 0)
-    /** Bit position of SRCMD_PERM.w for each RRID */
+/** Bit position of SRCMD_PERM.w for each RRID */
 #define IOPMP_SRCMD_PERM_W      (1 << 1)
-    /** Bit mask of SRCMD_PERM for each RRID */
+/** Bit mask of SRCMD_PERM for each RRID */
 #define IOPMP_SRCMD_PERM_MASK   (IOPMP_SRCMD_PERM_W | IOPMP_SRCMD_PERM_R)
+
     /**
-     * Desired permissions for each RRID. Each RRID uses one array element.
-     * For example, RRID(0) uses \p rrid_perm[0] and RRID(31) uses
-     * \p rrid_perm[31] . Each \p rrid_perm encodes \p IOPMP_SRCMD_PERM_R and
-     * \p IOPMP_SRCMD_PERM_W
+     * Bit mask to indicate which RRIDs' permission bits should be configured.
+     * For example, if we are going to configure RRID(0)'s bits, the bit 0 and
+     * bit 1 of this member will be set to 1
      */
-    uint8_t rrid_perm[IOPMP_MAX_RRID_SRCMD_FMT_2];
+    uint64_t srcmd_perm_mask;
+
+    /**
+     * Bit mask to indicate the desired permissions for configured RRIDs.
+     * For example, if we are going to configure RRID(0)'s bits, the bit 0
+     * indicates whether RRID(0) has read permission on this MD, while the bit 1
+     * indicates whether RRID(0) has write permission on this MD
+     */
+    uint64_t srcmd_perm_val;
 };
 typedef struct iopmp_srcmd_perm_config IOPMP_SRCMD_PERM_CFG_t;
 
 /**
- * \brief Macro used to set rrid_perm[] in struct iopmp_srcmd_perm_config
+ * \brief Macro used to directly set members in struct iopmp_srcmd_perm_config
  *
  * \param[in] cfg       pointer to struct iopmp_srcmd_perm_config
- * \param[in] rrid      Desired RRID to be set
- * \param[in] r         Set true to give RRID read permission; false to clear
- *                      read permission
- * \param[in] w         Set true to give RRID write permission; false to clear
- *                      write permission
+ * \param[in] mask      Desired value of srcmd_perm_mask
+ * \param[in] val       Desired value of srcmd_perm_val
  */
-#define IOPMP_SRCMD_PERM_SET(cfg, rrid, r, w)               \
-    do {                                                    \
-        IOPMP_SRCMD_PERM_CFG_t *__cfg = (cfg);              \
-        uint8_t __rrid = (uint8_t)(rrid);                   \
-        bool __r = (bool)(r);                               \
-        bool __w = (bool)(w);                               \
-        if (__rrid >= 0 &&                                  \
-            __rrid < IOPMP_MAX_RRID_SRCMD_FMT_2) {          \
-            __cfg->rrid_changed |= ((uint32_t)1 << __rrid); \
-            __cfg->rrid_perm[__rrid]  = (__r << 0);         \
-            __cfg->rrid_perm[__rrid] |= (__w << 1);         \
-        }                                                   \
+#define IOPMP_SRCMD_PERM_CFG_SET_DIRECT(cfg, mask, val) \
+    do {                                                \
+        IOPMP_SRCMD_PERM_CFG_t *__cfg = (cfg);          \
+        __cfg->srcmd_perm_mask = mask;                  \
+        __cfg->srcmd_perm_val  = val;                   \
     } while (0);
 
 /******************************************************************************/
@@ -1894,6 +1897,37 @@ enum iopmp_error iopmp_set_md_permission(IOPMP_t *iopmp, uint32_t rrid,
  */
 enum iopmp_error iopmp_set_md_permission_multi(IOPMP_t *iopmp, uint32_t mdidx,
                                                IOPMP_SRCMD_PERM_CFG_t *cfg);
+
+/**
+ * \brief Helper function used to set struct iopmp_srcmd_perm_config
+ *
+ * \param[in] cfg               Pointer to struct iopmp_srcmd_perm_config
+ * \param[in] rrid              Desired RRID to be set
+ * \param[in] r                 Set true to give RRID read permission; false to
+ *                              clear read permission
+ * \param[in] w                 Set true to give RRID write permission; false to
+ *                              clear write permission
+ *
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p cfg is NULL
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid is out of bounds
+ */
+enum iopmp_error iopmp_set_srcmd_perm_cfg(IOPMP_SRCMD_PERM_CFG_t *cfg,
+                                          uint32_t rrid, bool r, bool w);
+
+/**
+ * \brief Helper function used to set struct iopmp_srcmd_perm_config. This is
+ * similar to iopmp_set_srcmd_perm_cfg() but there are no checks on cfg and RRID
+ *
+ * \param[in] cfg               Pointer to struct iopmp_srcmd_perm_config
+ * \param[in] rrid              Desired RRID to be set
+ * \param[in] r                 Set true to give RRID read permission; false to
+ *                              clear read permission
+ * \param[in] w                 Set true to give RRID write permission; false to
+ *                              clear write permission
+ */
+void iopmp_set_srcmd_perm_cfg_nocheck(IOPMP_SRCMD_PERM_CFG_t *cfg,
+                                      uint32_t rrid, bool r, bool w);
 
 /**
  * \brief (SPS only) Set RRID's read permission to MDs

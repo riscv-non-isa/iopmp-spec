@@ -1287,36 +1287,19 @@ enum iopmp_error
 srcmd_fmt_2_set_md_permission_multi(IOPMP_t *iopmp, uint32_t mdidx,
                                     IOPMP_SRCMD_PERM_CFG_t *cfg)
 {
-    uint64_t srcmd_perm_64, rb_srcmd_perm_64, shift, mask, val;
+    uint64_t srcmd_perm_64, rb_srcmd_perm_64, mask, val;
 
     srcmd_perm_64 = read_srcmd_perm_64(iopmp, mdidx);
-
-    for (int i = 0; i < iopmp->rrid_num; i++) {
-        if ((cfg->rrid_changed & ((uint32_t)1 << i)) == 0)
-            continue;
-
-        shift = i << 1;
-        mask = (uint64_t)IOPMP_SRCMD_PERM_MASK << shift;
-        val  = (uint64_t)cfg->rrid_perm[i] << shift;
-        srcmd_perm_64 = (srcmd_perm_64 & ~mask) | (val & mask);
-    }
-
+    mask = cfg->srcmd_perm_mask;
+    val  = cfg->srcmd_perm_val;
+    srcmd_perm_64 = (srcmd_perm_64 & ~mask) | (val & mask);
     write_srcmd_perm_64(iopmp, mdidx, srcmd_perm_64);
+
     /* SRCMD_PERM(H).perm is WARL field. Read it back to check value */
     rb_srcmd_perm_64 = read_srcmd_perm_64(iopmp, mdidx);
     if (rb_srcmd_perm_64 != srcmd_perm_64) {
-        for (int i = 0; i < iopmp->rrid_num; i++) {
-            if ((cfg->rrid_changed & ((uint32_t)1 << i)) == 0)
-                continue;
-
-            shift = i << 1;
-            mask = (uint64_t)IOPMP_SRCMD_PERM_MASK << shift;
-            val = (rb_srcmd_perm_64 & mask) >> shift;
-            /* Set WARL value into input parameter */
-            IOPMP_SRCMD_PERM_SET(cfg, i, !!(val & IOPMP_SRCMD_PERM_R),
-                                 !!(val & IOPMP_SRCMD_PERM_W))
-        }
-
+        /* Set the value into cfg structure to let user check it */
+        cfg->srcmd_perm_val = (rb_srcmd_perm_64 & cfg->srcmd_perm_mask);
         return IOPMP_ERR_ILLEGAL_VALUE;
     }
 

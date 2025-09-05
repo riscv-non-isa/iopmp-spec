@@ -984,6 +984,31 @@ enum iopmp_error iopmp_set_md_permission_multi(IOPMP_t *iopmp, uint32_t mdidx,
     return iopmp->ops_specific->set_md_permission_multi(iopmp, mdidx, cfg);
 }
 
+void iopmp_set_srcmd_perm_cfg_nocheck(IOPMP_SRCMD_PERM_CFG_t *cfg,
+                                      uint32_t rrid, bool r, bool w)
+{
+    uint64_t shift, mask, val;
+
+    shift = (rrid << 1);
+    mask  = (uint64_t)IOPMP_SRCMD_PERM_MASK << shift;
+    val   = (((uint64_t)w << 1) | ((uint64_t)r << 0)) << shift;
+    cfg->srcmd_perm_mask |= mask;
+    cfg->srcmd_perm_val   = (cfg->srcmd_perm_val & ~mask) | (val & mask);
+}
+
+enum iopmp_error iopmp_set_srcmd_perm_cfg(IOPMP_SRCMD_PERM_CFG_t *cfg,
+                                          uint32_t rrid, bool r, bool w)
+{
+    if (!cfg)
+        return IOPMP_ERR_INVALID_PARAMETER;
+
+    if (rrid >= IOPMP_MAX_RRID_SRCMD_FMT_2)
+        return IOPMP_ERR_OUT_OF_BOUNDS;
+
+    iopmp_set_srcmd_perm_cfg_nocheck(cfg, rrid, r, w);
+    return IOPMP_OK;
+}
+
 /**
  * \brief (SPS only) Set RRID's read/write permission to MDs
  *
