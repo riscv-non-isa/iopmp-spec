@@ -1233,6 +1233,21 @@ enum iopmp_error iopmp_get_md_entry_association(IOPMP_t *iopmp, uint32_t mdidx,
     return IOPMP_OK;
 }
 
+/**
+ * \brief Check if given MD(mdidx_start)~MD(mdidx_start + md_num) are valid MDs
+ *
+ * \retval 1 if MD(mdidx_start) ~ MD(mdidx_start + md_num) are valid MDs
+ * \retval 0 if MD(mdidx_start) ~ MD(mdidx_start + md_num) are not valid MDs
+ *
+ * \note This function avoids unsigned integer overflow
+ */
+static bool __check_md_idx_range(IOPMP_t *iopmp, uint32_t mdidx_start,
+                                 uint32_t md_num)
+{
+    return mdidx_start < iopmp->md_num &&
+           md_num <= (iopmp->md_num - mdidx_start);
+}
+
 enum iopmp_error iopmp_set_md_entry_association_multi(IOPMP_t *iopmp,
                                                       uint32_t mdidx_start,
                                                       uint32_t *num_entries,
@@ -1249,7 +1264,7 @@ enum iopmp_error iopmp_set_md_entry_association_multi(IOPMP_t *iopmp,
     if (!num_entries)
         return IOPMP_ERR_INVALID_PARAMETER;
 
-    if (mdidx_start >= iopmp->md_num || (mdidx_start + md_num) >= iopmp->md_num)
+    if (!__check_md_idx_range(iopmp, mdidx_start, md_num))
         return IOPMP_ERR_OUT_OF_BOUNDS;
 
     /* Check if MDCFG(mdidx) has been locked by MDCFGLCK.f */
