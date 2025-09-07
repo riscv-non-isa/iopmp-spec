@@ -1587,6 +1587,22 @@ static bool __check_entry_priority(IOPMP_t *iopmp,
     return true;
 }
 
+/**
+ * \brief Check if given ENTRY(idx_start) ~ ENTRY(idx_start + num_entry) are
+ * valid entries
+ *
+ * \retval 1 if ENTRY(idx_start) ~ ENTRY(idx_start + num_entry) are valid
+ * \retval 0 if ENTRY(idx_start) ~ ENTRY(idx_start + num_entry) are not valid
+ *
+ * \note This function avoids unsigned integer overflow
+ */
+static bool __check_entry_idx_range(IOPMP_t *iopmp, uint32_t idx_start,
+                                    uint32_t num_entry)
+{
+    return idx_start < iopmp->entry_num &&
+           num_entry <= (iopmp->entry_num - idx_start);
+}
+
 enum iopmp_error iopmp_set_entries(IOPMP_t *iopmp,
                                    const struct iopmp_entry *entry_array,
                                    uint32_t idx_start, uint32_t num_entry)
@@ -1596,10 +1612,7 @@ enum iopmp_error iopmp_set_entries(IOPMP_t *iopmp,
     if (!entry_array || !num_entry)
         return IOPMP_ERR_INVALID_PARAMETER;
 
-    if (num_entry > iopmp->entry_num)
-        return IOPMP_ERR_OUT_OF_BOUNDS;
-
-    if ((idx_start + num_entry) > iopmp->entry_num)
+    if (!__check_entry_idx_range(iopmp, idx_start, num_entry))
         return IOPMP_ERR_OUT_OF_BOUNDS;
 
     /* Sanity check priority entries */
@@ -1650,10 +1663,7 @@ enum iopmp_error iopmp_get_entries(IOPMP_t *iopmp,
     if (!entry_array || !num_entry)
         return IOPMP_ERR_INVALID_PARAMETER;
 
-    if (num_entry > iopmp->entry_num)
-        return IOPMP_ERR_OUT_OF_BOUNDS;
-
-    if ((idx_start + num_entry) > iopmp->entry_num)
+    if (!__check_entry_idx_range(iopmp, idx_start, num_entry))
         return IOPMP_ERR_OUT_OF_BOUNDS;
 
     /* Read IOPMP entries from IOPMP registers */
@@ -1697,7 +1707,7 @@ enum iopmp_error iopmp_clear_entries(IOPMP_t *iopmp, uint32_t idx_start,
     if (num_entry > iopmp->entry_num)
         return IOPMP_ERR_OUT_OF_BOUNDS;
 
-    if ((idx_start + num_entry) > iopmp->entry_num)
+    if (!__check_entry_idx_range(iopmp, idx_start, num_entry))
         return IOPMP_ERR_OUT_OF_BOUNDS;
 
     /* Check if desired entries have been locked by ENTRYLCK.f */
@@ -1774,10 +1784,7 @@ enum iopmp_error iopmp_entries_get_belong_md(IOPMP_t *iopmp, uint32_t idx_start,
 
     assert(iopmp_is_initialized(iopmp));
 
-    if (num_entry > iopmp->entry_num)
-        return IOPMP_ERR_OUT_OF_BOUNDS;
-
-    if ((idx_start + num_entry) > iopmp->entry_num)
+    if (!__check_entry_idx_range(iopmp, idx_start, num_entry))
         return IOPMP_ERR_OUT_OF_BOUNDS;
 
     if (!mds)
