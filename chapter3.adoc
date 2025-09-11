@@ -35,12 +35,8 @@ This format also has a physical SRCMD Table of an array, like Format 0, but the 
 *SRCMD_PERM(_m_).r[_s_]* indicates the read permission and instruction fetch permission of RRID _s_ belongs to the memory domain _m_. *SRCMD_PERM(_m_).w[_s_]* indicates write permission of RRID _s_ belongs to the memory domain _m_. *SRCMD_PERM(_m_).r* and *SRCMD_PERM(_m_).w* are adjacent. That is, *SRCMD_PERM(_m_).r[_s_]* and *SRCMD_PERM(_m_).w[_s_]* are located at the bits (_s_ * 2) and  (_s_ * 2 + 1), respectively. For RRID indexed higher than 15, *SRCMD_PERMH(_m_)* is used. IOPMP looks at permissions in  *SRCMD_PERM(H)* and *ENTRY_CFG.r/w/x*.  As long as one of them grants the transaction under checking, it is legal. If one wants to use only *SRCMD_PERM(H)*, all *ENTRY_CFG.r/w/x* can be wired to zero.
 
 [#SECTION_3_3]
-=== MDCFG Table Formats
-The MDCFG Table is used to map a memory domain to its own entries. It can be viewed as a partition of all entries in the IOPMP. Its three formats aim to fit different design targets.
-
-[#SECTION_3_3_1]
-==== MDCFG Table Format 0
-In the format, every memory domain _m_ has a register, *MDCFG(_m_)*. Field *MDCFG(_m_).t* represents the upper bound (not included) and field *MDCFG(_m_-1).t* represents the lower bound (included) for _m_ > 0. They form the index range of IOPMP entries belonging to the memory domain _m_. That is,
+=== MDCFG Table
+The MDCFG Table is used to map a memory domain to its own entries. It can be viewed as a partition of all entries in the IOPMP. In the MDCFG Table, every memory domain _m_ has a register, *MDCFG(_m_)*. Field *MDCFG(_m_).t* represents the upper bound (not included) and field *MDCFG(_m_-1).t* represents the lower bound (included) for _m_ > 0. They form the index range of IOPMP entries belonging to the memory domain _m_. That is,
 
 * an entry with index _j_ belongs to MD _m_ if *MDCFG(_m_ - 1).t* &#8804; _j_ < *MDCFG(_m_).t*, where _m_ > 0.
 * an entry with index _j_ belongs to MD 0 if _j_ < *MDCFG(0).t*.
@@ -54,7 +50,7 @@ When the MDCFG Table has any improper setting, the belonging of IOPMP entries is
 
 [NOTE]
 ====
-For portability, programmers should ensure the MDCFG Table has a proper setting during the runtime. In the case that the process of programming or initializing the MDCFG Table causes an improper setting to occur transiently, one should use the procedure introduced in <<#SECTION_4, Programming IOPMPs>> to avoid security issues. Even though the procedure may introduce extra steps, the table is not subject to change at a high frequency to hurt overall performance. Thus, the specification requires programmers to maintain a proper setting instead of requiring specific hardware behaviors on improper settings.
+For portability, programmers should ensure the MDCFG Table has a proper setting during the runtime. In the case that the process of programming or initializing the MDCFG Table causes an improper setting to occur transiently, one can deassociate effected MDs in SRCMD table before programming MDCFG table to avoid security issues. Even though the procedure may introduce extra steps, the table is not subject to change at a high frequency to hurt overall performance. Thus, the specification requires programmers to maintain a proper setting instead of requiring specific hardware behaviors on improper settings.
 ====
 
 [NOTE]
@@ -69,20 +65,7 @@ Here are some reference behaviors for an improper setting, which may include, bu
 
 ====
 
-[#SECTION_3_3_2]
-==== MDCFG Table Format 1
-There is no physical MDCFG Table in the format. Each memory domain has exactly _k_ entries, where _k_ is implementation-dependent and non-programmable. The value of the read-only field *HWCFG0.md_entry_num* is the _k_ value minus 1. The register *MDCFGLCK* should not be implemented.
 
-[NOTE]
-====
-( *HWCFG0.md_entry_num* + 1 ) * *HWCFG0.md_num* can be greater than *HWCFG1.num_entry*. Behavior of any entry with index &#8805; *HWCFG1.num_entry* is described on <<#SECTION_2_5, IOPMP Entry and IOPMP Entry Array>>.
-====
-
-For a particular case of _k_=1 (*HWCFG0.md_entry_num*=0), every memory domain has exactly one entry. One can skip the concept of the memory domain when using such an IOPMP.
-
-[#SECTION_3_3_3]
-==== MDCFG Table Format 2
-This format is based on Format 1, except *HWCFG0.md_entry_num* is programmable. *md_entry_num* is locked when *HWCFG0* is locked, a.k.a. *HWCFG0.enable* is 1.
 
 [#SECTION_3_4]
 === IOPMP Models
