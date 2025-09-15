@@ -51,7 +51,7 @@ An RRID is an abstract representation of a transaction requestor. It encompasses
 
 It’s important to note that, generally speaking, a single RRID can be associated with multiple memory domains (MDs), and a MD can be associated with multiple RRIDs. SRCMD Table is a one of fundamental structures in IOPMP to indicate associations between RRIDs and MDs, which will be introduced in <<#SRCMD_TABLE, SRCMD Table>>.
 
-MDCFG Table also is one of fundamental structures in IOPMP to define a set of memory regions in a MD, which will be introduced in <<#MDCFG_TABLE, MCDFG Table>>. An IOPMP entry defines a single memory region, which will be introduced in <<#IOPMP_ENTRY, IOPMP Entry and IOPMP Entry Array>>. 
+MDCFG Table also is one of fundamental structures in IOPMP to define a set of memory regions in a MD, which will be introduced in <<#MDCFG_TABLE, MDCFG Table>>. An IOPMP entry defines a single memory region, which will be introduced in <<#IOPMP_ENTRY, IOPMP Entry and IOPMP Entry Array>>. 
 
 An RRID associated with a MD may not have full permissions on all memory regions of the MD, because the permission of each region is defined in the corresponding IOPMP entry.
 
