@@ -13,18 +13,14 @@ This document refers to the term “secure monitor” as the software responsibl
 |DRAM| dynamic random-access memory
 |ID| identifier
 |IMP|implementation-dependent
-|IMSIC| Incoming Message-Signaled Interrupt Controller, defined in the RISC-V advanced interrupt architecture (AIA) cite:[AIA] specification
 |IOMMU| Input-Output Memory Management Unit cite:[IOMMU], a RISC-V non-ISA specification
 |MD| memory domain
 |MMIO|memory mapped input/output devices
-|MSI| message-signaled interrupts
 |NA4|naturally aligned four-byte region, one of the address matching mode used in RISC-V PMP cite:[PrivISA] and IOPMP
 |NAPOT|naturally aligned power-of-2 region, one of the address matching mode used in RISC-V PMP cite:[PrivISA] and IOPMP
 |N/A| not available
-|ROM| read-only memory
 |RRID| Request Role ID
 |RX|receiver
-|SPS| secondary permission setting, an extension of RISC-V IOPMP
 |TOR|top boundary of an arbitrary range, one of the address matching mode used in RISC-V PMP cite:[PrivISA] and IOPMP
 |TX|transmitter
 |WARL|write any read legal, a behavior of fields
