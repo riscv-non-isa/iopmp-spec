@@ -45,17 +45,18 @@ Request Role ID, RRID for short, is a unique ID to identify a system-defined sec
 An IOPMP has one or multiple requestor ports, one or multiple receiver ports and one control port. A receiver port is where a transaction goes into the IOPMP, and a requestor port is where a transaction leaves it if the transaction passes all the checks. The control port is used to program the IOPMP.
 
 === Memory Domain
+// NOTE: This section was simplified as part of the specification simplification.
+// Only full model is described in the section.
 An RRID is an abstract representation of a transaction requestor. It encompasses one or more transaction requestors that are granted identical permissions. A memory domain, MD for short, is an abstract representation of a transaction destination that groups a set of memory regions for a specific purpose. MDs are indexed from zero. For example, a network interface controller, NIC, may have three memory regions: an RX region, a TX region, and a region of control registers. We could group them into one MD. If a processor can fully control the NIC, the processor can be associated with the MD.
 
-It’s important to note that, generally speaking, a single RRID can be associated with multiple memory domains (MDs), and a MD can be associated with multiple RRIDs. SRCMD Table is a one of fundamental structures in IOPMP to indicate associations between RRIDs and MDs, which will be introduced in <<#SECTION_3_2, SRCMD Table Formats>>.
+It’s important to note that, generally speaking, a single RRID can be associated with multiple memory domains (MDs), and a MD can be associated with multiple RRIDs. SRCMD Table is a one of fundamental structures in IOPMP to indicate associations between RRIDs and MDs, which will be introduced in <<#SRCMD_TABLE, SRCMD Table>>.
 
-MDCFG Table also is one of fundamental structures in IOPMP to define a set of memory regions in a MD, which will be introduced in <<#SECTION_3_3, MCDFG Table Formats>>. An IOPMP entry defines a single memory region, which will be introduced in <<#SECTION_2_5, IOPMP Entry and IOPMP Entry Array>>. 
+MDCFG Table also is one of fundamental structures in IOPMP to define a set of memory regions in a MD, which will be introduced in <<#MDCFG_TABLE, MCDFG Table>>. An IOPMP entry defines a single memory region, which will be introduced in <<#IOPMP_ENTRY, IOPMP Entry and IOPMP Entry Array>>. 
 
-An RRID associated with a MD may not have full permissions on all memory regions of the MD, because the permission of each region is defined in the corresponding IOPMP entry. Additionally, some specific configurations of SRCMD Table can define the permission to a whole MD in SRCMD Table that will be introduced in <<#SECTION_3_2_3, SRCMD Table Format 2>> and <<#APPENDIX_A3, Appendix A3. Secondary Permission Setting>>.
+An RRID associated with a MD may not have full permissions on all memory regions of the MD, because the permission of each region is defined in the corresponding IOPMP entry.
 
-Certain configurations of SRCMD Table and MDCFG Table may impose restrictions on this flexibility, which will be discussed in <<#IOPMP_Tables_and_Configuration_Protection, Chapter 3. IOPMP Tables and Configuration Protection>>.
 
-[#SECTION_2_5]
+[#IOPMP_ENTRY]
 === IOPMP Entry and IOPMP Entry Array
 The IOPMP entry array, contains *HWCFG1.entry_num* IOPMP entries, where the value zero is reserved. Each entry, starting from an index of zero, includes a specified memory region, the corresponding permissions, and optional features about error reactions and user customized attributes.
 
@@ -102,7 +103,6 @@ When an RRID is associated with a memory domain, it is also inherently associate
 // as part of the specification simplification. These fields were used to deny write
 // transactions and instruction fetch transactions globally, but are no longer supported.
 
-[#SECTION_2_6]
 === Priority and Matching Logic
 // NOTE: This section was simplified as part of the specification simplification.
 // Removed references to no_w/no_x fields, per-entry interrupt suppression (sire/siwe/sixe),
@@ -131,7 +131,9 @@ When multiple entries match a transaction, the entry with the lowest index (high
 
 Matched entries can grant a transaction according to its access type. If the matching entry allows the access type, the transaction is legal. Every entry can permit read and write access by its *r* and *w* bits, respectively.
 
-The matching entry must match all bytes of a transaction, or the transaction is illegal with error type = "partial hit on a priority rule" (0x04), irrespective of its permission. If an entry is matched but doesn't grant transaction permission to operate, the transaction is illegal with error type = "illegal read access" (0x01) for read access transaction, "illegal write access/AMO" (0x02) for write access/atomic memory operation (AMO) transaction, or "illegal instruction fetch" (0x03) for instruction fetch transaction.
+The matching entry must match all bytes of a transaction, or the transaction is illegal with error type = "partial hit on a priority rule" (0x04), irrespective of its permission. If an entry is matched but doesn't grant transaction permission to operate, the transaction is illegal with error type = "illegal read access" (0x01) for read access transaction, "illegal write access/AMO" (0x02) for write access/atomic memory operation (AMO) transaction.
+
+Finally, if no matching entry exists, the transaction is illegal with error type = "not hit any rule" (0x05).
 
 [NOTE]
 ====
@@ -143,15 +145,10 @@ To grant an AMO transaction permission, entries and/or memory domains must have 
 Some AMO implementations of I/O agents are using a non-atomic read-modify-write sequence which could contain a read access transaction and a write access transaction, not single AMO transaction. Therefore, IOPMP possiblly captures error type = "illegal read access" (0x01) when read permission for the read-modify-write sequence from the I/O agents is not granted.
 ====
 
-The transaction is legal if the matching entry permits its access type. If the matching entry doesn't permit the access type, the transaction is illegal with error type = "illegal read access" (0x01) for read access transaction, "illegal write access/AMO" (0x02) for write access/AMO transaction, or "illegal instruction fetch" (0x03) for instruction fetch transaction.
-
-Finally, if no matching entry exists, the transaction is illegal with error type = "not hit any rule" (0x05).
-
 [#IOPMP_BLOCK_DIAGRAM]
 .an example block diagram of an IOPMP. It illustrates the checking flow of an IOPMP. This IOPMP takes three inputs: RRID, the transaction type (read/write), and the request range (address/len). It first looks up the SRCMD Table according to the RRID carried by the incoming transaction to retrieve associated MD indexes and the corresponding permissions related to these MDs. By the MD indexes, the IOPMP looks up the MDCFG Table to get the belonging entry indexes. The final step checks the access right according to the above entry indexes and corresponding permissions. An interrupt, an error response, and/or a record is generated once the transaction fails the permission check in the step.
 image::images/iopmp_unit_block_diagram.png[]
 
-[#SECTION_2_7]
 === Error Reactions
 // NOTE: This section was significantly simplified as part of the specification simplification.
 // Removed instruction fetch error handling (error type 0x03), per-entry error suppression fields
@@ -188,29 +185,21 @@ The error capture record maintains the specifics of the first illegal access det
 
 An error capture only occurs when there is no pending error, that is, *ERR_INFO.v* = ‘0’. If a pending error exists (*v* = ‘1’), the record will not be updated, even if a new illegal access is detected. In other words, *v*  indicates whether the content of the capture record is valid and should be intentionally cleared in order to capture subsequent illegal accesses. One can write 1 to the bit to clear it. The error capture record is optional. If it is not implemented, *v* should be wired to zero. One can implement the error capture record, but doesn't implement the error entry index record (*ERR_REQID.eid*). In this case, *eid* should be wired to 0xffff.
 
-For an illegal transaction matching multiple non-priority entries, if the interrupt is triggered or the bus error response is returned, *ERR_REQID.eid* stores the index of any of them.
-
-The following table shows the control types (global or local) for each error type if the per-entry control bits are implemented (*HWCFG0.peis* = 1 and/or *HWCFG0.pees* = 1):
+The following table shows all error types and corredponding control bits of error reaction in this specification:
 
 .Error types and corresponding control bits
-[%autowidth, cols="<1,<2,<5,<3", options="header"]
+[%autowidth, cols="<1,<5,<3", options="header"]
 |===
-3+| Error type  | Control bits
-   |0x00        2+| No error                          | N/A
-   |0x01        2+| Illegal read access               | Global^1.^ and local^2.^
-   |0x02        2+| Illegal write access/AMO          | Global and local
-   |0x03        2+| Illegal instruction fetch         | Global and local
-   |0x04        2+| Partial hit on a priority rule    | Global
-   |0x05          | Not hit any rule                
-  a|* No entry matches all bytes of a transaction
-   | Global
-   |0x06        2+| Unknown RRID                      | Global
-   |0x07        2+| Error due to a stalled transaction. Please refer <<#FAULTING_STALLED_TRANSACTIONS, Faulting stalled transactions>>.
-   | Global
-   |0x08 ~ 0x0D 2+| N/A, reserved for future          | N/A
-   |0x0E ~ 0x0F 2+| User-defined error                | Implementation-dependent
+ 2+| Error type | Control bits
+   |0x00        | No error                          | N/A
+   |0x01        | Illegal read access               | *ie* and *rs* ^1.^
+   |0x02        | Illegal write access/AMO          | *ie* and *rs*
+   |0x03        | illegal instruction fetch         | *ie* and *rs*
+   |0x04        | Partial hit on a priority rule    | *ie* and *rs*
+   |0x05        | Not hit any rule                  | *ie* and *rs*
+   |0x06        | Unknown RRID                      | *ie* and *rs*
+   |0x07        | Reserved for future               | reserved
+   |0x08 ~ 0x0D | Reserved for future               | reserved
 |===
 
 ^1.^ Bit *ie* or *rs* in *ERR_CFG*. It depends on which reaction (that is, interrupt or bus error response).
-
-^2.^ Global error configuration in *ERR_CFG* register.
