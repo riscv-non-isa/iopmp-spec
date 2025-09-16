@@ -66,5 +66,7 @@ include::chapter3.adoc[]
 include::chapter5.adoc[]
 
 //the index must precede the bibliography
-include::index.adoc[]
+//include::index.adoc[]
 include::bibliography.adoc[]
+
+include::application_note/application_note.adoc[]

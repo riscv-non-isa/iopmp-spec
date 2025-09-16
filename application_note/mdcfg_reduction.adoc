@@ -1,0 +1,20 @@
+=== MDCFG Table Reduction
+
+The spec offers several IOPMP configurations to accommodate varied platforms. Users can choose one that best fits their design requirements, such as area, power consumption, latency, throughput, flexibility, and portability.
+
+
+MDCFG can be in one of three formats, specified in a read only field *HWCFG0.mdcfg_fmt* and described in <<#SECTION_3_3, MDCFG Table Formats>>.
+
+==== MDCFG Table Format 1
+There is no physical MDCFG Table in the format. Each memory domain has exactly _k_ entries, where _k_ is implementation-dependent and non-programmable. The value of the read-only field *HWCFG0.md_entry_num* is the _k_ value minus 1. The register *MDCFGLCK* should not be implemented.
+
+[NOTE]
+====
+( *HWCFG0.md_entry_num* + 1 ) * *HWCFG0.md_num* can be greater than *HWCFG1.num_entry*. Behavior of any entry with index &#8805; *HWCFG1.num_entry* is described on <<#SECTION_2_5, IOPMP Entry and IOPMP Entry Array>>.
+====
+
+For a particular case of _k_=1 (*HWCFG0.md_entry_num*=0), every memory domain has exactly one entry. One can skip the concept of the memory domain when using such an IOPMP.
+
+[#SECTION_3_3_3]
+==== MDCFG Table Format 2
+This format is based on Format 1, except *HWCFG0.md_entry_num* is programmable. *md_entry_num* is locked when *HWCFG0* is locked, a.k.a. *HWCFG0.enable* is 1.

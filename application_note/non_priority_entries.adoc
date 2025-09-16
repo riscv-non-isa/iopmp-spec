@@ -1,0 +1,38 @@
+[#NON_PRIORITY_ENTRIES]
+=== Non-priority IOPMP entries
+
+The following is a reference approach:
+
+IOPMP entries are partially prioritized. Entries identified by indices less than the value defined in a field *prio_entry* are prioritized according to their respective index values. Specifically, entries with lower indices are assigned a higher priority. These entries are referred to as priority entries. Conversely, entries with indices greater than or equal to *prio_entry* are treated equally and assigned the lowest priority. These entries are referred to as non-prioritized entries. The value of *prio_entry* is implementation-dependent. Additionally, a field *prient_prog* indicates if *prio_entry* is programmable. 
+
+NOTE: The approach incorporates both priority and non-priority entries due to considerations of security, latency, and area. Priority entries, which are locked, safeguard the most sensitive data, even in the event of secure software being compromised. However, implementing a large number of these priority entries results in higher latency and increased area usage. On the other hand, non-priority entries are treated equally and can be cached in smaller numbers. This approach reduces the amortized latency, power consumption, and area when the locality is sufficiently high. Thus, the mix of entry types in the approach allows for a balance between security and performance.
+
+The criteria of matching entry should be modified because an incoming transaction can have multiple non-priority matching entries. The following description is a reference behavior for partially prioritized IOPMP entries:
+
+An entry qualifies as a matching entry for an incoming transaction if:
+
+* For priority entries, its region covers any byte of the transaction,
+* For non-priority entries, its region covers all bytes of the transaction,
+* It is associated with the RRID carried by the transaction; and
+* It holds the highest priority among entries that meet the previous criteria.
+
+[NOTE]
+====
+Multiple matching entries are allowed for non-priority entries because they share the lowest priority.
+====
+
+If one matching entry is priority, the reaction is the same as the IOPMP specification.
+
+If one matching entry is non-priority, the transaction is legal if any matching entry permits its access type. If no matching entry permits, the transaction is illegal with error type = "illegal read access" (0x01) for read access transaction or "illegal write access/AMO" (0x02) for write access/AMO transaction.
+
+[NOTE]
+====
+Arbitration of per-entry configurations is needed for non-priority entries. The reference shows one of arbitration scheme.
+====
+
+For an illegal transaction matching multiple non-priority entries, if the interrupt is triggered or the bus error response is returned, *ERR_REQID.eid* stores the index of any of them.
+
+[NOTE]
+====
+Arbitration of *ERR_REQID.eid* is needed for non-priority entries because only a single *eid* field is in IOPMP specification. The reference shows one of arbitration scheme.
+====
