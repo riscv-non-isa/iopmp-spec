@@ -1,0 +1,3 @@
+[#IOPMP_SE]
+=== Source-enforcement 
+If all transactions going through the IOPMP are issued by the same transaction requestor or a set of transaction requestors with the same permission, the RRID can be ignored on the transaction requestor side and the above transactions. In the case, we denote the IOPMP performs source enforcement, IOPMP-SE for short.

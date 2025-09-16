@@ -1,0 +1,18 @@
+=== SRCMD Table Reduction
+
+The spec offers several IOPMP configurations to accommodate varied platforms. Users can choose one that best fits their design requirements, such as area, power consumption, latency, throughput, flexibility, and portability.
+
+==== SRCMD Table Formats
+Format 0 of the SRCMD Table uses a bit map to associate every RRID with memory domains. Format 1 is a simplified version that uses the RRID as the memory domain index. That is, the RRIDs and MD indexes are one-to-one mapping. In the Format 2, every RRID implicitly associates all implemented memory domains. Instead, Format 2 of the SRCMD Table uses a bit map to output permissions for each memory domain based on the RRID.
+
+===== SRCMD Table Format 0
+In Format 0, the SRCMD Table is an array and indexed by RRID. Every entry in the array is a set of registers. The register *SRCMD_EN(_s_)* must be implemented for the existing RRID _s_. Every bit in the 31-bit field *SRCMD_EN(_s_).md* indicates a memory domain. Bit _j_ in *SRCMD_EN(_s_).md* indicates if MD _j_ is associated with RRID _s_. If the number of MDs is more than 31, the register *SRCMD_ENH(_s_)* and its 32-bit field *SRCMD_ENH(_s_).mdh* can be implemented to support up to 63 memory domains. Bit _j_ in *SRCMD_ENH(_s_).mdh* indicates if MD (_j_ + 31) is associated with RRID _s_. For unimplemented memory domains, the corresponding bits should be hardwired read-only zero.
+
+Every *SRCMD_EN(_s_)* has 1-bit field *l* for SRCMD Table protection. The bit is described in <<#SECTION_3_5_1, SRCMD Table Protection>>.
+
+For a system requiring more memory domains than 63, please refer to <<#APPENDIX_A2, Appendix A2. Run Out Memory Domains>>.
+
+If SPS extension is supported, an entry has additional registers. These registers are described in <<#APPENDIX_A3, Appendix A3. Secondary Permission Setting>>.
+
+==== SRCMD Table Format 1
+The bitmap implementation of Format 1 specifically tailored for scenarios where there are minimal to no shared regions. In this format, each RRID is exactly associated with a single MD, eliminating the necessity for SRCMD Table lookups. Each RRID _i_ is directly associated with MD _i_, resulting in advantages in terms of area, latency, and system complexity. However, duplicated entry settings when a scenario requires shared regions, representing a potential drawback. In the format, the SPS extension is not supported.

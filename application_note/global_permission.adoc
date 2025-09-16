@@ -1,0 +1,8 @@
+[#GLOBAL_PPERMISSION]
+=== Global Permission Check
+
+Using global permission check can simplify implementations by reducing programmable permission bits and possibly reducing operations during retrieving entries when an implementation is designed for specific memory regions. 
+
+For example, there is a custom read-only bits, *no_w*, used to decide whether the IOPMP denies any write transaction for Flash memory regions and ROM regions. An IOPMP always fails a write transaction with error type "not hit any rule" (0x05) when *no_w* is 1. Reading *no_w* can determine whether the IOPMP supports the feature.
+
+Similarly, an implementation can have a custom read-only bits *no_x* if a system needs to deny a new transaction type - instruction fetch. *no_x* is used to decide whether the IOPMP denies any instruction fetch transaction for data-only regions. An IOPMP always fails a instruction fetch with error type "not hit any rule" (0x05) when *no_x* is 1. Reading *no_x* can determine whether the IOPMP supports the feature.

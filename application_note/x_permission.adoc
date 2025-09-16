@@ -1,0 +1,7 @@
+=== Instruction Fetch Permission Check
+
+To check instruction fetch transactions, one can add a custom bit *x* to *ENTRY_CFG(_i_)*. *ENTRY_CFG(_i_).r/w/x* indicate the read access, write access and instruction fetch permission and they are WARL.
+
+To indicate illegal instruction fetch transactions, one can add a custom *ttype* = 0x03 and *etype* = 0x03 in register *ERR_CFG*.
+
+To determine whether an IOPMP can differentiate between read and instruction fetch accesses, the IOPMP can have a custom bit *chk_x* to indicate whether *ENTRY_CFG(_i_).x* is implemented.

@@ -63,13 +63,10 @@ include::contributors.adoc[]
 include::intro.adoc[]
 include::chapter2.adoc[]
 include::chapter3.adoc[]
-include::chapter4.adoc[]
 include::chapter5.adoc[]
-include::appendix_a1.adoc[]
-include::appendix_a2.adoc[]
-include::appendix_a3.adoc[]
-include::appendix_a4.adoc[]
 
 //the index must precede the bibliography
-include::index.adoc[]
+//include::index.adoc[]
 include::bibliography.adoc[]
+
+include::application_note/application_note.adoc[]
