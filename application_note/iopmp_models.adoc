@@ -3,24 +3,24 @@ For the sake of convenience of discussion, some highly used combinations of *HWC
 
 .an example block diagram of the rapid-4 model. The flow is the same as in <<IOPMP_BLOCK_DIAGRAM>>, except the MDCFG Table is simplified to a constant mapping illustrated in the dashed box. In this example, every MD has exactly four entries.
 ifdef::backend-pdf[]
-image::images/iopmp_unit_block_diagram_rapid_4.png[]
+image::application_note/images/iopmp_unit_block_diagram_rapid_4.png[]
 endif::[]
 ifndef::backend-pdf[]
-image::../images/iopmp_unit_block_diagram_rapid_4.png[]
+image::images/iopmp_unit_block_diagram_rapid_4.png[]
 endif::[]
 
 .an example block diagram of the compact-4 model.
 ifdef::backend-pdf[]
-image::images/iopmp_unit_block_diagram_compact_4.png[]
+image::application_note/images/iopmp_unit_block_diagram_compact_4.png[]
 endif::[]
 ifndef::backend-pdf[]
-image::../images/iopmp_unit_block_diagram_compact_4.png[]
+image::images/iopmp_unit_block_diagram_compact_4.png[]
 endif::[]
 
 .an example block diagram of SRCMD Format 2. It illustrates the implementation of SRCMD Table Format 2 and MDCFG Table Format 1, where HWCFG0.md_entry_num is set to 0. In this example, each MD contains a single entry, meaning the entry index corresponds directly to the MD index.
 ifdef::backend-pdf[]
-image::images/iopmp_unit_block_diagram_srcmd_fmt2.png[]
+image::application_note/images/iopmp_unit_block_diagram_srcmd_fmt2.png[]
 endif::[]
 ifndef::backend-pdf[]
-image::../images/iopmp_unit_block_diagram_srcmd_fmt2.png[]
+image::images/iopmp_unit_block_diagram_srcmd_fmt2.png[]
 endif::[]

@@ -1,4 +1,4 @@
-=== Per-entry Interrupt/Bus Error Supression
+=== Per-entry Interrupt/Bus Error Suppression
 The optional register *ENTRY_USER_CFG(_i_)* stores customized attributes for an entry. To determine whether the register is implemented, one can check *HWCFG0.user_cfg_en*.
 
 *ENTRY_CFG(_i_)* also contains optional WARL fields: *sire*, *siwe*, *sixe*, *sere*, *sewe*, and *sexe*. These fields are used to control error reactions per entry, such as interrupt triggering and bus error responses. The detailed usages will be introduced in <<#SECTION_2_7, Error Reactions>>.

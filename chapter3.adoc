@@ -62,15 +62,17 @@ Here are some reference behaviors for an improper setting, which may include, bu
 // The original section described rapid-k, dynamic-k, isolation, and compact-k models.
 // Only the full model is now supported in the simplified specification.
 
+// NOTE: Section "Configuration Protection" simplified from the original which included Format 0, Format 1, and Format 2.
+// Only Format 0 (the full model) is now supported in the simplified specification
 [#CONF_PROTECTION]
 === Configuration Protection
 The term 'lock' refers to a hardware feature that renders one or more fields or registers nonprogrammable until the IOPMP is reset. This feature serves to maintain the integrity of essential configurations in the event of a compromise of secure software. In cases where a lock bit is programmable, it is expected to be reset to '0' and is a W1SS field.
 
 [#SRCMD_PROTECTION]
 ==== SRCMD Table Protection
-In Format 0, every *SRCMD_EN(_s_)* register has a bit *l* at bit 0, which is used to lock registers *SRCMD_EN(_s_)*, and *SRCMD_ENH(_s_)* if any.
+Every *SRCMD_EN(_s_)* register has a bit *l* at bit 0, which is used to lock registers *SRCMD_EN(_s_)*, and *SRCMD_ENH(_s_)* if any.
 
-The two fields *MDLCK.md* and *MDLCKH.mdh* have 63 bits together. Every bit is used to lock the association bits with a memory domain in the SRCMD Table. In Format 0, for MD 0 &#x2264; _m_ &#x2264; 30, *MDLCK.md[_m_]* locks *SRCMD(_s_).md[_m_]* for all existing RRID _s_. In Format 1, there is no *MDLCK*. In Format 2, *MDLCK.md[_m_]* locks both *SRCMD_PERM(_m_)* and *SRCMD_PERMH(_m_)*. For MD 31 &#x2264; _m_ &#x2264; 62, one should use *MDLCKH.mdh* to lock corresponding bits.
+The two fields *MDLCK.md* and *MDLCKH.mdh* have 63 bits together. Every bit is used to lock the association bits with a memory domain in the SRCMD Table. For MD 0 &#x2264; _m_ &#x2264; 30, *MDLCK.md[_m_]* locks *SRCMD(_s_).md[_m_]* for all existing RRID _s_. For MD 31 &#x2264; _m_ &#x2264; 62, one should use *MDLCKH.mdh* to lock corresponding bits.
 
 Bit *MDLCK.l* is a sticky to 1 and indicates if *MDLCK* and *MDLCKH* are locked.
 
@@ -84,9 +86,7 @@ By locking the association of the MD containing the configuration regions of a c
 
 [#MDCFG_PROTECTION]
 ==== MDCFG Table Protection
-Register *MDCFGLCK* is designed to partially or fully lock the MDCFG Table for Format 0. *MDCFGLCK* consists of two fields: *MDCFGLCK.l* and *MDCFGLCK.f*. *MDCFG(_m_)* is locked if _m_< *MDCFGLCK.f*. *MDCFGLCK.f* is incremental-only. Any smaller value can not be written into it. The bit *MDCFGLCK.l* is used to lock *MDCFGLCK*.
-
-Format 1 and 2 do not implement the register *MDCFGLCK*.
+Register *MDCFGLCK* is designed to partially or fully lock the MDCFG Table. *MDCFGLCK* consists of two fields: *MDCFGLCK.l* and *MDCFGLCK.f*. *MDCFG(_m_)* is locked if _m_< *MDCFGLCK.f*. *MDCFGLCK.f* is incremental-only. Any smaller value can not be written into it. The bit *MDCFGLCK.l* is used to lock *MDCFGLCK*.
 
 [NOTE]
 ====
