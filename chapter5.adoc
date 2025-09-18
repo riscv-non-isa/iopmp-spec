@@ -109,7 +109,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 5+h|{set:cellbgcolor:#D3D3D3} MDLCKH
 5+h|0x0044
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}mdh   |31:0       |WARL   |0          | *mdh[_m_]* is sticky to 1 and indicates if *SRCMD_ENH(_s_).mdh[_m_]* is locked for all RRID _s_.
+|{set:cellbgcolor:#FFFFFF}mdh   |31:0       |WARL   |0          | *mdh[_m_]* is sticky to 1 and indicates if *SRCMD_ENH(_s_).mdh[_m_]* is locked for all RRID _s_. Available when *HWCFG0.md_num* > 31.
 |===
 
 *MDCFGLCK* is the lock register to MDCFG Table.

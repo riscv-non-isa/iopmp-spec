@@ -27,8 +27,8 @@ include::mdcfg_reduction.adoc[]
 // Non-priority IOPMP entries
 include::non_priority_entries.adoc[]
 
-// Per-entry Interrupt/Bus Error Supression
-include::per_entry_supression.adoc[]
+// Per-entry Interrupt/Bus Error Suppression
+include::per_entry_suppression.adoc[]
 
 // Multi-Faults Record
 include::mfr.adoc[]

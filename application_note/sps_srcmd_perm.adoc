@@ -5,5 +5,6 @@ This format also has a physical SRCMD Table of an array, like Format 0, but the 
 
 *SRCMD_PERM(_m_).r[_s_]* indicates the read permission and instruction fetch permission of RRID _s_ belongs to the memory domain _m_. *SRCMD_PERM(_m_).w[_s_]* indicates write permission of RRID _s_ belongs to the memory domain _m_. *SRCMD_PERM(_m_).r* and *SRCMD_PERM(_m_).w* are adjacent. That is, *SRCMD_PERM(_m_).r[_s_]* and *SRCMD_PERM(_m_).w[_s_]* are located at the bits (_s_ * 2) and  (_s_ * 2 + 1), respectively. For RRID indexed higher than 15, *SRCMD_PERMH(_m_)* is used. IOPMP looks at permissions in  *SRCMD_PERM(H)* and *ENTRY_CFG.r/w/x*.  As long as one of them grants the transaction under checking, it is legal. If one wants to use only *SRCMD_PERM(H)*, all *ENTRY_CFG.r/w/x* can be wired to zero.
 
-In Format 2, the SRCMD Table can be prelocked fully or partially based on the presets of *MDLCK.md*.
+
+The SRCMD Table can be prelocked fully or partially based on the presets of *MDLCK.md*. *MDLCK.md[_m_]* locks both *SRCMD_PERM(_m_)* and *SRCMD_PERMH(_m_)*. Every bit is used to lock the association bits with a memory domain in the SRCMD Table. For MD 31 &#x2264; _m_ &#x2264; 62, one should use *MDLCKH.mdh* to lock corresponding bits. 
 The rest of the lock bits can be preset, too.
