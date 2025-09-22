@@ -1,7 +1,16 @@
 === Instruction Fetch Permission Check
 
-To check instruction fetch transactions, one can add a custom bit *x* to *ENTRY_CFG(_i_)*. *ENTRY_CFG(_i_).r/w/x* indicate the read access, write access and instruction fetch permission and they are WARL.
+The IOPMP specification supports instruction fetch permission checking through global and entry-level configuration. When the global permission bits HWCFG2.chk_x = 1 and HWCFG2.no_x = 0, the IOPMP instance enables rule checking for instruction fetch transactions. The *ENTRY_CFG(_i_)* register reserves a custom bit *x* to control instruction fetch permissions at the entry level.
 
-To indicate illegal instruction fetch transactions, one can add a custom *ttype* = 0x03 and *etype* = 0x03 in register *ERR_CFG*.
+The fields *ENTRY_CFG(_i_).r*, *ENTRY_CFG(_i_).w*, and *ENTRY_CFG(_i_).x* indicate read access, write access, and instruction fetch permissions respectively. All three fields are WARL (Write-Any-Read-Legal).
 
-To determine whether an IOPMP can differentiate between read and instruction fetch accesses, the IOPMP can have a custom bit *chk_x* to indicate whether *ENTRY_CFG(_i_).x* is implemented.
+For error reporting of illegal instruction fetch transactions, implementations may define custom transaction type *ttype* = 0x03 and error type *etype* = 0x03 in the *ERR_CFG* register.
+
+[cols="<2,<1,<1,<1,<6"]
+|===
+5+h|{set:cellbgcolor:#D3D3D3} ENTRY_CFG(_i_), _i_ = 0...HWCFG1.entry_num-1
+5+h|ENTRYOFFSET + 0x8 + (_i_)*16
+h|Field                         |Bits       |R/W    |Default    |Description
+|{set:cellbgcolor:#FFFFFF}x     |2:2        |WARL   |DC         |The instruction fetch permission to the protected memory region 
+|===
+

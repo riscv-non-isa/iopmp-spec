@@ -1,8 +1,23 @@
 [#GLOBAL_PPERMISSION]
 === Global Permission Check
 
-Using global permission check can simplify implementations by reducing programmable permission bits and possibly reducing operations during retrieving entries when an implementation is designed for specific memory regions. 
+Global permission checks can simplify implementations by reducing the needs for programming permission bits and minimizing the overhead of looking-up the per-entry rules. HWCFG2 registers are used to indicate the global permissions.
 
-For example, there is a custom read-only bits, *no_w*, used to decide whether the IOPMP denies any write transaction for Flash memory regions and ROM regions. An IOPMP always fails a write transaction with error type "not hit any rule" (0x05) when *no_w* is 1. Reading *no_w* can determine whether the IOPMP supports the feature.
+[#HWCFG1]
+[cols="<2,<1,<1,<1,<6"]
+|===
+5+h|HWCFG1{set:cellbgcolor:#D3D3D3}
+5+h|0x0008
+h|Field                         |Bits   |R/W    |Default    |Description
+|{set:cellbgcolor:#FFFFFF}chk_x|10:10  |R     | IMP| Indicate if the IOPMP implements the check of an instruction fetch.
+|no_x|11:11  |R     | IMP| For *chk_x*=1, the IOPMP with *no_x*=1 always fails on an instruction fetch; otherwise, it should depend on *x*-bit in *ENTRY_CFG(_i_)*. For *chk_x*=0, *no_x* has no effect.
+|no_w|12:12  |R     | IMP| Indicate if the IOPMP always fails write accesses considered as as no rule matched.
+|===
 
-Similarly, an implementation can have a custom read-only bits *no_x* if a system needs to deny a new transaction type - instruction fetch. *no_x* is used to decide whether the IOPMP denies any instruction fetch transaction for data-only regions. An IOPMP always fails a instruction fetch with error type "not hit any rule" (0x05) when *no_x* is 1. Reading *no_x* can determine whether the IOPMP supports the feature.
+IOPMPs can implement instruction fetch rule check by setting *chk_x* to 1. The *chk_x* and *no_x* bits together control the global behavior for instruction fetch rule checking. 
+
+** When *chk_x* is 0, the IOPMP does not check instruction fetch permissions.
+** When *chk_x* is 1 and *no_x* is 0, the IOPMP checks instruction fetch permissions based on entry rules.
+** When *chk_x* is 1 and *no_x* is 1, the IOPMP always denies instruction fetch transactions.
+
+The *no_w* bit determines whether the IOPMP denies all write transactions. When *no_w* is 1, the IOPMP always fails write transactions with error type "not hit any rule" (0x05). Reading *no_w* indicates whether the IOPMP supports this feature. This feature is useful when an IOPMP instance is designed to protect Flash memory or ROM regions only.

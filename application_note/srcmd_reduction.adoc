@@ -1,18 +1,58 @@
 === SRCMD Table Reduction
 
-The spec offers several IOPMP configurations to accommodate varied platforms. Users can choose one that best fits their design requirements, such as area, power consumption, latency, throughput, flexibility, and portability.
+In addition to the baseline configuration, the specification offers multiple SRCMD Table simplification options to support diverse platform requirements. Users can choose to use the simplified format that best matches their design constraints, including area, power consumption, latency, throughput, flexibility, and portability.
 
 ==== SRCMD Table Formats
-Format 0 of the SRCMD Table uses a bit map to associate every RRID with memory domains. Format 1 is a simplified version that uses the RRID as the memory domain index. That is, the RRIDs and MD indexes are one-to-one mapping. In the Format 2, every RRID implicitly associates all implemented memory domains. Instead, Format 2 of the SRCMD Table uses a bit map to output permissions for each memory domain based on the RRID.
+The specification in addition provides two SRCMD Table formats :
 
-===== SRCMD Table Format 0
-In Format 0, the SRCMD Table is an array and indexed by RRID. Every entry in the array is a set of registers. The register *SRCMD_EN(_s_)* must be implemented for the existing RRID _s_. Every bit in the 31-bit field *SRCMD_EN(_s_).md* indicates a memory domain. Bit _j_ in *SRCMD_EN(_s_).md* indicates if MD _j_ is associated with RRID _s_. If the number of MDs is more than 31, the register *SRCMD_ENH(_s_)* and its 32-bit field *SRCMD_ENH(_s_).mdh* can be implemented to support up to 63 memory domains. Bit _j_ in *SRCMD_ENH(_s_).mdh* indicates if MD (_j_ + 31) is associated with RRID _s_. For unimplemented memory domains, the corresponding bits should be hardwired read-only zero.
+* **Format 1**: RRID _i_ is exactly associated with memory domain _i_, creating a direct one-to-one mapping for reduced hardware design complexity.The SRCMD Table therefore is not implemented in this format. The maximum number of RRIDs supported in Format 2 is 64, where s = 0 ... 63.
 
-Every *SRCMD_EN(_s_)* has 1-bit field *l* for SRCMD Table protection. The bit is described in <<#SECTION_3_5_1, SRCMD Table Protection>>.
+* **Format 2**: The SRCMD Table array is indexed by memory domain, allowing users to specify all RRIDs' permissions for each memory domain. The maximum number of RRIDs supported in Format 2 is 64, where s = 0 ... 31.
 
-For a system requiring more memory domains than 63, please refer to <<#APPENDIX_A2, Appendix A2. Run Out Memory Domains>>.
+The discovery of SRCMD Table Formats is through the HWCFG2.srcmd_fmt field.
+[#HWCFG2]
+[cols="<2,<1,<1,<1,<6"]
+|===
+5+h|HWCFG2{set:cellbgcolor:#D3D3D3}
+5+h|0x0008
+h|Field                         |Bits   |R/W    |Default    |Description
+|{set:cellbgcolor:#FFFFFF}srcmd_fmt                      |3:2    |R      |IMP        |Indicates the SRCMD Table format:
 
-If SPS extension is supported, an entry has additional registers. These registers are described in <<#APPENDIX_A3, Appendix A3. Secondary Permission Setting>>.
+* 0x0: Format 0 (default) - Standard SRCMD Table implementation
+
+* 0x1: Format 1 - No SRCMD Table required    
+
+* 0x2: Format 2 - *SRCMD_PERM(_m_)* and *SRCMD_PERMH(_m_)* registers available
+
+* 0x3: Reserved
+
+|===
+
 
 ==== SRCMD Table Format 1
-The bitmap implementation of Format 1 specifically tailored for scenarios where there are minimal to no shared regions. In this format, each RRID is exactly associated with a single MD, eliminating the necessity for SRCMD Table lookups. Each RRID _i_ is directly associated with MD _i_, resulting in advantages in terms of area, latency, and system complexity. However, duplicated entry settings when a scenario requires shared regions, representing a potential drawback. In the format, the SPS extension is not supported.
+Format 1 implements a bitmap approach specifically designed for scenarios with minimal or no shared memory regions. In this format, each RRID is exclusively associated with a single memory domain, eliminating the need for SRCMD Table lookups. Each RRID _i_ is directly mapped to MD _i_, providing benefits in area efficiency, latency reduction, and system complexity. However, this approach requires duplicated entry settings when shared regions are needed, which represents a potential limitation. The SPS extension is not supported in this format.
+
+==== SRCMD Table Format 2
+Format 2 implements a physical SRCMD Table array similar to the baseline SRCMD Table, but indexed by memory domain rather than RRID. For memory domain _m_, registers *SRCMD_PERM(_m_)* and *SRCMD_PERMH(_m_)* are implemented at the same addresses as *SRCMD_EN(_s_)* and *SRCMD_ENH(_s_)* in the baseline format. This format allows per-RRID permission configuration for each memory domain, outputting permissions for every memory domain based on the requesting RRID. The maximum number of RRIDs supported in Format 2 is 32, where s = 0 ... 31. The SPS extension is not supported in this format.
+
+.An example block diagram of SRCMD Table Format 2 Implementation.
+image::images/SRCMD_Variant_2.png[]
+
+*SRCMD_PERM(_m_)* and *SRCMD_PERMH(_m_)* are available when *HWCFG0.srcmd_fmt* = 2.
+In Format 2, an IOPMP checks both the permission of *SRCMD_PERM(H)(_m_)* and the *ENTRY_CFG.r/w/x* permission. A transaction is legal if any of them allows the transaction.
+
+[cols="<2,<1,<1,<1,<6"]
+|===
+5+h|{set:cellbgcolor:#D3D3D3} SRCMD_PERM(_m_), _m_ = 0...HWCFG0.md_num-1
+5+h|0x1000 + (_m_)*32
+h|Field                         |Bits             |R/W  |Default |Description
+|{set:cellbgcolor:#FFFFFF}perm     | 31:0 | WARL | DC | Holds two bits per RRID that give the RRID’s read and write permissions for the entry. Bit 2*_s_ holds the read permission for RRID _s_, and bit 2*_s_+1 holds the write permission for RRID _s_, where _s_&#8804;15.
+|===
+
+[cols="<2,<1,<1,<1,<6"]
+|===
+5+h|{set:cellbgcolor:#D3D3D3} SRCMD_PERMH(_m_), _m_ = 0...HWCFG0.md_num-1
+5+h|0x1004 + (_m_)*32
+h|Field                         |Bits             |R/W  |Default |Description
+|{set:cellbgcolor:#FFFFFF}permh     | 31:0 | WARL | DC | Holds two bits per RRID that give the RRID’s read and write permissions for the entry. Bit 2*(_s_-16) holds the read permission for RRID _s_, and bit 2*(_s_-16)+1 holds the write permission for RRID _s_, where _s_ &#8805;16. The register is implemented when *HWCFG0.rrid_num* > 16.
+|===
