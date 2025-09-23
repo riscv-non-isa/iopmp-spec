@@ -16,8 +16,11 @@ The bit *ERR_CFG.msi_en* indicates whether the IOPMP triggers interrupt by MSI o
 5+h|ERR_CFG{set:cellbgcolor:#D3D3D3}
 5+h|0x0060
 h|Field                           |Bits   |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}msi_en  |3:3    |WARL   |IMP        a| Indicates 
-msidata |18:8   |WARL   |IMP   | The data to trigger 
+|{set:cellbgcolor:#FFFFFF}msi_en  |3:3    |WARL   |IMP        a| Indicates whether the IOPMP triggers interrupt by MSI or wired interrupt:
+
+* 0x0: the IOPMP triggers interrupt by wired interrupt
+* 0x1: the IOPMP triggers interrupt by MSI 
+| msidata |18:8   |WARL   |IMP   | The data to trigger MSI
 |===
 
 
