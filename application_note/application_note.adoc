@@ -3,6 +3,7 @@
 :appendix-caption!:
 == Application Note
 
+:figure-caption: Figure
 :sectnums!:
 
 include::intro.adoc[]

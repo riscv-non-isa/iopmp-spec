@@ -5,9 +5,9 @@ In addition to the baseline configuration, the specification offers multiple SRC
 ==== SRCMD Table Formats
 The specification in addition provides two SRCMD Table formats :
 
-* **Format 1**: RRID _i_ is exactly associated with memory domain _i_, creating a direct one-to-one mapping for reduced hardware design complexity.The SRCMD Table therefore is not implemented in this format. The maximum number of RRIDs supported in Format 2 is 64, where s = 0 ... 63.
+* **Format 1**: RRID _i_ is exactly associated with memory domain _i_, creating a direct one-to-one mapping for reduced hardware design complexity.The SRCMD Table therefore is not implemented in this format. The maximum number of RRIDs supported in Format 1 is 63.
 
-* **Format 2**: The SRCMD Table array is indexed by memory domain, allowing users to specify all RRIDs' permissions for each memory domain. The maximum number of RRIDs supported in Format 2 is 64, where s = 0 ... 31.
+* **Format 2**: The SRCMD Table array is indexed by memory domain, allowing users to specify all RRIDs' permissions for each memory domain. The maximum number of RRIDs supported in Format 2 is 32.
 
 The discovery of SRCMD Table Formats is through the HWCFG2.srcmd_fmt field.
 [#HWCFG2]

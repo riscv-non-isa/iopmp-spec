@@ -1,16 +1,51 @@
 === Instruction Fetch Permission Check
 
-The IOPMP specification supports instruction fetch permission checking through global and entry-level configuration. When the global permission bits HWCFG2.chk_x = 1 and HWCFG2.no_x = 0, the IOPMP instance enables rule checking for instruction fetch transactions. The *ENTRY_CFG(_i_)* register reserves a custom bit *x* to control instruction fetch permissions at the entry level.
+The IOPMP specification supports instruction fetch permission checking through global and entry-level configuration. This feature enables protection of executable memory regions by controlling instruction fetch transactions.
 
-The fields *ENTRY_CFG(_i_).r*, *ENTRY_CFG(_i_).w*, and *ENTRY_CFG(_i_).x* indicate read access, write access, and instruction fetch permissions respectively. All three fields are WARL (Write-Any-Read-Legal).
+==== Global Configuration
 
-For error reporting of illegal instruction fetch transactions, implementations may define custom transaction type *ttype* = 0x03 and error type *etype* = 0x03 in the *ERR_CFG* register.
+The global instruction fetch behavior is controlled by the *chk_x* and *no_x* bits in the HWCFG2 register:
+
+* **chk_x = 0**: The IOPMP does not perform instruction fetch permission checking
+* **chk_x = 1, no_x = 0**: The IOPMP checks instruction fetch permissions based on entry-level rules
+* **chk_x = 1, no_x = 1**: The IOPMP always denies all instruction fetch transactions
+
+
+[#HWCFG2]
+[cols="<2,<1,<1,<1,<6"]
+|===
+5+h|HWCFG2{set:cellbgcolor:#D3D3D3}
+5+h|0x0008
+h|Field                         |Bits   |R/W    |Default    |Description
+|{set:cellbgcolor:#FFFFFF}chk_x|10:10  |R     | IMP| Indicates if the IOPMP implements instruction fetch checking
+|no_x|11:11  |R     | IMP| For *chk_x*=1, when *no_x*=1, the IOPMP always denies instruction fetch transactions; otherwise, it depends on the *x*-bit in *ENTRY_CFG(_i_)*. For *chk_x*=0, *no_x* has no effect
+|===
+
+==== Entry-Level Configuration
+
+When global instruction fetch checking is enabled (*chk_x* = 1 and *no_x* = 0), individual entries can control instruction fetch permissions through the *x* bit in the *ENTRY_CFG(_i_)* register.
+
+The *ENTRY_CFG(_i_)* register contains three permission fields:
+* *ENTRY_CFG(_i_).r*: Read access permission
+* *ENTRY_CFG(_i_).w*: Write access permission  
+* *ENTRY_CFG(_i_).x*: Instruction fetch permission
+
+All three fields are WARL (Write-Any-Read-Legal).
+
 
 [cols="<2,<1,<1,<1,<6"]
 |===
 5+h|{set:cellbgcolor:#D3D3D3} ENTRY_CFG(_i_), _i_ = 0...HWCFG1.entry_num-1
 5+h|ENTRYOFFSET + 0x8 + (_i_)*16
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}x     |2:2        |WARL   |DC         |The instruction fetch permission to the protected memory region 
+|{set:cellbgcolor:#FFFFFF}x     |2:2        |WARL   |DC         |Instruction fetch permission for the protected memory region
 |===
+
+==== Error Reporting
+
+For illegal instruction fetch transactions, implementations may define custom error reporting using:
+* Transaction type *ttype* = 0x03
+* Error type *etype* = 0x03
+
+These values are configured in the *ERR_CFG* register.
 
