@@ -1,15 +1,14 @@
 === Instruction Fetch Permission Check
 
-The IOPMP specification supports instruction fetch permission checking through global and entry-level configuration. This feature enables protection of executable memory regions by controlling instruction fetch transactions.
+The IOPMP specification provides instruction fetch permission checking through global and entry-level configuration mechanisms. This functionality enables protection of executable (x) memory regions by controlling instruction fetch transaction authorization.
 
-==== Global Configuration
+==== Global X Permission Configuration
 
 The global instruction fetch behavior is controlled by the *chk_x* and *no_x* bits in the HWCFG2 register:
 
 * **chk_x = 0**: The IOPMP does not perform instruction fetch permission checking
-* **chk_x = 1, no_x = 0**: The IOPMP checks instruction fetch permissions based on entry-level rules
-* **chk_x = 1, no_x = 1**: The IOPMP always denies all instruction fetch transactions
-
+* **chk_x = 1, no_x = 0**: The IOPMP performs instruction fetch permission checking based on entry-level rules
+* **chk_x = 1, no_x = 1**: The IOPMP denies all instruction fetch transactions
 
 [#HWCFG2]
 [cols="<2,<1,<1,<1,<6"]
@@ -17,21 +16,15 @@ The global instruction fetch behavior is controlled by the *chk_x* and *no_x* bi
 5+h|HWCFG2{set:cellbgcolor:#D3D3D3}
 5+h|0x0008
 h|Field                         |Bits   |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}chk_x|10:10  |R     | IMP| Indicates if the IOPMP implements instruction fetch checking
-|no_x|11:11  |R     | IMP| For *chk_x*=1, when *no_x*=1, the IOPMP always denies instruction fetch transactions; otherwise, it depends on the *x*-bit in *ENTRY_CFG(_i_)*. For *chk_x*=0, *no_x* has no effect
+|{set:cellbgcolor:#FFFFFF}chk_x|10:10  |R     | IMP| Indicates whether the IOPMP implements instruction fetch checking
+|no_x|11:11  |R     | IMP| For *chk_x*=1, when *no_x*=1, the IOPMP denies all instruction fetch transactions; otherwise, it depends on the *x*-bit in *ENTRY_CFG(_i_)*. For *chk_x*=0, *no_x* has no effect
 |===
 
-==== Entry-Level Configuration
+==== Per-Entry X Permission Configuration
 
-When global instruction fetch checking is enabled (*chk_x* = 1 and *no_x* = 0), individual entries can control instruction fetch permissions through the *x* bit in the *ENTRY_CFG(_i_)* register.
+When global instruction fetch checking is enabled (*chk_x* = 1 and *no_x* = 0), individual entries control instruction fetch permissions through the *x* bit in the *ENTRY_CFG(_i_)* register.
 
-The *ENTRY_CFG(_i_)* register contains three permission fields:
-* *ENTRY_CFG(_i_).r*: Read access permission
-* *ENTRY_CFG(_i_).w*: Write access permission  
-* *ENTRY_CFG(_i_).x*: Instruction fetch permission
-
-All three fields are WARL (Write-Any-Read-Legal).
-
+The *ENTRY_CFG(_i_)* register contains the *x* field for instruction fetch permission, which is WARL (Write-Any-Read-Legal).
 
 [cols="<2,<1,<1,<1,<6"]
 |===
