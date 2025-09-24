@@ -40,5 +40,5 @@ For illegal instruction fetch transactions, implementations may define custom er
 * Transaction type *ttype* = 0x03
 * Error type *etype* = 0x03
 
-These values are configured in the *ERR_CFG* register.
+These values are configured in the *ERR_INFO* register.
 

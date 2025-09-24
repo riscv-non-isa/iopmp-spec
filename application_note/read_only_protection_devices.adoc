@@ -11,5 +11,5 @@ The *no_w* bit is a read-only field that indicates whether the IOPMP implementat
 5+h|HWCFG2{set:cellbgcolor:#D3D3D3}
 5+h|0x0008
 h|Field                         |Bits   |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}no_w|12:12  |R     | IMP| Indicates if the IOPMP always denies write accesses when no rule matches
+|{set:cellbgcolor:#FFFFFF}no_w|12:12  |R     | IMP| Indicates whether the IOPMP denies all write accesses as if no rule matches
 |===
