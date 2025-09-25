@@ -2,23 +2,19 @@
 
 Per-entry control mechanisms can be beneficial in scenarios such as configuring guard regions that a prefetch may incidentally access but should not access. Suppressing such interrupts and bus error responses can reduce the unnecessary burden of unwanted interruptions and bus error responses.
 
+=== Interrupt Suppression
 *ERR_CFG.ie* configures the interrupt globally, while every entry has local fields to configure interrupt behavior locally. Every entry _i_ has two interrupt suppression bits in register *ENTRY_CFG(_i_)*, *sire* and *siwe*, to suppress interrupt triggering due to illegal read access and illegal writes access/AMO, respectively. *HWCFG0.peis* is 1 if an implementation supports *sire* and *siwe*. If *peis* is 0, *sire* and *siwe* should be wired to 0. 
 
-On an illegal transaction with error type = "illegal read access" (0x01) or "illegal write access/AMO" (0x02), an interrupt is triggered if the global interrupt is enabled (*ie*) and not suppressed (*sire* or *siwe*). On an illegal transaction with other types, an IOPMP triggers an interrupt only when *ie*=1. Considering Entry _i_ matches an illegal transaction, the condition for the interrupt for each type of illegal access can be described as follows: 
+When an illegal transaction occurs with error type "illegal read access" (0x01) or "illegal write access/AMO" (0x02), an interrupt is triggered if the global interrupt is enabled (*ie*) and not suppressed by *sire* or *siwe*. Considering Entry _i_ matches an illegal transaction, the condition for the interrupt for each type of illegal access can be described as follows: 
 
 * Illegal read access (0x01): +
 *ERR_CFG.ie* && !*ENTRY_CFG(_i_).sire* 
 * Illegal write access/AMO (0x02): +
 *ERR_CFG.ie* && !*ENTRY_CFG(_i_).siwe*
 
-In the same way, the bus error response behavior can be set up globally and individually for each IOPMP entry. *ERR_CFG.rs* globally suppresses returning a bus error on illegal access. When global suppression is disabled, individual per-entry suppression is possible using *sere* and *sewe* for illegal read access, illegal write access/AMO, respectively. *HWCFG0.pees* is 1 if an IOPMP implements *sere* and *sewe*. If *pees* is 0, *sere* and *sewe* should be wired to 0.
+Where ! represents logical NOT, and && represents logical AND.
 
-Bus error response behavior of an IOPMP is controlled by global bus error response suppression configuration bit *rs* and suppression bits (*sere* or *sewe*) in entries if a transaction only violates permissions on entries. On the other hand, if a transaction doesn't only violate permissions on entries, bus error response behavior of an IOPMP is controlled only by bus error response suppression configuration bit *rs*. Considering Entry  _i_ matches an illegal transaction, the condition for a bus error response for each access type can be described as follows:  
-
-* Illegal read access (0x01): +
-!*ERR_CFG.rs* && !*ENTRY_CFG(_i_).sere* 
-* Illegal write access/AMO (0x02): +
-!*ERR_CFG.rs* && !*ENTRY_CFG(_i_).sewe*
+When an illegal transaction occurs with error type "Partial hit on a priority rule" (0x04), "Not hit any rule" (0x05), or "Unknown RRID" (0x06), an IOPMP triggers an interrupt only if *ie* = 1. 
 
 [cols="<2,<1,<1,<1,<6"]
 |===
@@ -26,8 +22,6 @@ Bus error response behavior of an IOPMP is controlled by global bus error respon
 5+h|0x0008
 h|Field                         |Bits   |R/W    |Default    |Description 
 |{set:cellbgcolor:#FFFFFF}peis|14:14  |R     | IMP| Indicate if the IOPMP implements interrupt suppression per entry, including fields *sire* and *siwe* in *ENTRY_CFG(_i_)*.
-|pees|15:15 | R |IMP| Indicate if the IOPMP implements the error suppression per entry, including fields *sere* and *sewe* in *ENTRY_CFG(_i_)*.
-
 |===
 
 [cols="<2,<1,<1,<1,<6"]
@@ -35,10 +29,39 @@ h|Field                         |Bits   |R/W    |Default    |Description
 5+h|{set:cellbgcolor:#D3D3D3} ENTRY_CFG(_i_), _i_ = 0...HWCFG1.entry_num-1
 5+h|ENTRYOFFSET + 0x8 + (_i_)*16
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}sire |5:5       |WARL   |IMP | To suppress interrupt for an illegal read access caught by the entry
+|{set:cellbgcolor:#FFFFFF}sire |5:5       |WARL   |IMP | Suppress interrupt for an illegal read access caught by the entry
 
-|{set:cellbgcolor:#FFFFFF}siwe |6:6       |WARL   |IMP |Suppress interrupt for write violations caught by the entry
+|{set:cellbgcolor:#FFFFFF}siwe |6:6       |WARL   |IMP | Suppress interrupt for an illegal write access/AMO caught by the entry
+|===
 
+=== Bus Error Suppression
+*ERR_CFG.rs* globally suppresses returning a bus error on illegal access. When global suppression is disabled, individual per-entry suppression is possible using *sere* and *sewe* in *ENTRY_CFG(_i_)* for illegal read access and illegal write access/AMO, respectively. *HWCFG0.pees* is 1 if an IOPMP implements *sere* and *sewe*. If *pees* is 0, *sere* and *sewe* should be wired to 0.
+
+When an illegal transaction occurs with error type "illegal read access" (0x01) or "illegal write access/AMO" (0x02), an IOPMP responds bus error if the bus error is not suppressed. Considering Entry _i_ matches an illegal transaction, the condition for a bus error response for each access type can be described as follows:
+
+* Illegal read access (0x01): +
+!*ERR_CFG.rs* && !*ENTRY_CFG(_i_).sere* 
+* Illegal write access/AMO (0x02): +
+!*ERR_CFG.rs* && !*ENTRY_CFG(_i_).sewe*
+
+Where ! represents logical NOT, and && represents logical AND.
+
+When an illegal transaction occurs with error type "Partial hit on a priority rule" (0x04), "Not hit any rule" (0x05), or "Unknown RRID" (0x06), an IOPMP responds bus error only if *rs* = 0. 
+
+[cols="<2,<1,<1,<1,<6"]
+|===
+5+h|HWCFG0{set:cellbgcolor:#D3D3D3}
+5+h|0x0008
+h|Field                         |Bits   |R/W    |Default    |Description 
+|{set:cellbgcolor:#FFFFFF}
+pees                            |15:15  | R     |IMP        | Indicate if the IOPMP implements the error suppression per entry, including fields *sere* and *sewe* in *ENTRY_CFG(_i_)*.
+|===
+
+[cols="<2,<1,<1,<1,<6"]
+|===
+5+h|{set:cellbgcolor:#D3D3D3} ENTRY_CFG(_i_), _i_ = 0...HWCFG1.entry_num-1
+5+h|ENTRYOFFSET + 0x8 + (_i_)*16
+h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}sere   |8:8    |WARL   |IMP    a| Suppress the (bus) error on an illegal read access caught by the entry
 
 * 0x0: respond an error if *ERR_CFG.rs* is 0x0. 
