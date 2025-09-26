@@ -6,4 +6,4 @@ Source-enforcement (IOPMP-SE) is a simplified IOPMP configuration that assumes a
 
 [#IOPMP_SE_Example]
 .An example block diagram of IOPMP-SE Implementation.
-image::images/IOPMP_SE.drawio.png[]
+image::../images/IOPMP_SE.drawio.png[]

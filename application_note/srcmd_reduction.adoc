@@ -37,7 +37,7 @@ Format 2 implements a physical SRCMD Table array similar to the baseline SRCMD T
 
 [#Example_Format_2]
 .An example block diagram of SRCMD Table Format 2 Implementation.
-image::images/srcmd_format2_example.png[]
+image::../images/srcmd_format2_example.png[]
 
 *SRCMD_PERM(_m_)* and *SRCMD_PERMH(_m_)* are available when *HWCFG2.srcmd_fmt* = 2.
 In Format 2, an IOPMP checks both the permission of *SRCMD_PERM(H)(_m_)* and the *ENTRY_CFG.r/w/x* permission. A transaction is legal if any of them allows the transaction.
