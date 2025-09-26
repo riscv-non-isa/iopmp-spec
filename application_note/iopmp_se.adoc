@@ -1,3 +1,9 @@
 [#IOPMP_SE]
 === Source-enforcement 
-If all transactions going through the IOPMP are issued by the same transaction requestor or a set of transaction requestors with the same permission, the RRID can be ignored on the transaction requestor side and the above transactions. In the case, we denote the IOPMP performs source enforcement, IOPMP-SE for short.
+When some requestors already implement firewalls with functionality similar to the IOPMP, users can configure the IOPMP to apply rule checking only to unprotected requestors. This enables IOPMP simplification to support either a single requestor or multiple requestors with identical access permissions—a common configuration in embedded systems. For example, <<IOPMP_SE_Example>> illustrates a scenario where RISC-V harts implement PMP as the firewall, and IOPMP-SE is applied only to heterogeneous cores and general DMA.
+
+Source-enforcement (IOPMP-SE) is a simplified IOPMP configuration that assumes a single requestor or multiple requestors with identical permissions. This implementation requires only one SRCMD Table entry and allows the RRID field to be ignored when all transactions originate from requestors with identical permissions.
+
+[#IOPMP_SE_Example]
+.An example block diagram of IOPMP-SE Implementation.
+image::../images/IOPMP_SE.drawio.png[]

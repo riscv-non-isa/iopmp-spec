@@ -23,6 +23,7 @@
 :icons: font
 :lang: en
 :listing-caption: Listing
+:figure-caption: Figure
 :sectnums:
 :toc: left
 :toclevels: 4
