@@ -16,7 +16,7 @@ include::iopmp_se.adoc[]
 // Instruction Fetch Permission Check
 include::x_permission.adoc[]
 
-// Global Permission Check
+// Read Only Protection Devices 
 include::read_only_protection_devices.adoc[]
 
 // SRCMD Table Reduction

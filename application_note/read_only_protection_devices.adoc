@@ -2,7 +2,7 @@
 
 The *no_w* bit enables global write protection, which is particularly useful for protecting read-only memory regions such as Flash memory or ROM. This feature simplifies implementations by reducing the need for programming individual permission bits and minimizing the overhead of per-entry rule lookups.
 
-The *no_w* bit is a read-only field that indicates whether the IOPMP implementation supports global write protection functionality. When *no_w* is set to 1, the IOPMP denies all write transactions and reports them with error type "no hit any rule" (0x05). This global configuration eliminates the requirement to configure individual entry rules for write protection, providing an efficient solution for protecting read-only memory regions.
+The *no_w* bit is a read-only field that indicates whether the IOPMP implementation supports global write protection functionality. When *no_w* is set to 1, the IOPMP denies all write transactions and reports them with error type "not hit any rule" (0x05). This global configuration eliminates the requirement to configure individual entry rules for write protection, providing an efficient solution for protecting read-only memory regions.
 
 
 [#HWCFG2]
