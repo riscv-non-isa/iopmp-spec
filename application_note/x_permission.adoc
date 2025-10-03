@@ -37,6 +37,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 ==== Error Reporting
 
 For illegal instruction fetch transactions, implementations may define custom error reporting using:
+
 * Transaction type *ttype* = 0x03
 * Error type *etype* = 0x03
 

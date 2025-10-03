@@ -9,7 +9,7 @@ The specification in addition provides two SRCMD Table formats :
 
 * **Format 2**: The SRCMD Table array is indexed by memory domain, allowing users to specify all RRIDs' permissions for each memory domain. Format 2 supports up to 32 RRIDs.
 
-The discovery of SRCMD Table Formats is through the HWCFG2.srcmd_fmt field.
+The discovery of SRCMD Table Formats is through the *HWCFG2.srcmd_fmt* field.
 [#HWCFG2]
 [cols="<2,<1,<1,<1,<6"]
 |===

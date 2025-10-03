@@ -1,11 +1,18 @@
 [[Program_IOPMPs]]
 :numbered:
 === Programming IOPMPs
-At times, it can be difficult or even impossible to configure all IOPMP settings when the system starts, especially before I/O agents are active or connected to the system. As a result, it is necessary to update IOPMP settings during runtime. This may occur when a device is enabled, disabled, added, removed, or when the accessible area of a device changes. When updating, it is important to avoid checking transactions in an incomplete setting. However, updating IOPMP settings often involves a series of control accesses, and if a transaction check occurs during the update, it can potentially create a vulnerability. 
-It could be a heavy burden for the security software to guarantee that no transactions are in progress from all related initiators. This chapter describes an optional method for updating IOPMP's settings that avoids checking transactions in an incomplete setting and burdening the security software.
+At times, attempting to configuring all IOPMP settings when the system starts can be difficult or even impossible, especially before I/O agents are active or connected to the system. As a result, it is necessary to update IOPMP settings during runtime. 
 
-// TODO:
-// Describe how to update IOPMP settings only with core standard.
+To configure all IOPMP settings during runtime, security software can 
+configure addtional MDs for different settings in MDCFG Table and entry array, and switch the associcated MDs for an RRID in SRCMD Table from a single access.
+
+[NOTE]
+The aforementioned method is invalid if an IOPMP supports number of MD greater than 31 and its control port only supports 32-bit access. Security software needs two access to switch the association in the configuration. It results incomplete setting between the first access and the second access and potentially create a vulnerability.
+
+However, the aforementioned method may not be suitable for certain systems. Another method to update IOPMP settings is necessary. This may occur when a device is enabled, disabled, added, removed, or when the accessible area of a device changes. When updating, it is important to avoid checking transactions in an incomplete setting. However, updating IOPMP settings often involves a series of control accesses, and if a transaction check occurs during the update, it can potentially create a vulnerability. 
+It could be a heavy burden for the security software to guarantee that no transactions are in progress from all related initiators.
+
+This section describes the optional method for updating IOPMP's settings that avoids checking transactions in an incomplete setting and burdening the security software.
 
 ==== Atomicity Requirement
 The Atomicity Requirement is that when updating an IOPMP, all transactions from receiver ports must be checked either before any changes are made or after all changes are completed. Essentially, checking a transaction in a partial setting should be avoided. The succeeding sections will describe the mechanism that helps the security software satisfy this requirement.
