@@ -10,14 +10,11 @@ include::intro.adoc[]
 
 :sectnums:
 
-// Source-enforcement
-include::iopmp_se.adoc[]
-
-// Instruction Fetch Permission Check
-include::x_permission.adoc[]
-
 // Read Only Protection Devices 
 include::read_only_protection_devices.adoc[]
+
+// Source-enforcement
+include::iopmp_se.adoc[]
 
 // SRCMD Table Reduction
 include::srcmd_reduction.adoc[]
@@ -25,29 +22,8 @@ include::srcmd_reduction.adoc[]
 // MDCFG Table Reduction
 include::mdcfg_reduction.adoc[]
 
-// Non-priority IOPMP entries
-include::non_priority_entries.adoc[]
-
-// Per-entry Interrupt/Bus Error Suppression
-include::per_entry_suppression.adoc[]
-
-// Multi-Faults Record
-include::mfr.adoc[]
-
 // Run out memory domains and RRID translate
 include::run_out_md.adoc[]
-
-// Secondary Permission Setting
-include::sps.adoc[]
-
-// Secondary Permission Setting (SRCMD_PERM)
-include::sps_srcmd_perm.adoc[]
-
-// Message-Signaled Interrupts (MSI)
-include::msi.adoc[]
-
-// Programming IOPMPs
-include::programming.adoc[]
 
 // IOPMP Models
 include::iopmp_models.adoc[]

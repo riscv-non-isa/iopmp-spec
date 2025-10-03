@@ -1,0 +1,16 @@
+
+== Extensions
+
+include::application_note/x_permission.adoc[]
+
+include::application_note/sps.adoc[]
+
+include::application_note/non_priority_entries.adoc[]
+
+include::application_note/per_entry_suppression.adoc[]
+
+include::application_note/mfr.adoc[]
+
+include::application_note/msi.adoc[]
+
+include::application_note/programming.adoc[]
