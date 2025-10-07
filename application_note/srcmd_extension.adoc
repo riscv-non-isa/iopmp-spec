@@ -1,6 +1,6 @@
 === SRCMD Table Extensions
 
-The IOPMP specification provides extensions to the baseline SRCMD Table implementation to support advanced use cases requiring flexible permission management. These extensions enable different transaction requestors to have varying access permissions within shared memory domains or alternative table indexing schemes.
+The IOPMP specification provides extensions to the baseline SRCMD Table implementation to support advanced use cases requiring flexible permission management. These extensions enable different RRIDs to have varying access permissions within shared memory domains or alternative table indexing schemes.
 
 ==== Secondary Permission Setting (SPS)
 
