@@ -16,9 +16,6 @@ include::read_only_protection_devices.adoc[]
 // Read Only Protection Devices 
 include::data_only_protection_devices.adoc[]
 
-// Source-enforcement
-include::iopmp_se.adoc[]
-
 // SRCMD Table Reduction (includes Source-enforcement as Format 1)
 include::srcmd_reduction.adoc[]
 
