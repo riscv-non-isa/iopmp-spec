@@ -1,8 +1,10 @@
 === Read Only Protection Devices
 
-The *no_w* bit enables global write protection, which is particularly useful for protecting read-only memory regions such as Flash memory or ROM. This feature simplifies implementations by reducing the need for programming individual permission bits and minimizing the overhead of per-entry rule lookups.
+Systems that primarily protect read-only memory regions, such as Flash memory or ROM, can leverage global write protection to reduce implementation complexity and hardware overhead. The IOPMP provides the *no_w* configuration bit in the HWCFG2 register to enable this functionality.
 
-The *no_w* bit is a read-only field that indicates whether the IOPMP implementation supports global write protection functionality. When *no_w* is set to 1, the IOPMP denies all write transactions and reports them with error type "not hit any rule" (0x05). This global configuration eliminates the requirement to configure individual entry rules for write protection, providing an efficient solution for protecting read-only memory regions.
+When *no_w* is set to 1, the IOPMP denies all write transactions regardless of entry rule configurations, reporting them with error type "no rule matched" (0x05). This global configuration strategy eliminates the need for per-entry write permission checking logic and removes the requirement to configure write permission bits in individual entry rules, thereby reducing hardware resources and implementation complexity.
+
+The *no_w* bit is a read-only implementation parameter that indicates whether the IOPMP instance supports this global write protection feature. System designers can leverage this configuration for applications where write access control is unnecessary, achieving both area savings and design simplification.
 
 
 [#HWCFG2]

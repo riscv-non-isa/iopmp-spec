@@ -3,7 +3,7 @@
 
 include::application_note/x_permission.adoc[]
 
-include::application_note/sps.adoc[]
+include::application_note/srcmd_extension.adoc[]
 
 include::application_note/non_priority_entries.adoc[]
 
