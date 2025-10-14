@@ -188,18 +188,18 @@ An error capture only occurs when there is no pending error, that is, *ERR_INFO.
 The following table shows all error types and corredponding control bits of error reaction in this specification:
 
 .Error types and corresponding control bits
-[%autowidth, cols="<1,<5,<3", options="header"]
+[%autowidth, cols="<1,<5,<3,<2", options="header"]
 |===
- 2+| Error type | Control bits
-   |0x00        | No error                          | N/A
-   |0x01        | Illegal read access               | *ie* and *rs* ^1.^
-   |0x02        | Illegal write access/AMO          | *ie* and *rs*
-   |0x03        | illegal instruction fetch         | *ie* and *rs*
-   |0x04        | Partial hit on a priority rule    | *ie* and *rs*
-   |0x05        | Not hit any rule                  | *ie* and *rs*
-   |0x06        | Unknown RRID                      | *ie* and *rs*
-   |0x07        | Reserved for future               | reserved
-   |0x08 ~ 0x0D | Reserved for future               | reserved
+ 2+| Error type                                     | Control bits       | Note
+   |0x00        | No error                          | N/A                |
+   |0x01        | Illegal read access               | *ie* and *rs* ^1.^ |
+   |0x02        | Illegal write access/AMO          | *ie* and *rs*      |
+   |0x03        | illegal instruction fetch         | *ie* and *rs*      | See <<X_PERM>>.
+   |0x04        | Partial hit on a priority rule    | *ie* and *rs*      |
+   |0x05        | Not hit any rule                  | *ie* and *rs*      |
+   |0x06        | Unknown RRID                      | *ie* and *rs*      |
+   |0x07        | Error due to a stalled transaction| *ie* and *rs*      | See <<Program_IOPMPs>>.
+   |0x08 ~ 0x0D | Reserved for future               | reserved           |
 |===
 
 ^1.^ Bit *ie* or *rs* in *ERR_CFG*. It depends on which reaction (that is, interrupt or bus error response).

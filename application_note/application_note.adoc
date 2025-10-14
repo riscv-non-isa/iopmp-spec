@@ -13,6 +13,9 @@ include::intro.adoc[]
 // Read Only Protection Devices 
 include::read_only_protection_devices.adoc[]
 
+// Read Only Protection Devices 
+include::data_only_protection_devices.adoc[]
+
 // SRCMD Table Reduction (includes Source-enforcement as Format 1)
 include::srcmd_reduction.adoc[]
 
