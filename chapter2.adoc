@@ -13,6 +13,7 @@ This document refers to the term “secure monitor” as the software responsibl
 |DRAM| dynamic random-access memory
 |ID| identifier
 |IMP|implementation-dependent
+|IMSIC| Incoming Message-Signaled Interrupt Controller, defined in the RISC-V advanced interrupt architecture (AIA) cite:[AIA] specification
 |IOMMU| Input-Output Memory Management Unit cite:[IOMMU], a RISC-V non-ISA specification
 |MD| memory domain
 |MMIO|memory mapped input/output devices
@@ -200,6 +201,7 @@ The following table shows all error types and corredponding control bits of erro
    |0x06        | Unknown RRID                      | *ie* and *rs*      |
    |0x07        | Error due to a stalled transaction| *ie* and *rs*      | See <<Program_IOPMPs>>.
    |0x08 ~ 0x0D | Reserved for future               | reserved           |
+   |0x0E ~ 0x0F | User-defined error                | Implementation dependent           |
 |===
 
 ^1.^ Bit *ie* or *rs* in *ERR_CFG*. It depends on which reaction (that is, interrupt or bus error response).
