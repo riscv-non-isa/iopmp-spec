@@ -17,7 +17,7 @@ If an optional register is not implemented, the behavior is implementation-depen
 | - | Other regions in offset 0x0000 to 0x0800 are reserved for standard use.
 
 2+|{set:cellbgcolor:#D3D3D3} Configuration Protection
-|{set:cellbgcolor:#FFFFFF} MDLCK/MDLCKH | Lock registers for SRCMD Table.
+|{set:cellbgcolor:#FFFFFF} MDLCK/ (optional) MDLCKH | Lock registers for SRCMD Table.
 | MDCFGLCK | Lock register for MDCFG Table.
 | ENTRYLCK | Lock register for IOPMP entry array.
 
@@ -25,7 +25,7 @@ If an optional register is not implemented, the behavior is implementation-depen
 |{set:cellbgcolor:#FFFFFF} ERR_CFG | Indicates the reactions for the violations
 | ERR_INFO | Indicates the information regarding captured violations.
 |ERR_REQID   | Indicates the RRID and entry index regarding the first captured violation.
-| ERR_REQADDR/ERR_REQADDRH | Indicates request address regarding the first captured violation.
+| ERR_REQADDR/ (optional) ERR_REQADDRH | Indicates request address regarding the first captured violation.
 
 .3+|0x0800 2+|{set:cellbgcolor:#D3D3D3} MDCFG Table,  _m_ = 0...*HWCFG0.md_num*-1
 |{set:cellbgcolor:#FFFFFF}MDCFG(_m_)  |MD config register, which specifies the indices of IOPMP entries belonging to a MD.
@@ -37,7 +37,7 @@ If an optional register is not implemented, the behavior is implementation-depen
 
 .4+|ENTRYOFFSET    2+|{set:cellbgcolor:#D3D3D3} Entry Array, _i_ =0…*HWCFG1.entry_num*-1
 |{set:cellbgcolor:#FFFFFF}ENTRY_ADDR(_i_)| Bit 33:2 of address (region) for entry _i_.
-|ENTRY_ADDRH(_i_) |(Optional) bit 65:34 of the address (region) for entry _i_. 
+|(Optional) ENTRY_ADDRH(_i_) | Bit 65:34 of the address (region) for entry _i_. 
 |ENTRY_CFG(_i_) |The configuration of entry _i_.
 |===
 

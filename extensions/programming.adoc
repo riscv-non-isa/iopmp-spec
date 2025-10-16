@@ -120,7 +120,7 @@ NOTE: An example of partial implementation of *MDSTALL.md*/*MDSTALLH.mdh* is a s
 
 *MDSTALL.is_busy* can be wired to 0 if any *MDSTALL* and *RRIDSCP* writing won't cause a race condition of the transactions still under checking and the subsequent setting updates.
 
-If whole *MDSTALL* is not implemented, *MDSTALL*, *MDSTALLH* and *ERR_CFG.stall_violation_en* should always return zero.
+If whole *MDSTALL* is not implemented, *MDSTALL*, *MDSTALLH*, *RRIDSCP* and *ERR_CFG.stall_violation_en* should always return zero.
 
 If *RRIDSCP* is not implemented, it always returns zero. One can test if it is implemented by writing a zero and then reading it back. Any IOPMP implementing *RRIDSCP* should not return a zero in *RRIDSCP.stat* in this case.
 
