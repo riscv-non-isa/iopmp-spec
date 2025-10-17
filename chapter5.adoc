@@ -7,7 +7,7 @@ If an optional register is not implemented, the behavior is implementation-depen
 |===
 |OFFSET |Register |Description
 
-.19+|0x0000  2+|{set:cellbgcolor:#D3D3D3} INFO
+.20+|0x0000  2+|{set:cellbgcolor:#D3D3D3} INFO
 |{set:cellbgcolor:#FFFFFF} VERSION |Indicates the specification and the IP vendor.
 |IMPLEMENTATION | Indicates the implementation version.
 | HWCFG0 |Indicates the basic configurations of current IOPMP instance.
@@ -17,10 +17,10 @@ If an optional register is not implemented, the behavior is implementation-depen
 | HWCFG_USER | (Optional) User-defined configurations of current IOPMP instance.
 | ENTRYOFFSET |Indicates the internal address offsets of each table.
 
-| - | Other regions in offset 0x0000 to 0x0800 are reserved for standard use.
+
 
 2+|{set:cellbgcolor:#D3D3D3} Configuration Protection
-|{set:cellbgcolor:#FFFFFF} MDLCK/ MDLCKH | Lock registers for SRCMD Table. *MDLCKH* is optional.
+|{set:cellbgcolor:#FFFFFF} MDLCK/MDLCKH | Lock registers for SRCMD Table. *MDLCKH* is optional.
 | MDCFGLCK | Lock register for MDCFG Table.
 | ENTRYLCK | Lock register for IOPMP entry array.
 
@@ -28,7 +28,10 @@ If an optional register is not implemented, the behavior is implementation-depen
 |{set:cellbgcolor:#FFFFFF} ERR_CFG | Indicates the reactions for the violations
 | ERR_INFO | Indicates the information regarding captured violations.
 |ERR_REQID   | Indicates the RRID and entry index regarding the first captured violation.
-| ERR_REQADDR/ ERR_REQADDRH | Indicates request address regarding the first captured violation. *ERR_REQADDRH* is optional.
+| ERR_REQADDR/ERR_REQADDRH | Indicates request address regarding the first captured violation. *ERR_REQADDRH* is optional.
+| ERR_USER(0:7) | (Optional) User-defined violation information.
+
+| - | Other regions in offset 0x0000 to 0x0800 are reserved for standard use.
 
 .3+|0x0800 2+|{set:cellbgcolor:#D3D3D3} MDCFG Table,  _m_ = 0...*HWCFG0.md_num*-1
 |{set:cellbgcolor:#FFFFFF}MDCFG(_m_)  |MD config register, which specifies the indices of IOPMP entries belonging to a MD.
