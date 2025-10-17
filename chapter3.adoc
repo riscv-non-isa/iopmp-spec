@@ -76,7 +76,9 @@ The two fields *MDLCK.md* and *MDLCKH.mdh* have 63 bits together. Every bit is u
 
 Bit *MDLCK.l* is a sticky to 1 and indicates if *MDLCK* and *MDLCKH* are locked.
 
-*MDLCK.md* is optional, if not implemented, *MDLCK.md* should be wired to 0 and *MDLCK.l* should be wired to 1. *MDLCKH* is optional.
+*MDLCK.md* is optional, if not implemented, *MDLCK.md* should be wired to 0 and *MDLCK.l* should be wired to 1.
+
+*MDLCKH* is optional. It is available when *HWCFG0.md_num* > 31.
 
 [NOTE]
 ====
