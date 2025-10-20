@@ -1,0 +1,18 @@
+=== Data Only Protection Devices
+
+The *no_x* bit enables global instruction fetch protection, which is particularly useful for protecting data-only memory regions such as peripherals which don't have any instruction of processors. This feature simplifies implementations by reducing the need for programming individual permission bits and minimizing the overhead of per-entry rule lookups.
+
+The global instruction fetch behavior is controlled by the *chk_x* bit on the *HWCFG0* register *no_x* bit in the *HWCFG2* register:
+
+* **chk_x = 0**: The IOPMP does not perform instruction fetch permission checking
+* **chk_x = 1, no_x = 0**: The IOPMP performs instruction fetch permission checking based on entry-level rules
+* **chk_x = 1, no_x = 1**: The IOPMP denies all instruction fetch transactions
+
+[#HWCFG2]
+[cols="<2,<1,<1,<1,<6"]
+|===
+5+h|HWCFG2{set:cellbgcolor:#D3D3D3}
+5+h|0x0008
+h|Field                         |Bits   |R/W    |Default    |Description
+|{set:cellbgcolor:#FFFFFF}no_x|11:11  |R     | IMP| For *HWCFG0.chk_x*=1, when *no_x*=1, the IOPMP denies all instruction fetch transactions; otherwise, it depends on the *x*-bit in *ENTRY_CFG(_i_)*. For *chk_x*=0, *no_x* has no effect
+|===
