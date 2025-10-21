@@ -1,4 +1,4 @@
-[[X_PERM]]
+[#X_PERM]
 === Instruction Fetch Permission Check
 
 The IOPMP specification provides instruction fetch permission checking. This extension enables protection of executable (x) memory regions by controlling instruction fetch transaction authorization.
@@ -9,12 +9,3 @@ For illegal instruction fetch transactions, IOPMP reports error record using:
 
 * Transaction type (*ERR_INFO.ttype*) = 0x03 "instruction fetch transaction"
 * Error type (*ERR_INFO.etype*) = 0x03 "illegal instruction fetch"
-
-
-[cols="<2,<1,<1,<1,<6"]
-|===
-5+h|{set:cellbgcolor:#D3D3D3} ENTRY_CFG(_i_), _i_ = 0...HWCFG1.entry_num-1
-5+h|ENTRYOFFSET + 0x8 + (_i_)*16
-h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}x     |2:2        |WARL   |DC         |Instruction fetch permission for the protected memory region
-|===

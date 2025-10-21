@@ -31,15 +31,15 @@ If an optional register is not implemented, the behavior is implementation-depen
 | ERR_REQADDR/ERR_REQADDRH | Indicates request address regarding the first captured violation. *ERR_REQADDRH* is optional.
 | ERR_USER(0:7) | (Optional) User-defined violation information.
 
-| - | Other regions in offset 0x0000 to 0x0800 are reserved.
+| - | Other regions in offset 0x0000 to 0x07FF are reserved.
 
 .3+|0x0800 2+|{set:cellbgcolor:#D3D3D3} MDCFG Table,  _m_ = 0...*HWCFG0.md_num*-1
 |{set:cellbgcolor:#FFFFFF}MDCFG(_m_)  |MD config register, which specifies the indices of IOPMP entries belonging to a MD.
-|{set:cellbgcolor:#FFFFFF} - |Other regions in offset 0x0800 to 0x1000 are reserved.
+|{set:cellbgcolor:#FFFFFF} - |Other regions in offset 0x0800 to 0x0FFF are reserved.
 
 .3+|0x1000 2+|{set:cellbgcolor:#D3D3D3} SRCMD Table, _s_ = 0...*HWCFG1.rrid_num*-1
 |{set:cellbgcolor:#FFFFFF}SRCMD_EN(_s_)/SRCMD_ENH(_s_)    |The bitmapped MD enabling register of the requestor _s_ that *SRCMD_EN(_s_)[_m_]* indicates if the requestor is associated with MD _m_ and *SRCMD_ENH(_s_)[_m_]* indicates if the requestor is associated with MD (_m_+31). *SRCMD_ENH(_s_)* is optional.
-|{set:cellbgcolor:#FFFFFF} - |Other regions in offset 0x1000 to ENTRYOFFSET are reserved.
+|{set:cellbgcolor:#FFFFFF} - |Other regions in offset 0x1000 to ENTRYOFFSET-1 are reserved.
 
 .4+|ENTRYOFFSET    2+|{set:cellbgcolor:#D3D3D3} Entry Array, _i_ =0…*HWCFG1.entry_num*-1
 |{set:cellbgcolor:#FFFFFF}ENTRY_ADDR(_i_)| Bit 33:2 of address (region) for entry _i_.
@@ -250,6 +250,14 @@ h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}eid   |31:16  |R      |DC          |Indicates the index pointing to the entry that catches the violation. If no entry is hit, that is, *etype*=0x05, 0x06 or 0x07, the value of this field is invalid. If the field is not implemented, it should be wired to 0xffff.
 |===
 
+*ERR_USER(0:7)* are optional registers to provide users to define their own error capture information.
+[cols="<2,<1,<1,<1,<6"]
+|===
+5+h|{set:cellbgcolor:#D3D3D3} ERR_USER(_i_)
+5+h|0x0080 + 0x04 * _i_, _i_ = 0...7
+h|Field                         |Bits       |R/W    |Default    |Description
+|{set:cellbgcolor:#FFFFFF}user  |31:0       |IMP    |IMP        |(Optional) user-defined registers
+|===
 
 === *MDCFG Table Registers*
 MDCFG Table is a lookup to specify the number of IOPMP entries that is associated with each MD.
