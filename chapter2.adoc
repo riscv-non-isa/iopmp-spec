@@ -27,7 +27,6 @@ This document refers to the term “secure monitor” as the software responsibl
 |WARL|write any read legal, a behavior of fields
 |W1C|write '1' clear, a behavior of single bit fields
 |W1CS|write '1' clear and sticky to 0, a behavior of single bit fields: writing '1' clears the bit. If the bit is cleared, this state remains fixed until IOPMP registers are reset.
-|W1S|write '1' set, a behavior of single bit fields
 |W1SS|write '1' set and sticky to 1, a behavior of single bit fields: writing '1' sets the bit. If the bit is set, this state remains fixed until IOPMP registers are reset.
 |X( _n_ )|the _n_-th register in the register array X, which starts from 0.
 |X[ _n_ ]|the _n_-th bit of a register X or register field X
