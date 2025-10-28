@@ -181,7 +181,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 5+h|0x0060
 h|Field                           |Bits   |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}l       |0:0    |W1SS   |0          |Lock bit to *ERR_CFG* register.
-|ie                               |1:1    |RW     |0          |Enable the interrupt of the IOPMP rule violation.
+|ie                               |1:1    |WARL   |0          |Enable the interrupt of the IOPMP rule violation.
 |rs                               |2:2    |WARL   |0         a| 
 
 To suppress an error response on an IOPMP rule violation.
