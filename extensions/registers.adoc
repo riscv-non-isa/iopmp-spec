@@ -14,30 +14,30 @@ Each subsection in this section describes detailed register information. Some re
 .Register and field summary of extensions between offset 0x0000 and 0x07FF.
 [%autowidth, options="header"]
 |===
-   |Offset    |Register      |Field          |Bits  |Related section(s)
-.9+|0x0010 .9+|HWCFG2        |prio_entry     |15:0  |<<NON_PRIORITY_ENTRIES>>
-                             |chk_x          |24:24 |<<X_PERM>>
-                             |prient_prog    |25:25 |<<NON_PRIORITY_ENTRIES>>
-                             |pies           |26:26 |<<_per_entry_interruptbus_error_suppression>>
-                             |pees           |27:27 |<<_per_entry_interruptbus_error_suppression>>
-                             |user_cfg_en    |28:28 |<<ENTRY_USER_CFG>>
-                             |sps_en         |29:29 |<<_srcmd_table_extension>>
-                             |stall_en       |30:30 |<<Program_IOPMPs>>
-                             |mfr_en         |31:31 |<<_multi_faults_record>>
-   |0x0030    |MDSTALL     2+|All                .3+|<<Program_IOPMPs>>
-   |0x0034    |MDSTALLH    2+|All
-   |0x0038    |RRIDSCP     2+|All
-.3+|0x0060 .3+|ERR_CFG       |msi_en         |3:3   |<<_message_signaled_interrupts_msi>>
-                             |stall_fault_en |4:4   |<<Program_IOPMPs>>
-                             |msi_data       |18:8  |<<_message_signaled_interrupts_msi>>
-.4+|0x0064 .4+|ERR_INFO      |ttype          |2:1   |<<X_PERM>>
-                             |msi_werr       |3:3   |<<_message_signaled_interrupts_msi>>
-                             |etype          |7:4   |<<X_PERM>> + 
-                                                     and <<Program_IOPMPs>>
-                             |svc            |8:8   |<<_multi_faults_record>>
-   |0x0074 |ERR_MFR        2+|All                   |<<_multi_faults_record>>
-   |0x0078 |ERR_MSIADDR    2+|All                .2+|<<_message_signaled_interrupts_msi>>
-   |0x007C |ERR_MSIADDRH   2+|All 
+   |Offset    |Register    |Field          |Bits     |Related section(s)
+.9+|0x0010 .9+|HWCFG2      |prio_entry     |15:0  .3+|<<NON_PRIORITY_ENTRIES>>
+                           |prio_ent_prog  |16:16
+                           |non_prio_en    |17:17 
+                           |chk_x          |26:26    |<<X_PERM>>
+                           |pies           |27:27 .2+|<<PEIS_PEES>>
+                           |pees           |28:28
+                           |sps_en         |29:29    |<<SRCMD_EXT>>
+                           |stall_en       |30:30    |<<Program_IOPMPs>>
+                           |mfr_en         |31:31    |<<MFR>>
+   |0x0030    |MDSTALL   2+|All                   .3+|<<Program_IOPMPs>>
+   |0x0034    |MDSTALLH  2+|All
+   |0x0038    |RRIDSCP   2+|All
+.3+|0x0060 .3+|ERR_CFG     |msi_en         |3:3      |<<MSI>>
+                           |stall_fault_en |4:4      |<<Program_IOPMPs>>
+                           |msi_data       |18:8     |<<MSI>>
+.4+|0x0064 .4+|ERR_INFO    |ttype          |2:1      |<<X_PERM>>
+                           |msi_werr       |3:3      |<<MSI>>
+                           |etype          |7:4      |<<X_PERM>> + 
+                                                      and <<Program_IOPMPs>>
+                           |svc            |8:8      |<<MFR>>
+   |0x0074 |ERR_MFR      2+|All                      |<<MFR>>
+   |0x0078 |ERR_MSIADDR  2+|All                   .2+|<<MSI>>
+   |0x007C |ERR_MSIADDRH 2+|All 
 |===
 
 [#EXT_SUMMARY_SRCMD]
@@ -46,9 +46,7 @@ Each subsection in this section describes detailed register information. Some re
 |===
 3+h|SRCMD Table, _m_ = 0...*HWCFG0.md_num*-1, _s_ = 0...*HWCFG1.rrid_num*-1.
   h|Offset           h|Register          h|Related section(s)
-   |0x1000 + (_m_)*32 |SRCMD_PERM(_m_) .6+|<<_srcmd_table_extension>>
-   |0x1004 + (_m_)*32 |SRCMD_PERMH(_m_)
-   |0x1008 + (_s_)*32 |SRCMD_R(_s_)
+   |0x1008 + (_s_)*32 |SRCMD_R(_s_)    .4+|<<SRCMD_EXT>>
    |0x100C + (_s_)*32 |SRCMD_RH(_s_)
    |0x1010 + (_s_)*32 |SRCMD_W(_s_)
    |0x1014 + (_s_)*32 |SRCMD_WH(_s_)
@@ -62,14 +60,12 @@ Each subsection in this section describes detailed register information. Some re
    |Offset                          |Register              |Field |Bits   |Related section(s)
 .7+|ENTRYOFFSET +
     + 0x8 + (_i_)*16             .7+|ENTRY_CFG(_i_)        |x     |2:2    |<<X_PERM>>
-                                                           |sire  |5:5 .6+|<<_per_entry_interruptbus_error_suppression>>
+                                                           |sire  |5:5 .6+|<<PEIS_PEES>>
                                                            |siwe  |6:6  
                                                            |sixe  |7:7  
                                                            |sere  |8:8  
                                                            |sewe  |9:9  
                                                            |sexe  |10:10
-   |ENTRYOFFSET +
-    + 0xC + (_i_)*16                |ENTRY_USER_CFG(_i_) 2+| All |<<ENTRY_USER_CFG>>
 |===
 
 :xrefstyle: {xrefstyle_bak}

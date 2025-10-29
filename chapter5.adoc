@@ -29,7 +29,7 @@ If an optional register is not implemented, the behavior is implementation-depen
 | ERR_INFO | Indicates the information regarding captured violations.
 |ERR_REQID   | Indicates the RRID and entry index regarding the first captured violation.
 | ERR_REQADDR/ERR_REQADDRH | Indicates request address regarding the first captured violation. *ERR_REQADDRH* is optional.
-| ERR_USER(0:7) | (Optional) User-defined violation information.
+| ERR_USER(0:7) | (Optional) user-defined violation information.
 
 | - | Other regions in offset 0x0000 to 0x07FF are reserved.
 
@@ -41,15 +41,16 @@ If an optional register is not implemented, the behavior is implementation-depen
 |{set:cellbgcolor:#FFFFFF}SRCMD_EN(_s_)/SRCMD_ENH(_s_)    |The bitmapped MD enabling register of the requestor _s_ that *SRCMD_EN(_s_)[_m_]* indicates if the requestor is associated with MD _m_ and *SRCMD_ENH(_s_)[_m_]* indicates if the requestor is associated with MD (_m_+31). *SRCMD_ENH(_s_)* is optional.
 |{set:cellbgcolor:#FFFFFF} - |Other regions in offset 0x1000 to ENTRYOFFSET-1 are reserved.
 
-.4+|ENTRYOFFSET    2+|{set:cellbgcolor:#D3D3D3} Entry Array, _i_ =0…*HWCFG1.entry_num*-1
+.5+|ENTRYOFFSET    2+|{set:cellbgcolor:#D3D3D3} Entry Array, _i_ =0…*HWCFG1.entry_num*-1
 |{set:cellbgcolor:#FFFFFF}ENTRY_ADDR(_i_)| Bit 33:2 of address (region) for entry _i_.
 |ENTRY_ADDRH(_i_) | (Optional) bit 65:34 of the address (region) for entry _i_. 
 |ENTRY_CFG(_i_) |The configuration of entry _i_.
+|ENTRY_USER_CFG(_i_) |(Optional) user-defined attributes.
 |===
 
 === *INFO registers*
 
-INFO registers are use to indicate the IOPMP instance configuration info.
+INFO registers are used to indicate the IOPMP instance configuration info.
 {set:cellbgcolor:#0000}
 [cols="<2,<1,<1,<1,<6"]
 |===
@@ -334,3 +335,13 @@ h|Field                         |Bits       |R/W    |Default    |Description
 |===
 
 Bits *r* and *w* grant read and write permission, respectively. Not each bit should be programmable. Some or all of them could be wired. Besides, an implementation can optionally impose constraints on their combinations.
+
+*ENTRY_USER_CFG* implementation defined registers that allows users to define their own additional IOPMP check rules beside the rules.
+
+[cols="<2,<1,<1,<1,<6"]
+|===
+5+h|{set:cellbgcolor:#D3D3D3} ENTRY_USER_CFG(_i_), _i_ =0...HWCFG1.entry_num-1
+5+h|ENTRYOFFSET + 0xC + (_i_)*16
+h|Field                         |Bits       |R/W    |Default    |Description
+|{set:cellbgcolor:#FFFFFF}im    |31:0       |IMP     |IMP         |User customized field 
+|===

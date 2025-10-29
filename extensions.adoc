@@ -18,5 +18,3 @@ include::extensions/mfr.adoc[]
 include::extensions/msi.adoc[]
 
 include::extensions/programming.adoc[]
-
-include::extensions/entry_user_cfg.adoc[]

@@ -1,4 +1,0 @@
-[#ENTRY_USER_CFG]
-=== User Customized Attributes of Entry Array
-
-The extension enables user customized attributes of IOPMP entry array. *HWCFG2.user_cfg_en* = 1 indicates an IOPMP supports the extension. *ENTRY_USER_CFG(_i_)* are implementation-dependent registers of entry _i_, _i_ = 0 ... *HWCFG1.entry_num* - 1.

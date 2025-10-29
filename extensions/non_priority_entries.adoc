@@ -3,7 +3,8 @@
 
 The extension enables non-priority entries to reduce latency, power consumption, and area. It can also be used together with the priority entries to achieve a balance between security and performance.
 
-When the extension is enabled, entries with indices greater than or equal to *HWCFG2.prio_entry* are non-prioritized. These are treated equally and assigned the lowest priority. Entries with indices less than *prio_entry* are prioritized. The value of *prio_entry* is implementation-dependent. Additionally, a field *HWCFG2.prient_prog* indicates whether *prio_entry* is programmable.
+*HWCFG2.non_prio_en* indicates whether the IOPMP supports non-priority entries. When the extension is enabled, *HWCFG2.non_prio_en* is 1 and entries with indices greater than or equal to *HWCFG2.prio_entry* are non-prioritized. These are treated equally and assigned the lowest priority. Entries with indices less than *prio_entry* are prioritized. The value of *prio_entry* is implementation-dependent. Additionally, a field *HWCFG2.prio_ent_prog* indicates whether *prio_entry* is programmable.
+
 
 [NOTE]
 ====

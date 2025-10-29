@@ -1,3 +1,4 @@
+[#SRCMD_EXT]
 === SRCMD Table Extension
 
 The IOPMP specification provides an extension to the baseline SRCMD Table implementation to support advanced use cases requiring flexible permission management.

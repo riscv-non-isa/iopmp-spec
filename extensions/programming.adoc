@@ -108,7 +108,7 @@ Some steps may be skipped according to the actual implementation.
 
 ==== Implementation Options
 
-*HWCFG2.stall_en* indicates if the IOPMP implements the extension, which are *MDSTALL*, *MDSTALLH*, *RRIDSCP*, *ERR_CFG.stall_violation_en*, and addtional error type = 0x07 "error due to a stalled transaction".
+*HWCFG2.stall_en* indicates if the IOPMP implements the extension, which are *MDSTALL*, *MDSTALLH*, *RRIDSCP*, *ERR_CFG.stall_violation_en*, and additional error type = 0x07 "error due to a stalled transaction".
 
 All registers and fields described in xref:Program_IOPMPs[xrefstyle=full] (*MDSTALL*, *MDSTALLH*, *RRIDSCP*, and *ERR_CFG.stall_violation_en*) are optional. Moreover, these features could be partially implemented.
 
