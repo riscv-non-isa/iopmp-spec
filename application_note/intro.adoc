@@ -21,9 +21,5 @@ The techniques described in this application note are optional and implementatio
 |===
 |Term |Description
 |IOPMP| Physical Memory Protection Unit for Input/Output Devices <<APPNOTE_IOPMP>>, a RISC-V non-ISA specification
-// |IMSIC| Incoming Message-Signaled Interrupt Controller, defined in the RISC-V advanced interrupt architecture (AIA) cite:[AIA] specification
-|IMSIC| Incoming Message-Signaled Interrupt Controller, defined in the RISC-V advanced interrupt architecture (AIA) <<APPNOTE_AIA>> specification
-|MSI| message-signaled interrupts
 |ROM| read-only memory
-|SPS| secondary permission setting, an extension of RISC-V IOPMP
 |===
