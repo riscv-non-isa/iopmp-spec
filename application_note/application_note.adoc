@@ -10,11 +10,13 @@ include::intro.adoc[]
 
 :sectnums:
 
-// Read Only Protection Devices 
-include::read_only_protection_devices.adoc[]
+include::application_note_registers.adoc[]
 
-// Read Only Protection Devices 
-include::data_only_protection_devices.adoc[]
+// Write Protection Devices 
+include::write_protection_devices.adoc[]
+
+// Instruction Fectch Protection Devices 
+include::x_protection_devices.adoc[]
 
 // SRCMD Table Reduction (includes Source-enforcement as Format 1)
 include::srcmd_reduction.adoc[]
