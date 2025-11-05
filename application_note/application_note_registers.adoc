@@ -40,7 +40,7 @@ Please refer to <<mdcfg-table-formats>> for details.
 * 0x3: reserved.
 
 Please refer to <<srcmd-table-formats>> for details.
-|md_entry_num   |11:4  |WARL   |IMP     a| When *HWCFG0.mdcfg_fmt* = 
+|md_entry_num   |11:4  |WARL   |IMP     a| When *HWCFG3.mdcfg_fmt* = 
 
 * 0x0: must be zero
 
