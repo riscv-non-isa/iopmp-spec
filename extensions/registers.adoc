@@ -115,7 +115,7 @@ prio_entry                      |15:0   |WARL   |IMP        |Indicate the number
 |pees                           |27:27  |R      |IMP        |Indicate if the IOPMP implements the error suppression per entry, including fields *sere* and *sewe* in *ENTRY_CFG(_i_)*.
 |user_cfg_en                    |28:28  |R      |IMP        |Indicate if user customized attributes of entry array is supported; which are *ENTRY_USER_CFG(_i_)* registers.
 |sps_en                         |29:29  |R      |IMP        |Indicates secondary permission settings are supported; which are *SRCMD_R/RH(_i_)* and *SRCMD_W/WH(_i_)* registers.
-|stall_en                       |30:30  |R      |IMP        |Indicate if the IOPMP implements stall-related features, which are *MDSTALL*, *MDSTALLH*, and *RRIDSCP* registers.
+|stall_en                       |30:30  |R      |IMP        |Indicate if the IOPMP implements stall-related features, which are *MDSTALL*, *MDSTALLH*, *RRIDSCP*, and *ERR_CFG.stall_violation_en*.
 |mfr_en                         |31:31  |R      |IMP        |Indicate if the IOPMP implements Multi Faults Record, that is *ERR_MFR* and *ERR_INFO.svc*.
 |===
 
@@ -267,7 +267,7 @@ h|Field                            |Bits       |R/W    |Default    |Description
 [cols="<2,<1,<1,<1,<6"]
 |===
 5+h|{set:cellbgcolor:#D3D3D3} SRCMD_R(_s_), _s_ = 0...HWCFG1.rrid_num-1
-5+h|0x1008 + (_s_)*32
+5+h|0x1008 + (_s_) × 32
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}rsv   |0:0        |ZERO   |0          |Must be zero on write, reserved for future.
 |md                             |31:1       |WARL   |DC         |*md[_m_]* = 1 indicates RRID _s_ has read access and instruction fetch permission to the corresponding MD _m_. 
@@ -276,7 +276,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 [cols="<2,<1,<1,<1,<6"]
 |===
 5+h|{set:cellbgcolor:#D3D3D3} SRCMD_RH(s), _s_ = 0...HWCFG1.rrid_num-1
-5+h|0x100C + (_s_)*32
+5+h|0x100C + (_s_) × 32
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}mdh   |31:0       |WARL   |DC         |*mdh[_m_]* = 1 indicates RRID _s_ has read access and instruction fetch permission to MD (_m_+31). 
 |===
@@ -284,7 +284,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 [cols="<2,<1,<1,<1,<6"]
 |===
 5+h|{set:cellbgcolor:#D3D3D3} SRCMD_W(_s_), _s_ = 0...HWCFG1.rrid_num-1
-5+h|0x1010 + (_s_)*32
+5+h|0x1010 + (_s_) × 32
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}rsv   |0:0        |ZERO   |0          |Must be zero on write, reserved for future.
 |md                             |31:1       |WARL   |DC         |*md[_m_]* = 1 indicates RRID _s_ has write permission to the corresponding MD _m_. 
@@ -293,7 +293,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 [cols="<2,<1,<1,<1,<6"]
 |===
 5+h|{set:cellbgcolor:#D3D3D3} SRCMD_WH(_s_), _s_ = 0...HWCFG1.rrid_num-1
-5+h|0x1014 + (_s_)*32
+5+h|0x1014 + (_s_) × 32
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}mdh   |31:0       |WARL   |DC         |*mdh[_m_]* = 1 indicates RRID _s_ has write permission to MD (_m_+31). 
 |===
@@ -304,7 +304,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 [cols="<2,<1,<1,<1,<6"]
 |===
 5+h|{set:cellbgcolor:#D3D3D3} ENTRY_CFG(_i_), _i_ = 0...HWCFG1.entry_num-1
-5+h|ENTRYOFFSET + 0x8 + (_i_)*16
+5+h|ENTRYOFFSET + 0x8 + (_i_) × 16
 h|Field                         |Bits       |R/W       |Default    |Description
 |{set:cellbgcolor:#FFFFFF}
 r                               |0:0        |WARL      |DC         |The read permission to protected memory region.
@@ -333,13 +333,4 @@ r                               |0:0        |WARL      |DC         |The read per
 * 0x0: respond an error if *ERR_CFG.rs* is 0x0.
 * 0x1: do not respond an error. User to define the behavior, e.g., respond a success with an implementation-dependent value to the initiator.
 |rsv                            |31:11      |ZERO      |0          |Must be zero on write, reserved for future.
-|===
-
-
-[cols="<2,<1,<1,<1,<6"]
-|===
-5+h|{set:cellbgcolor:#D3D3D3} ENTRY_USER_CFG(_i_), _i_ =0...HWCFG1.entry_num-1
-5+h|ENTRYOFFSET + 0xC + (_i_)*16
-h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}im    |31:0       |IMP    |IMP        |User customized field.
 |===

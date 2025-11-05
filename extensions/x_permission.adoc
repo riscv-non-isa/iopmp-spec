@@ -3,7 +3,7 @@
 
 The IOPMP specification provides instruction fetch permission checking. This extension enables protection of executable (x) memory regions by controlling instruction fetch transaction authorization.
 
-When instruction fetch checking is enabled (*HWCFG0.chk_x* = 1), the *ENTRY_CFG(_i_)* register contains the *x* field for instruction fetch permission, which is WARL (Write-Any-Read-Legal).
+When instruction fetch checking is enabled (*HWCFG2.chk_x* = 1), the *ENTRY_CFG(_i_)* register contains the *x* field for instruction fetch permission, which is WARL (Write-Any-Read-Legal).
 
 For illegal instruction fetch transactions, IOPMP reports error record using:
 

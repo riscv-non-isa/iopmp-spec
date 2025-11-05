@@ -1,8 +1,11 @@
 [[Program_IOPMPs]]
 :numbered:
-=== Programming IOPMPs
+// NOTE:
+// This is temporary title for better extension name.
+// It was "Programming IOPMPs".
+=== Transaction Stalling
 
-This section introduces an extension and describes how to use the extension to update IOPMP's settings in runtime.
+This section introduces an extension to stall transations by RRIDs and describes how to use the extension to update IOPMP's settings in runtime.
 
 At times, attempting to configuring all IOPMP settings when the system starts can be difficult or even impossible, especially before I/O agents are active or connected to the system. As a result, it is necessary to update IOPMP settings during runtime. 
 
