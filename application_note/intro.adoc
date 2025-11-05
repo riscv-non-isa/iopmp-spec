@@ -15,7 +15,6 @@ The techniques described in this application note are optional and implementatio
 
 === Glossary and Acronyms
 
-[caption="{table-caption} {counter:application-note-table-number}. "]
 .Glossary and Acronyms
 [%autowidth, cols="<1,<3", options="header"]
 |===

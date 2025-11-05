@@ -1,7 +1,6 @@
 === Registers
 This section summarizes the additional registers required when implementing any of the application variants.
 
-[caption="{table-caption} {counter:application-note-table-number}. "]
 .Register summary
 [cols="<8,<6,<12",options="header"]
 |===

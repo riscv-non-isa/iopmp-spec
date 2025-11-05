@@ -48,7 +48,7 @@ If an optional register is not implemented, the behavior is implementation-depen
 |ENTRY_USER_CFG(_i_) |(Optional) user-defined attributes.
 |===
 
-=== *INFO registers*
+=== INFO registers
 
 INFO registers are used to indicate the IOPMP instance configuration info.
 {set:cellbgcolor:#0000}
@@ -125,7 +125,7 @@ h|Field                         |Bits   |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}offset|31:0   |R      |IMP        |Indicate the offset address of the IOPMP array from the base of an IOPMP instance, a.k.a. the address of *VERSION*. Note: the offset is a signed number in two's complement representation. That is, the IOPMP array can be placed in front of *VERSION*.  
 |===
 
-=== *Configuration Protection Registers*
+=== Configuration Protection Registers
 
 *MDLCK* and *MDLCKH* are registers with a bitmap field to indicate which MDs are locked in the SRCMD Table. 
 
@@ -171,7 +171,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}rsv    |31:17       |ZERO   |0 | Must be zero on write, reserved for future
 |===
 
-=== *Error Capture Registers*
+=== Error Capture Registers
 
 *ERR_CFG* is a read/write WARL register used to configure the global error reporting behavior on an IOPMP violation.
 
@@ -260,7 +260,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}user  |31:0       |IMP    |IMP        |(Optional) user-defined registers
 |===
 
-=== *MDCFG Table Registers*
+=== MDCFG Table Registers
 MDCFG Table is a lookup to specify the number of IOPMP entries that is associated with each MD.
 
 [cols="<2,<1,<1,<1,<6"]
@@ -278,7 +278,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 |===
 
 
-=== *SRCMD Table Registers*
+=== SRCMD Table Registers
 
 *SRCMD_EN(_s_)* and *SRCMD_ENH(_s_)* are the SRCMD Table registers.
 
@@ -300,7 +300,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 |===
 
 
-=== *Entry Array Registers*
+=== Entry Array Registers
 [cols="<2,<1,<1,<1,<6"]
 |===
 5+h|{set:cellbgcolor:#D3D3D3} ENTRY_ADDR(_i_), _i_ = 0...HWCFG1.entry_num-1
