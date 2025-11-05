@@ -11,6 +11,15 @@ IOPMP/SPS (Secondary Permission Setting) is an extension that enables different 
 
 When IOPMP/SPS extension is implemented, each SRCMD Table entry additionally defines read and write permission registers: *SRCMD_R(_s_)* and *SRCMD_W(_s_)*, and *SRCMD_RH(_s_)* and *SRCMD_WH(_s_)* if applicable. Register *SRCMD_R(_s_)* and *SRCMD_W(_s_)* each has a single field, *SRCMD_R(_s_).md* and *SRCMD_W(_s_).md*, respectively representing the read and write permissions for each memory domain for requestor _s_.
 
+.An example block diagram of an IOPMP with SPS extension. It illustrates the checking flow of an IOPMP with SPS extension. The IOPMP first looks up the SRCMD Table according to the RRID carried by the incoming transaction to retrieve associated MD indexes and the corresponding permissions related to these MDs. By the MD indexes, the IOPMP looks up the MDCFG Table to get the belonging entry indexes. The final step checks the access right according to the above entry indexes and corresponding permissions.
+ifdef::backend-pdf[]
+image::./images/iopmp_unit_block_diagram_other_formats.png[]
+endif::[]
+ifndef::backend-pdf[]
+image::../images/iopmp_unit_block_diagram_other_formats.png[]
+endif::[]
+
+
 IOPMP/SPS shares the same locks as *SRCMD_EN(_s_)* and *SRCMD_ENH(_s_)*. Setting lock to *SRCMD_EN(_s_).l* locks *SRCMD_R(_s_)*, *SRCMD_RH(_s_)*, *SRCMD_W(_s_)*, and *SRCMD_WH(_s_)*. *MDLCK.md[_m_]* locks *SRCMD_R(_s_).md[_m_]* and *SRCMD_W(_s_).md[_m_]* for all existing RRID _s_. *MDLCKH.mdh[_m_]* also locks *SRCMD_RH(_s_).mdh[_m_]* and *SRCMD_WH(_s_).mdh[_m_]* for all existing RRID _s_. *SRCMD_R*, *SRCMD_RH*, *SRCMD_W*, and *SRCMD_WH* can have prelocked bits fully or partially based on presets of *MDLCK.md*, *MDLCK.mdh*, and *SRCMD_EN.l*.
 
 IOPMP/SPS has two sets of permission settings: one from IOPMP entry and the other from *SRCMD_R*/*SRCMD_W*. IOPMP/SPS shall check read and write permissions on both the SRCMD Table and entries. A transaction fails the IOPMP/SPS check if it violates either of the permission settings. That is, it can restrict the permissions defined on an entry according to requestors.
