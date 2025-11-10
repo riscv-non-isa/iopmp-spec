@@ -1,17 +1,17 @@
 [#SRCMD_EXT]
-=== SRCMD Table Extension
+=== Secondary Permission Setting (SPS)
 
-The IOPMP specification provides an extension to the baseline SRCMD Table implementation to support advanced use cases requiring flexible permission management.
-// Temporarily commented alternative SRCMD Table (Format 2) due to moving to application note.
-// These extensions enable different RRIDs to have varying access permissions within shared memory domains or alternative table indexing schemes.
+This extension provides a mechanism to reduce the consumption of IOPMP entries in systems where multiple requestors (RRIDs) require different access permissions to the same shared memory regions.
 
-==== Secondary Permission Setting (SPS)
+Motivation: In the baseline specification, if RRID 'A' requires Read-Write (RW) access to a region and RRID 'B' requires Read-Only (RO) access to the exact same address range, two separate IOPMP entries must be configured (typically in two different Memory Domains). This consumes valuable Entry Array resources simply to define duplicate address ranges with different permissions.
 
-IOPMP/SPS (Secondary Permission Setting) is an extension that enables different transaction requestors to share memory domains while allowing each requestor to have different read, write, and instruction fetch permissions to a single memory domain. The field *HWCFG2.sps_en*=1 indicates that the IOPMP/SPS extension is implemented.
+The SPS extension addresses this by adding a second layer of permission checking within the SRCMD Table. This allows a single, shared IOPMP entry to define the address region with a superset of permissions (e..g., R=1, W=1), while the SPS registers (*SRCMD_R*/*SRCMD_W*) restrict the permissions for each RRID individually. This allows multiple RRIDs to share a single Memory Domain and its corresponding entries, significantly conserving the total number of entries required.
 
-When IOPMP/SPS extension is implemented, each SRCMD Table entry additionally defines read and write permission registers: *SRCMD_R(_s_)* and *SRCMD_W(_s_)*, and *SRCMD_RH(_s_)* and *SRCMD_WH(_s_)* if applicable. Register *SRCMD_R(_s_)* and *SRCMD_W(_s_)* each has a single field, *SRCMD_R(_s_).md* and *SRCMD_W(_s_).md*, respectively representing the read and write permissions for each memory domain for requestor _s_.
+The field *HWCFG2.sps_en*=1 indicates that the extension is implemented.
 
-.An example block diagram of an IOPMP with SPS extension. It illustrates the checking flow of an IOPMP with SPS extension. The IOPMP first looks up the SRCMD Table according to the RRID carried by the incoming transaction to retrieve associated MD indexes and the corresponding permissions related to these MDs. By the MD indexes, the IOPMP looks up the MDCFG Table to get the belonging entry indexes. The final step checks the access right according to the above entry indexes and corresponding permissions.
+When the SPS extension is implemented, each SRCMD Table entry additionally defines read and write permission registers: *SRCMD_R(_s_)* and *SRCMD_W(_s_)*, and *SRCMD_RH(_s_)* and *SRCMD_WH(_s_)* if applicable. Register *SRCMD_R(_s_)* and *SRCMD_W(_s_)* each has a single field, *SRCMD_R(_s_).md* and *SRCMD_W(_s_).md*, respectively representing the read and write permissions for each memory domain for requestor _s_.
+
+.An example block diagram of an IOPMP with the SPS extension. It illustrates the checking flow of an IOPMP with the SPS extension. The IOPMP first looks up the SRCMD Table according to the RRID carried by the incoming transaction to retrieve associated MD indexes and the corresponding permissions related to these MDs. By the MD indexes, the IOPMP looks up the MDCFG Table to get the belonging entry indexes. The final step checks the access right according to the above entry indexes and corresponding permissions.
 ifdef::backend-pdf[]
 image::./images/iopmp_unit_block_diagram_other_formats.png[]
 endif::[]
@@ -20,45 +20,8 @@ image::../images/iopmp_unit_block_diagram_other_formats.png[]
 endif::[]
 
 
-IOPMP/SPS shares the same locks as *SRCMD_EN(_s_)* and *SRCMD_ENH(_s_)*. Setting lock to *SRCMD_EN(_s_).l* locks *SRCMD_R(_s_)*, *SRCMD_RH(_s_)*, *SRCMD_W(_s_)*, and *SRCMD_WH(_s_)*. *MDLCK.md[_m_]* locks *SRCMD_R(_s_).md[_m_]* and *SRCMD_W(_s_).md[_m_]* for all existing RRID _s_. *MDLCKH.mdh[_m_]* also locks *SRCMD_RH(_s_).mdh[_m_]* and *SRCMD_WH(_s_).mdh[_m_]* for all existing RRID _s_. *SRCMD_R*, *SRCMD_RH*, *SRCMD_W*, and *SRCMD_WH* can have prelocked bits fully or partially based on presets of *MDLCK.md*, *MDLCK.mdh*, and *SRCMD_EN.l*.
+The extension shares the same locks as *SRCMD_EN(_s_)* and *SRCMD_ENH(_s_)*. Setting lock to *SRCMD_EN(_s_).l* locks *SRCMD_R(_s_)*, *SRCMD_RH(_s_)*, *SRCMD_W(_s_)*, and *SRCMD_WH(_s_)*. *MDLCK.md[_m_]* locks *SRCMD_R(_s_).md[_m_]* and *SRCMD_W(_s_).md[_m_]* for all existing RRID _s_. *MDLCKH.mdh[_m_]* also locks *SRCMD_RH(_s_).mdh[_m_]* and *SRCMD_WH(_s_).mdh[_m_]* for all existing RRID _s_. *SRCMD_R*, *SRCMD_RH*, *SRCMD_W*, and *SRCMD_WH* can have prelocked bits fully or partially based on presets of *MDLCK.md*, *MDLCK.mdh*, and *SRCMD_EN.l*.
 
-IOPMP/SPS has two sets of permission settings: one from IOPMP entry and the other from *SRCMD_R*/*SRCMD_W*. IOPMP/SPS shall check read and write permissions on both the SRCMD Table and entries. A transaction fails the IOPMP/SPS check if it violates either of the permission settings. That is, it can restrict the permissions defined on an entry according to requestors.
+The extension has two sets of permission settings: one from IOPMP entry and the other from *SRCMD_R*/*SRCMD_W*. A transaction is legal only if it is permitted by both the SRCMD Table (SPS) permission and the matching entry's permission. A transaction fails the SPS check if it violates either of the permission settings. That is, the extension can only be used to restrict the permissions defined on an entry, not grant new permissions.
 
-The instruction fetch permission on IOPMP/SPS is considered the same as the read permission.
-
-// Temporarily commented alternative SRCMD Table (Format 2) due to moving to application note.
-
-////
-==== Alternative SRCMD Table (Format 2)
-
-Format 2 implements a physical SRCMD Table array similar to the baseline SRCMD Table, but indexed by memory domain rather than RRID. For memory domain _m_, registers *SRCMD_PERM(_m_)* and *SRCMD_PERMH(_m_)* are implemented at the same addresses as *SRCMD_EN(_s_)* and *SRCMD_ENH(_s_)* in the baseline format. This format allows per-RRID permission configuration for each memory domain, outputting permissions for every memory domain based on the requesting RRID. Format 2 supports up to 32 RRIDs. The SPS extension is not supported in this format.
-
-[#Example_Format_2]
-.An example block diagram of SRCMD Table Format 2 Implementation.
-ifdef::backend-pdf[]
-image::./images/srcmd_format2_example.png[]
-endif::[]
-ifndef::backend-pdf[]
-image::../images/srcmd_format2_example.png[]
-endif::[]
-
-*SRCMD_PERM(_m_)* and *SRCMD_PERMH(_m_)* are available when *HWCFG2.srcmd_fmt* = 2.
-In Format 2, an IOPMP checks both the permission of *SRCMD_PERM(H)(_m_)* and the *ENTRY_CFG.r/w/x* permission. A transaction is legal if either of them allows the transaction.
-
-[cols="<2,<1,<1,<1,<6"]
-|===
-5+h|{set:cellbgcolor:#D3D3D3} SRCMD_PERM(_m_), _m_ = 0...HWCFG0.md_num-1
-5+h|0x1000 + (_m_)*32
-h|Field                         |Bits             |R/W  |Default |Description
-|{set:cellbgcolor:#FFFFFF}perm     | 31:0 | WARL | DC | Holds two bits per RRID that give the RRID's read and write permissions for the entry. Bit 2*_s_ holds the read permission for RRID _s_, and bit 2*_s_+1 holds the write permission for RRID _s_, where _s_&#8804;15.
-|===
-
-[cols="<2,<1,<1,<1,<6"]
-|===
-5+h|{set:cellbgcolor:#D3D3D3} SRCMD_PERMH(_m_), _m_ = 0...HWCFG0.md_num-1
-5+h|0x1004 + (_m_)*32
-h|Field                         |Bits             |R/W  |Default |Description
-|{set:cellbgcolor:#FFFFFF}permh     | 31:0 | WARL | DC | Holds two bits per RRID that give the RRID's read and write permissions for the entry. Bit 2*(_s_-16) holds the read permission for RRID _s_, and bit 2*(_s_-16)+1 holds the write permission for RRID _s_, where _s_ &#8805;16. The register is implemented when *HWCFG1.rrid_num* > 16.
-|===
-
-////
+The instruction fetch permission on the SPS extension is considered the same as the read permission.
