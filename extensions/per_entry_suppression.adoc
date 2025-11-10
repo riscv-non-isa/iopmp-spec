@@ -1,7 +1,13 @@
 [#PEIS_PEES]
 === Per-entry Interrupt/Bus Error Suppression
 
-The extension provides a per-entry control mechanism. It can be beneficial in scenarios such as configuring guard regions that a prefetch may incidentally access but should not access. Suppressing such interrupts and bus error responses can reduce the unnecessary burden of unwanted interruptions and bus error responses.
+This extension provides a fine-grained, per-entry mechanism to selectively suppress interrupt triggers and bus error responses for specific access violations.
+
+In modern high-performance systems, I/O agents may employ aggressive speculative prefetching to improve performance. While beneficial, these prefetchers may speculatively access memory locations just outside their intended operational regions, such as "guard regions" or adjacent memory boundaries.
+
+If these guard regions are protected by an IOPMP entry (which is a correct and secure configuration), the speculative prefetch would be correctly identified as a violation. However, this "benign" violation can lead to a flood of unnecessary interrupt alarms and bus errors, creating significant system noise and increasing the burden on the secure monitor.
+
+The per-entry suppression extension addresses this problem. It allows software to define these known guard regions with specific IOPMP entries and then set flags (e.g., *sire*, *sere*) to suppress the interrupt and bus error for violations at that specific entry. This ensures that speculative prefetches do not stall the system or generate false alarms, while still preventing access to truly illegal content and without adding interference to the system.
 
 ==== Interrupt Suppression
 *HWCFG2.peis* indicates whether the IOPMP supports per-entry interrupt suppression. If *HWCFG2.peis* is 1, every entry _i_ has two interrupt suppression bits, *sire*, *siwe*, in register *ENTRY_CFG(_i_)*. The bits suppress interrupt triggering due to illegal read access and illegal writes access/AMO respectively.
