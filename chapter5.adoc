@@ -12,9 +12,9 @@ If an optional register is not implemented, the behavior is implementation-depen
 |IMPLEMENTATION | Indicates the implementation version.
 | HWCFG0 |Indicates the basic configurations of current IOPMP instance.
 | HWCFG1 |Indicates the supported numbers of RRIDs and entries.
-| HWCFG2 | (Optional) Indicates the extended configurations of current IOPMP instance for extension.
-| HWCFG3 | (Optional) Indicates the extended configurations of current IOPMP instance for application note.
-| HWCFG_USER | (Optional) User-defined configurations of current IOPMP instance.
+| HWCFG2 | (Optional) indicates the extended configurations of current IOPMP instance for extension.
+| HWCFG3 | (Optional) indicates the extended configurations of current IOPMP instance for application note.
+| HWCFG_USER | (Optional) user-defined configurations of current IOPMP instance.
 | ENTRYOFFSET |Indicates the internal address offsets of each table.
 
 
@@ -48,7 +48,7 @@ If an optional register is not implemented, the behavior is implementation-depen
 |ENTRY_USER_CFG(_i_) |(Optional) user-defined attributes.
 |===
 
-=== *INFO registers*
+=== INFO registers
 
 INFO registers are used to indicate the IOPMP instance configuration info.
 {set:cellbgcolor:#0000}
@@ -125,7 +125,7 @@ h|Field                         |Bits   |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}offset|31:0   |R      |IMP        |Indicate the offset address of the IOPMP array from the base of an IOPMP instance, a.k.a. the address of *VERSION*. Note: the offset is a signed number in two's complement representation. That is, the IOPMP array can be placed in front of *VERSION*.  
 |===
 
-=== *Configuration Protection Registers*
+=== Configuration Protection Registers
 
 *MDLCK* and *MDLCKH* are registers with a bitmap field to indicate which MDs are locked in the SRCMD Table. 
 
@@ -171,7 +171,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}rsv    |31:17       |ZERO   |0 | Must be zero on write, reserved for future
 |===
 
-=== *Error Capture Registers*
+=== Error Capture Registers
 
 *ERR_CFG* is a read/write WARL register used to configure the global error reporting behavior on an IOPMP violation.
 
@@ -248,25 +248,25 @@ h|Field                         |Bits       |R/W    |Default    |Description
 5+h|0x0070
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}rrid  |15:0       |R      |DC        |Indicate the errored RRID.
-|{set:cellbgcolor:#FFFFFF}eid   |31:16  |R      |DC          |Indicates the index pointing to the entry that catches the violation. If no entry is hit, that is, *etype*=0x05, 0x06 or 0x07, the value of this field is invalid. If the field is not implemented, it should be wired to 0xffff.
+|{set:cellbgcolor:#FFFFFF}eid   |31:16  |R      |DC          |Indicates the index pointing to the entry that catches the violation. If no entry is hit, that is, *ERR_INFO.etype*=0x05, 0x06 or 0x07, the value of this field is invalid. If the field is not implemented, it should be wired to 0xffff.
 |===
 
 *ERR_USER(0:7)* are optional registers to provide users to define their own error capture information.
 [cols="<2,<1,<1,<1,<6"]
 |===
 5+h|{set:cellbgcolor:#D3D3D3} ERR_USER(_i_)
-5+h|0x0080 + 0x04 * _i_, _i_ = 0...7
+5+h|0x0080 + (_i_) × 4, _i_ = 0...7
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}user  |31:0       |IMP    |IMP        |(Optional) user-defined registers
 |===
 
-=== *MDCFG Table Registers*
+=== MDCFG Table Registers
 MDCFG Table is a lookup to specify the number of IOPMP entries that is associated with each MD.
 
 [cols="<2,<1,<1,<1,<6"]
 |===
 5+h|{set:cellbgcolor:#D3D3D3} MDCFG(_m_), _m_ = 0...HWCFG0.md_num-1, support up to 63 MDs
-5+h|0x0800 + (_m_)*4
+5+h|0x0800 + (_m_) × 4
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}t     |15:0       |WARL   |DC/IMP         a| Indicate the encoding the range of memory domain _m_. An IOPMP entry with index _j_ belongs to MD _m_                 
       
@@ -278,14 +278,14 @@ h|Field                         |Bits       |R/W    |Default    |Description
 |===
 
 
-=== *SRCMD Table Registers*
+=== SRCMD Table Registers
 
 *SRCMD_EN(_s_)* and *SRCMD_ENH(_s_)* are the SRCMD Table registers.
 
 [cols="<2,<1,<1,<1,<6"]
 |===
 5+h|{set:cellbgcolor:#D3D3D3} SRCMD_EN(_s_), _s_ = 0...HWCFG1.rrid_num-1
-5+h|0x1000 + (_s_)*32
+5+h|0x1000 + (_s_) × 32
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}l     |0:0        |W1SS     |0          | A sticky lock bit. When set, locks *SRCMD_EN(_s_)* and *SRCMD_ENH(_s_)*.
 |md                             |31:1       |WARL   |DC         | *md[_m_]* = 1 indicates MD _m_ is associated with RRID _s_.
@@ -294,17 +294,17 @@ h|Field                         |Bits       |R/W    |Default    |Description
 [cols="<2,<1,<1,<1,<6"]
 |===
 5+h|{set:cellbgcolor:#D3D3D3} SRCMD_ENH(_s_), _s_ = 0...HWCFG1.rrid_num-1
-5+h|0x1004 + (_s_)*32
+5+h|0x1004 + (_s_) × 32
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}mdh   |31:0       |WARL   |DC         | *mdh[_m_]* = 1 indicates MD (_m_+31) is associated with RRID _s_.
 |===
 
 
-=== *Entry Array Registers*
+=== Entry Array Registers
 [cols="<2,<1,<1,<1,<6"]
 |===
 5+h|{set:cellbgcolor:#D3D3D3} ENTRY_ADDR(_i_), _i_ = 0...HWCFG1.entry_num-1
-5+h|ENTRYOFFSET + (_i_)*16
+5+h|ENTRYOFFSET + (_i_) × 16
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}addr  |31:0       |WARL   |DC |The physical address[33:2] of protected memory region. 
 |===
@@ -312,7 +312,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 [cols="<2,<1,<1,<1,<6"]
 |===
 5+h|{set:cellbgcolor:#D3D3D3} ENTRY_ADDRH(_i_), _i_ = 0...HWCFG1.entry_num-1
-5+h|ENTRYOFFSET + 0x4 + (_i_)*16
+5+h|ENTRYOFFSET + 0x4 + (_i_) × 16
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}addrh |31:0       |WARL   |DC |The physical address[65:34] of protected memory region. 
 |===
@@ -321,7 +321,7 @@ A complete 64-bit address consists of these two registers, *ENTRY_ADDR* and *ENT
 [cols="<2,<1,<1,<1,<6"]
 |===
 5+h|{set:cellbgcolor:#D3D3D3} ENTRY_CFG(_i_), _i_ = 0...HWCFG1.entry_num-1
-5+h|ENTRYOFFSET + 0x8 + (_i_)*16
+5+h|ENTRYOFFSET + 0x8 + (_i_) × 16
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}r     |0:0        |WARL   |DC         |The read permission to protected memory region 
 |w                              |1:1        |WARL   |DC         |The write permission to the protected memory region
@@ -341,7 +341,7 @@ Bits *r* and *w* grant read and write permission, respectively. Not each bit sho
 [cols="<2,<1,<1,<1,<6"]
 |===
 5+h|{set:cellbgcolor:#D3D3D3} ENTRY_USER_CFG(_i_), _i_ =0...HWCFG1.entry_num-1
-5+h|ENTRYOFFSET + 0xC + (_i_)*16
+5+h|ENTRYOFFSET + 0xC + (_i_) × 16
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}im    |31:0       |IMP     |IMP         |User customized field 
 |===

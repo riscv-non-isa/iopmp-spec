@@ -2,7 +2,7 @@
 
 The *no_x* bit enables global instruction fetch protection, which is particularly useful for protecting data-only memory regions such as peripherals which don't have any instruction of processors. This feature simplifies implementations by reducing the need for programming individual permission bits and minimizing the overhead of per-entry rule lookups.
 
-The global instruction fetch behavior is controlled by the *chk_x* bit and *no_x* bit in the *HWCFG3* register:
+The global instruction fetch behavior is controlled by the *chk_x* bit in the *HWCFG2* register and *no_x* bit in the *HWCFG3* register:
 
 * **chk_x = 0**: The IOPMP does not perform instruction fetch permission checking
 * **chk_x = 1, no_x = 0**: The IOPMP performs instruction fetch permission checking based on entry-level rules
