@@ -1,11 +1,32 @@
 [#X_PERM]
 === Instruction Fetch Permission Check
+This extension provides a mechanism for Data Execution Prevention (DEP) for I/O agents, a critical security feature for mitigating code-injection attacks. In a complex system, an I/O agent (e.g., a DMA engine or network controller) might be compromised or misused to write malicious code into a data buffer (e.g., a network packet buffer or a data queue). If that same or another agent can be tricked into treating that data region as executable, it could allow for a full system compromise. 
 
-The IOPMP specification provides instruction fetch permission checking. This extension enables protection of executable (x) memory regions by controlling instruction fetch transaction authorization.
+The Instruction Fetch Permission Check extension addresses this threat by introducing a separate 'execute' (x) permission, distinct from the 'read' (r) permission. This allows the IOPMP to ensure that memory regions intended for data storage cannot be executed by an I/O agent.
 
-When instruction fetch checking is enabled (*HWCFG2.chk_x* = 1), the *ENTRY_CFG(_i_)* register contains the *x* field for instruction fetch permission, which is WARL (Write-Any-Read-Legal).
+==== Functional Description
+This extension is active when *HWCFG2.chk_x* is 1. When active, it adds a new permission check for transactions identified as "instruction fetches."
 
-For illegal instruction fetch transactions, IOPMP reports error record using:
+A critical prerequisite for this feature is that the system's bus fabric or interconnect MUST provide a signal to the IOPMP clearly distinguishing an instruction fetch transaction from a data read transaction. If the system cannot distinguish between these, *HWCFG2.chk_x* must be 0 (or the IOPMP cannot be implemented with this extension).
 
-* Transaction type (*ERR_INFO.ttype*) = 0x03 "instruction fetch transaction"
-* Error type (*ERR_INFO.etype*) = 0x03 "illegal instruction fetch"
+When an instruction fetch transaction is received, the IOPMP performs its matching logic as defined in Section 2.5. The permission check is then based on the *ENTRY_CFG(_i_).x* bit of the matching entry:
+
+* If the matching entry has *ENTRY_CFG(_i_).x* = 1, the transaction is legal.
+* If the matching entry has *ENTRY_CFG(_i_).x* = 0, the transaction is illegal.
+
+This extension introduces the following register fields:
+
+* *HWCFG2.chk_x*: A read-only bit that indicates if the IOPMP implements the instruction fetch check.
+* *ENTRY_CFG(_i_).x*: The instruction fetch permission bit for entry _i_. This field is WARL.
+
+==== Error Reporting
+When an instruction fetch is denied (either by a matching entry with x=0 or by failing to match any rule), the IOPMP generates an error using the following specific codes, provided the error capture mechanism is implemented:
+
+* Transaction Type (*ERR_INFO.ttype*): Set to 0x03 ("instruction fetch").
+* Error Type (*ERR_INFO.etype*): Set to 0x03 ("illegal instruction fetch").
+
+If the bus matrix does not provide a signal to indicate an instruction fetch, the ttype and etype can never return 0x03.
+
+==== Interaction with Other Extensions
+* Secondary Permission Setting (SPS) (Sec 5.3): If the SPS extension is implemented, the instruction fetch permission is considered the same as the read permission at the SRCMD Table level. Separate 'x' permission control is not provided by SPS; it is only controlled at the entry level via *ENTRY_CFG(_i_).x*.
+* Per-entry Suppression (Sec 5.5): If the per-entry suppression extension is implemented, the *ENTRY_CFG(_i_).sixe* and *ENTRY_CFG(_i_).sexe* fields are used to suppress interrupts and bus errors, respectively, for illegal instruction fetch violations caught by this entry.
