@@ -73,6 +73,7 @@ Writing *RRIDSCP* register is an optional substep after writing *MDSTALL* within
 [NOTE]
 ====
 *MDSTALL*/*MDSTALLH* only stall the RRIDs based on the SRCMD Table at the moment of writing *MDSTALL*. _rrid_stall_ is not updated when the SRCMD Table is updated. Besides, _rrid_stall_ is set or clear only for those RRIDs associated with given MDs. The RRIDSCP is used to fine-tune the _rrid_stall_ if writing *MDSTALL*/*MDSTALLH* doesn't fulfill the desired _rrid_stall_ values.
+Software should, whenever possible, prioritize using the *MDSTALL*/*MDSTALLH* batch mechanism to manage the _rrid_stall_ state. While RRIDSCP offers granular control, it introduces significant software complexity. Its use is primarily intended for complex scenarios where the MD-based grouping logic of *MDSTALL* is insufficient to precisely define the set of RRIDs that must be stalled or exempted.
 ====
 
 The *RRIDSCP* register comprises two fields: a 2-bit *RRIDSCP.op* and a field for *RRIDSCP.rrid*. By setting *RRIDSCP.op* = 1, the _rrid_stall_[_s_] is set for _s_ = *RRIDSCP.rrid*. Conversely, by setting *RRIDSCP.op* = 2, the _rrid_stall_[_s_] is clear for _s_ = *RRIDSCP.rrid*. This register is used to fine-tune the result of writing *MDSTALL*/*MDSTALLH*. The writing *RRIDSCP.op* = 0 querys the value of _rrid_stall_[_s_] for a valid _s_. The value will be returned in the two most significant bits in the following reading *RRIDSCP*. *RRIDSCP.op*=3 is reserved.
