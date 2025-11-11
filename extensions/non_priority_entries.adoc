@@ -49,3 +49,16 @@ If one matching entry is priority, the reaction is the same as baseline IOPMP en
 If one matching entry is non-priority, the transaction is legal if any matching entry permits its access type. If no matching entry permits, the transaction is illegal with error type = "illegal read access" (0x01) for read access transaction or "illegal write access/AMO" (0x02) for write access/AMO transaction. If an IOPMP supports instruction fetch permission check (*HWCFG2.chk_x* = 1), the IOPMP reports illegal instruction fetch transaction with with error type = "illegal instruction fetch" (0x03).
 
 For an illegal transaction matching multiple non-priority entries, if the interrupt is triggered or the bus error response is returned, *ERR_REQID.eid* stores the index of any of them.
+
+==== Register(s) and Field(s)
+
+[cols="<2,<1,<1,<1,<6"]
+|===
+5+h|HWCFG2{set:cellbgcolor:#D3D3D3}
+5+h|0x0008
+h|Field                         |Bits   |R/W    |Default    |Description
+|{set:cellbgcolor:#FFFFFF}
+prio_entry                      |15:0   |WARL   |IMP        |Indicate the number of entries matched with priority. These rules should be placed in the lowest order. Within these rules, the lower order has a higher priority.
+|prio_ent_prog                  |16:16  |W1CS   |IMP        |A write-1-clear bit is sticky to 0 and indicates if `HWCFG2.prio_entry` is programmable. Reset to 1 if the implementation supports programmable `prio_entry`, otherwise, wired to 0.
+|non_prio_en                    |17:17  |RO     |IMP        |Indicates whether the IOPMP supports non-priority entries.
+|===
