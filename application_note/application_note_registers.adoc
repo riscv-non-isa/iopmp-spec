@@ -51,7 +51,7 @@ Please refer to <<srcmd-table-formats>> for details.
 |no_w|13:13  |R     | IMP| Indicate if the IOPMP always fails write accesses considered as as no rule matched.
 |rrid_transl_en                  |14:14    |R      |IMP        |Indicate the if tagging a new RRID on the initiator port is supported
 |rrid_transl_prog                |15:15    |W1CS   |IMP        |A write-1-clear bit is sticky to 0 and indicate if the field rrid_transl is programmable. Support only for *rrid_transl_en*=1, otherwise, wired to 0.
-|rrid_transl                     |31:16    |R   |IMP          |The RRID tagged to outgoing transactions. Support only for *HWCFG3.rrid_transl_en*=1.
+|rrid_transl                     |31:16    |RW   |IMP          |The RRID tagged to outgoing transactions. Support only for `HWCFG3.rrid_transl_en`=1. It is writable only when `HWCFG3.rrid_transl_prog`=1.
 |===
 
 [cols="<2,<1,<1,<1,<6"]
