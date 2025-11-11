@@ -1,10 +1,16 @@
 [#mdcfg-table-formats]
 === MDCFG Table Reduction
+In the baseline specification, a complete IOPMP check involves a sequential, two-stage lookup: first the SRCMD Table (to find MD indexes) and then the MDCFG Table (to find the corresponding entry indexes). This data dependency on the MDCFG Table lookup can introduce a latency.
 
-Users can reduce MDCFG table that best fits their design requirements, such as area, power consumption, latency, throughput. The section provides a suggestion to reduce MDCFG table.
+This application note provides a guideline for an optimized implementation model that **eliminates this second lookup stage**. This optimization reduces check latency, simplifies hardware logic, and saves area by removing the need for the MDCFG Table storage.
 
 ==== Each Memory Domain Has Exactly _k_ Entries
-Each memory domain has exactly _k_ entries, where _k_ is implementation-dependent and non-programmable. The MDCFG table and the register *MDCFGLCK* can be omitted. The value of the read-only field *HWCFG3.md_entry_num* is the _k_ value minus 1. 
+
+This format is the foundational mechanism for achieving the optimization described in A.5, and it is the basis for the models in A.7.2 ("Rapid-k Model") and A.7.5 ("Compact-k Model"). The primary motivation is to *remove the MDCFG Table and its associated lookup latency*.
+
+This is achieved by defining that each memory domain contains exactly _k_ entries, where _k_ is a fixed value (e.g., `(HWCFG3.md_entry_num + 1)`). By making _k_ a constant, the range of entry indexes for a given `MD m` is no longer stored in a table but is *directly calculable* (e.g., `Entry Indexes = [m * k, (m * k) + k - 1]`).
+
+This optimization breaks the sequential data dependency of the two-stage lookup, enabling a faster, simpler, and lower-area implementation. Implementations adopting this model can omit the MDCFG Table and the MDCFGLCK register entirely.
 
 [NOTE]
 ====
