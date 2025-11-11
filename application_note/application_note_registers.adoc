@@ -1,71 +1,25 @@
 === Registers
-This section summarizes the additional registers required when implementing any of the application variants.
 
-.Register summary
-[cols="<8,<6,<12",options="header"]
+This section summarizes the additional registers and fields required when implementing any of the application variants. Detailed register definitions are provided in their respective sections.
+
+:xrefstyle_bak: {xrefstyle}
+:xrefstyle: full
+
+.Register and field summary
+[%autowidth, options="header"]
 |===
-|OFFSET |Register |Description
-|0x0014 |HWCFG3 | Indicate the configuration of the IOPMP instance
-|0x1000 + (_m_) × 32, +
-_m_ = 0...*HWCFG0.md_num*-1 |SRCMD_PERM(_m_) .2+| The bitmapped permission register of the MD _m_
-|0x1004 + (_m_) × 32, +
-_m_ = 0...*HWCFG0.md_num*-1 |SRCMD_PERMH(_m_) 
-|===
-
-[#HWCFG3]
-[cols="<2,<1,<1,<1,<6"]
-|===
-5+h|HWCFG3{set:cellbgcolor:#D3D3D3}
-5+h|0x0014
-h|Field                         |Bits   |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}mdcfg_fmt |1:0    |R      |IMP        a|Indicate the MDCFG format
-
-* 0x0: Format 0. MDCFG Table is implemented.
-
-* 0x1: Format 1. No MDCFG Table. *HWCFG3.md_entry_num* is fixed.
-
-* 0x2: Format 2. No MDCFG Table. *HWCFG3.md_entry_num* is programmable.
-
-* 0x3: reserved.
-
-Please refer to <<mdcfg-table-formats>> for details.
-|{set:cellbgcolor:#FFFFFF}srcmd_fmt                      |3:2    |R      |IMP        a|Indicate the SRCMD format
-
-* 0x0: Format 0. *SRCMD_EN(_s_)* and *SRCMD_ENH(_s_)* are available.
-
-* 0x1: Format 1. No SRCMD Table. RRID _i_ associates exclusively with memory domain _i_, _i_ = 0 ... *HWCFG0.num_md*.
-
-* 0x2: Format 2. *SRCMD_PERM(_m_)* and *SRCMD_PERMH(_m_)* are available.
-
-* 0x3: reserved.
-
-Please refer to <<srcmd-table-formats>> for details.
-|md_entry_num   |11:4  |WARL   |IMP     a| When *HWCFG3.mdcfg_fmt* = 
-
-* 0x0: must be zero
-
-* 0x1 or 0x2: *md_entry_num* indicates each memory domain exactly has (*md_entry_num* + 1) entries in a memory domain
-
-*md_entry_num* is locked if *HWCFG0.enable* is 1.
-|no_x|12:12  |R     | IMP| For *chk_x*=1, the IOPMP with *no_x*=1 always fails on an instruction fetch; otherwise, it should depend on *x*-bit in *ENTRY_CFG(_i_)*. For *chk_x*=0, *no_x* has no effect.
-|no_w|13:13  |R     | IMP| Indicate if the IOPMP always fails write accesses considered as as no rule matched.
-|rrid_transl_en                  |14:14    |R      |IMP        |Indicate the if tagging a new RRID on the initiator port is supported
-|rrid_transl_prog                |15:15    |W1CS   |IMP        |A write-1-clear bit is sticky to 0 and indicate if the field rrid_transl is programmable. Support only for *rrid_transl_en*=1, otherwise, wired to 0.
-|rrid_transl                     |31:16    |RW   |IMP          |The RRID tagged to outgoing transactions. Support only for `HWCFG3.rrid_transl_en`=1. It is writable only when `HWCFG3.rrid_transl_prog`=1.
+  |Offset |Register |Field |Bits |Related section(s)
+.8+|0x0014 .8+|HWCFG3 |mdcfg_fmt |1:0 .2+|<<mdcfg-table-formats, MDCFG Table Reduction>>
+                     |md_entry_num |11:4
+                     |srcmd_fmt |3:2 |<<srcmd-table-formats, SRCMD Table Reduction>>
+                     |no_w |13:13 |<<Write Protection Devices>>
+                     |no_x |12:12 |<<Instruction Fetch Protection Devices>>
+                     |rrid_transl_en |14:14 .3+|<<Cascading IOPMP>>
+                     |rrid_transl_prog |15:15
+                     |rrid_transl |31:16
+  |0x1000 + (_m_) × 32 |SRCMD_PERM(_m_) 2+|All .2+|<<SRCMD_Table_Extension, SRCMD Table Extension>>
+  |0x1004 + (_m_) × 32 |SRCMD_PERMH(_m_) 2+|All
 |===
 
-[cols="<2,<1,<1,<1,<6"]
-|===
-5+h|{set:cellbgcolor:#D3D3D3} SRCMD_PERM(_m_), _m_ = 0...HWCFG0.md_num-1
-5+h|0x1000 + (_m_)*32
-h|Field                         |Bits  |R/W   |Default |Description
-|{set:cellbgcolor:#FFFFFF}perm  |31:0  |WARL  |DC      |Holds two bits per RRID that give the RRID's read and write permissions for the entry. Bit 2*_s_ holds the read permission for RRID _s_, and bit 2*_s_+1 holds the write permission for RRID _s_, where _s_&#8804;15.
-|===
-
-[cols="<2,<1,<1,<1,<6"]
-|===
-5+h|{set:cellbgcolor:#D3D3D3} SRCMD_PERMH(_m_), _m_ = 0...HWCFG0.md_num-1
-5+h|0x1004 + (_m_)*32
-h|Field                         |Bits |R/W   |Default |Description
-|{set:cellbgcolor:#FFFFFF}permh |31:0 |WARL  |DC      |Holds two bits per RRID that give the RRID's read and write permissions for the entry. Bit 2*(_s_-16) holds the read permission for RRID _s_, and bit 2*(_s_-16)+1 holds the write permission for RRID _s_, where _s_ &#8805;16. The register is implemented when *HWCFG1.rrid_num* > 16.
-|===
+:xrefstyle: {xrefstyle_bak}
+:xrefstyle_bak!:

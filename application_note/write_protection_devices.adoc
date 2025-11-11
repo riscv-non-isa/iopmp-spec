@@ -6,3 +6,11 @@ When *no_w* is set to 1, the IOPMP denies all write transactions regardless of e
 
 The *no_w* bit is a read-only implementation parameter that indicates whether the IOPMP instance supports this global write protection feature. System designers can leverage this configuration for applications where write access control is unnecessary, achieving both area savings and design simplification.
 
+[cols="<2,<1,<1,<1,<6"]
+|===
+5+h|HWCFG3{set:cellbgcolor:#D3D3D3}
+5+h|0x0014
+h|Field |Bits |R/W |Default |Description
+|{set:cellbgcolor:#FFFFFF}no_w |13:13 |R |IMP |Indicate if the IOPMP always denies write accesses as if no rule matched.
+|===
+

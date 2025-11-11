@@ -8,6 +8,7 @@ The IOPMP specification supports multiple implementation models that combine dif
 
 The Full Model is the default IOPMP configuration with complete SRCMD and MDCFG Table implementations, providing maximum flexibility and supporting all IOPMP extensions. This serves as the baseline for comparison with other optimized models.
 
+[#rapid-k-model]
 ==== Rapid-_k_ Model
 
 *Configuration*: *srcmd_fmt*=0, *mdcfg_fmt*=1, where _k_ = (*md_entry_num* + 1)
@@ -65,6 +66,7 @@ The Isolation Model implements direct RRID-to-MD mapping where RRID _i_ exclusiv
 
 *Use cases*: Embedded systems with isolated functional units, systems prioritizing strong isolation over shared resources, source-enforcement scenarios.
 
+[#compact-k-model]
 ==== Compact-_k_ Model
 
 *Configuration*: *srcmd_fmt*=1, *mdcfg_fmt*=1, where _k_ = (*md_entry_num* + 1)
