@@ -10,7 +10,7 @@ This application note provides a guideline for an optimized implementation model
 
 This format is the foundational mechanism for achieving the MDCFG Table optimization, and it is the basis for the <<rapid-k-model>> and <<compact-k-model>>. The primary motivation is to *remove the MDCFG Table and its associated lookup latency*.
 
-This is achieved by defining that each memory domain contains exactly _k_ entries, where _k_ is a fixed value (e.g., `(HWCFG3.md_entry_num + 1)`). By making _k_ a constant, the range of entry indexes for a given `MD m` is no longer stored in a table but is *directly calculable* (e.g., `Entry Indexes = [m * k, (m * k) + k - 1]`).
+This is achieved by defining that each memory domain contains exactly _k_ entries, where _k_ is a fixed value (e.g., `HWCFG3.md_entry_num + 1`). By making _k_ a constant, the range of entry indexes for a given MD _m_ is no longer stored in a table but is *directly calculable* (e.g., Entry Indexes = `[_m_ * _k_, (_m_ * _k_) + _k_ - 1]`).
 
 This optimization breaks the sequential data dependency of the two-stage lookup, enabling a faster, simpler, and lower-area implementation. Implementations adopting this model can omit the MDCFG Table and the MDCFGLCK register entirely.
 
