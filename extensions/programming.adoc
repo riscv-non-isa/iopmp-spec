@@ -1,11 +1,8 @@
 [[Program_IOPMPs]]
 :numbered:
-// NOTE:
-// This is temporary title for better extension name.
-// It was "Programming IOPMPs".
-=== Transaction Stalling
+=== Safe Runtime Configuration
 
-This section introduces an extension to stall transations by RRIDs and describes how to use the extension to update IOPMP's settings in runtime.
+This section introduces an extension to stall transations by RRIDs and describes how to use the extension to update IOPMP's settings safely in runtime.
 
 At times, attempting to configuring all IOPMP settings when the system starts can be difficult or even impossible, especially before I/O agents are active or connected to the system. As a result, it is necessary to update IOPMP settings during runtime. 
 
@@ -131,3 +128,91 @@ If *RRIDSCP* is not implemented, it always returns zero. One can test if it is i
 It is unnecessary to allow every implemented RRID to be selectable by *RRIDSCP.rrid*. If an unimplemented or unselectable RRID is written into *RRIDSCP.rrid*, it returns *RRIDSCP.stat* = 3.
 
 *ERR_CFG.stall_violation_en* is a WARL field so it can be programmable or fixed.
+
+==== Register(s) and Field(s)
+
+[cols="<2,<1,<1,<1,<6"]
+|===
+5+h|HWCFG2{set:cellbgcolor:#D3D3D3}
+5+h|0x0008
+h|Field                         |Bits   |R/W    |Default    |Description
+|{set:cellbgcolor:#FFFFFF}
+stall_en                        |30:30  |R      |IMP        |Indicate if the IOPMP implements stall-related features, which are `MDSTALL`, `MDSTALLH`, `RRIDSCP`, and `ERR_CFG.stall_violation_en`.
+|===
+
+*MDSTALL(H)* and *RRIDSCP* registers are all optional and used to support atomicity issue while programming the IOPMP, as the IOPMP rule may not be updated in a single transaction.
+
+[cols="<2,<1,<1,<1,<6"]
+|===
+5+h|MDSTALL{set:cellbgcolor:#D3D3D3}
+5+h|0x0030
+h|Field                         |Bits   |R/W    |Default    |Description
+|{set:cellbgcolor:#FFFFFF}exempt|0:0    |W      |N/A       a| 
+Stall transactions from selected RRIDs:
+
+* 0: the RRIDs are associated with a selected MD
+* 1: the RRIDs are not associated with any selected MD
+
+Please refer <<#STALL_TRANSACTIONS, Stall transactions>> for detailed operations
+|is_busy                        |0:0    |R      |0         a|Indicates the status of previous writing `MDSTALL` and `RRIDSCP`:
+
+* 0: the write has taken effect or no previous write
+* 1: the write has not taken effect
+|md                             |31:1   |WARL   |0          |Writing `md[__m__]`=1 selects MD _m_; reading `md[__m__]` = 1 means MD __m__ selected.
+|===
+
+[cols="<2,<1,<1,<1,<6"]
+|===
+5+h|MDSTALLH{set:cellbgcolor:#D3D3D3}
+5+h|0x0034
+h|Field                         |Bits       |R/W    |Default    |Description
+|{set:cellbgcolor:#FFFFFF}mdh   |31:0       |WARL   |0          |Writing `mdh[__m__]`=1 selects MD (__m__+31); reading `mdh[__m__]` = 1 means MD (__m__+31) selected.
+|===
+
+[cols="<2,<1,<1,<1,<6"]
+|===
+5+h|RRIDSCP{set:cellbgcolor:#D3D3D3}
+5+h|0x0038
+h|Field                         |Bits       |R/W    |Default    |Description
+|{set:cellbgcolor:#FFFFFF}rrid  |15:0       |WARL   |DC         |RRID to select.
+|rsv                            |29:16      |ZERO   |0          |Must be zero on write, reserved for future.
+|op                             |31:30      |W      |N/A       a| 
+* 0: query
+* 1: stall transactions associated with selected RRID
+* 2: don't stall transactions associated with selected RRID
+* 3: reserved
+|stat                           |31:30      |R      |0         a|
+* 0: `RRIDSCP` is not implemented
+* 1: transactions associated with selected RRID are stalled
+* 2: transactions associated with selected RRID are not stalled
+* 3: unimplemented or unselectable RRID
+|===
+
+[cols="<2,<1,<1,<1,<6"]
+|===
+5+h|ERR_CFG{set:cellbgcolor:#D3D3D3}
+5+h|0x0060
+h|Field                           |Bits   |R/W    |Default    |Description
+|{set:cellbgcolor:#FFFFFF}
+ stall_violation_en               |4:4    |WARL   |IMP        |Indicates whether the IOPMP faults stalled transactions. When the bit is set, the IOPMP faults the transactions if the corresponding RRID is not exempt from stall.
+|===
+
+[cols="<2,<1,<1,<1,<6"]
+|===
+5+h|{set:cellbgcolor:#D3D3D3} ERR_INFO
+5+h|0x0064
+h|Field                         |Bits       |R/W    |Default    |Description
+|{set:cellbgcolor:#FFFFFF}
+etype                           |7:4        |R      |0         a|Indicated the type of violation:
+
+- 0x00 = no error
+- 0x01 = illegal read access
+- 0x02 = illegal write access/AMO
+- 0x03 = illegal instruction fetch
+- 0x04 = partial hit on a priority rule
+- 0x05 = not hit any rule
+- 0x06 = unknown RRID
+- 0x07 = error due to a stalled transaction. It should not happen when `ERR_CFG.stall_violation_en` is 0.
+- 0x08 ~ 0x0D = N/A, reserved for future
+- 0x0E ~ 0x0F = user-defined error
+|===
