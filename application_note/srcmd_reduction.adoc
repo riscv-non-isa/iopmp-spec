@@ -27,6 +27,7 @@ Exclusive Format is particularly effective for embedded systems and resource-con
 The SRCMD Table format is discovered through the *HWCFG3.srcmd_fmt* field.
 *HWCFG3.srcmd_fmt* = 1 indicates the SRCMD Table format is Exclusive Format.
 
+[#SRCMD-MD-indexed]
 ==== SRCMD Table in the MD-indexed Format
 This section introduces the MD-indexed Format (Format 2) for the SRCMD Table. This format is provided as an alternative implementation, driven by a key strategic goal: to lower the barrier for migrating existing, non-RISC-V systems to the RISC-V ecosystem.
 
@@ -62,8 +63,7 @@ h|Field |Bits |R/W |Default |Description
 
 |===
 
-[#SRCMD_Table_Extension]
-==== SRCMD Table Extension
+==== Register(s) and Field(s)
 
 [cols="<2,<1,<1,<1,<6"]
 |===
