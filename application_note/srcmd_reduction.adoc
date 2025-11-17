@@ -24,8 +24,8 @@ Exclusive Format implements a direct mapping where RRID _i_ associates exclusive
 
 Exclusive Format is particularly effective for embedded systems and resource-constrained environments where minimizing hardware overhead is critical. The format supports up to 63 RRIDs and eliminates the physical SRCMD Table implementation entirely. However, designers should note that shared memory regions require duplicated entry settings in this format, which may impact configuration flexibility in systems with extensive resource sharing requirements.
 
-The SRCMD Table format is discovered through the *HWCFG3.srcmd_fmt* field.
-*HWCFG3.srcmd_fmt* = 1 indicates the SRCMD Table format is Exclusive Format.
+The SRCMD Table format is discovered through the `HWCFG3.srcmd_fmt` field.
+`HWCFG3.srcmd_fmt` = 1 indicates the SRCMD Table format is Exclusive Format.
 
 [#SRCMD-MD-indexed]
 ==== SRCMD Table in the MD-indexed Format
@@ -35,7 +35,7 @@ The primary objective of non-ISA specifications like IOPMP is to accelerate the 
 
 The MD-indexed format directly supports this familiar, resource-centric paradigm. By providing a physical SRCMD Table indexed by the Memory Domain (MD) instead of the RRID, it allows existing security software and established programming models to be ported with minimal modification. This significantly simplifies integration, ensuring that the IOPMP’s protection mechanism does not become an impediment, but rather an enabler, for adopting RISC-V.
 
-MD-indexed Format implements a physical SRCMD Table array similar to the baseline SRCMD Table, but indexed by memory domain rather than RRID. For memory domain _m_, registers *SRCMD_PERM(_m_)* and *SRCMD_PERMH(_m_)* are implemented at the same addresses as *SRCMD_EN(_s_)* and *SRCMD_ENH(_s_)* in the baseline format. This format allows per-RRID permission configuration for each memory domain, outputting permissions for every memory domain based on the requesting RRID. MD-indexed Format supports up to 32 RRIDs. The SPS extension is not supported in this format.
+MD-indexed Format implements a physical SRCMD Table array similar to the baseline SRCMD Table, but indexed by memory domain rather than RRID. For memory domain _m_, registers `SRCMD_PERM(_m_)` and `SRCMD_PERMH(_m_)` are implemented at the same addresses as `SRCMD_EN(_s_)` and `SRCMD_ENH(_s_)` in the baseline format. This format allows per-RRID permission configuration for each memory domain, outputting permissions for every memory domain based on the requesting RRID. MD-indexed Format supports up to 32 RRIDs. The SPS extension is not supported in this format.
 
 [#Example_Format_2]
 .An example block diagram of SRCMD Table MD-indexed Format Implementation.
@@ -46,19 +46,19 @@ ifndef::backend-pdf[]
 image::../images/srcmd_format2_example.png[]
 endif::[]
 
-*SRCMD_PERM(_m_)* and *SRCMD_PERMH(_m_)* are available when *HWCFG3.srcmd_fmt* = 2.
-In MD-indexed Format, an IOPMP checks both the permission of *SRCMD_PERM(H)(_m_)* and the *ENTRY_CFG.r/w/x* permission. A transaction is legal if either of them allows the transaction.
+`SRCMD_PERM(_m_)` and `SRCMD_PERMH(_m_)` are available when `HWCFG3.srcmd_fmt` = 2.
+In MD-indexed Format, an IOPMP checks both the permission of `SRCMD_PERM(H)(_m_)` and the `ENTRY_CFG.r/w/x` permission. A transaction is legal if either of them allows the transaction.
 
 [cols="<2,<1,<1,<1,<6"]
 |===
 5+h|HWCFG3{set:cellbgcolor:#D3D3D3}
 5+h|0x0014
 h|Field |Bits |R/W |Default |Description
-|{set:cellbgcolor:#FFFFFF}srcmd_fmt |3:2 |R |IMP a|Indicate the SRCMD Table format:
+|{set:cellbgcolor:#FFFFFF} `srcmd_fmt` |3:2 |R |IMP a|Indicate the SRCMD Table format:
 
-* 0x0: Format 0 (baseline). *SRCMD_EN(_s_)* and *SRCMD_ENH(_s_)* are available.
-* 0x1: Exclusive Format. No SRCMD Table. RRID _i_ associates exclusively with memory domain _i_, _i_ = 0 ... *HWCFG0.md_num*-1.
-* 0x2: MD-indexed Format. *SRCMD_PERM(_m_)* and *SRCMD_PERMH(_m_)* are available.
+* 0x0: Format 0 (baseline). `SRCMD_EN(_s_)` and `SRCMD_ENH(_s_)` are available.
+* 0x1: Exclusive Format. No SRCMD Table. RRID _i_ associates exclusively with memory domain _i_, _i_ = 0 ... `HWCFG0.md_num`-1.
+* 0x2: MD-indexed Format. `SRCMD_PERM(_m_)` and `SRCMD_PERMH(_m_)` are available.
 * 0x3: reserved.
 
 |===
@@ -67,16 +67,16 @@ h|Field |Bits |R/W |Default |Description
 
 [cols="<2,<1,<1,<1,<6"]
 |===
-5+h|{set:cellbgcolor:#D3D3D3} SRCMD_PERM(_m_), _m_ = 0...*HWCFG0.md_num*-1
+5+h|{set:cellbgcolor:#D3D3D3} SRCMD_PERM(_m_), _m_ = 0...`HWCFG0.md_num`-1
 5+h|0x1000 + (_m_) × 32
 h|Field |Bits |R/W |Default |Description
-|{set:cellbgcolor:#FFFFFF}perm |31:0 |WARL |DC |Holds two bits per RRID that give the RRID's read and write permissions for memory domain _m_. Bit 2*_s_ holds the read permission for RRID _s_, and bit 2*_s_+1 holds the write permission for RRID _s_, where _s_≤15.
+|{set:cellbgcolor:#FFFFFF} `perm` |31:0 |WARL |DC |Holds two bits per RRID that give the RRID's read and write permissions for memory domain _m_. Bit 2*_s_ holds the read permission for RRID _s_, and bit 2*_s_+1 holds the write permission for RRID _s_, where _s_≤15.
 |===
 
 [cols="<2,<1,<1,<1,<6"]
 |===
-5+h|{set:cellbgcolor:#D3D3D3} SRCMD_PERMH(_m_), _m_ = 0...*HWCFG0.md_num*-1
+5+h|{set:cellbgcolor:#D3D3D3} SRCMD_PERMH(_m_), _m_ = 0...`HWCFG0.md_num`-1
 5+h|0x1004 + (_m_) × 32
 h|Field |Bits |R/W |Default |Description
-|{set:cellbgcolor:#FFFFFF}permh |31:0 |WARL |DC |Holds two bits per RRID that give the RRID's read and write permissions for memory domain _m_. Bit 2*(_s_-16) holds the read permission for RRID _s_, and bit 2*(_s_-16)+1 holds the write permission for RRID _s_, where _s_≥16. The register is implemented when *HWCFG1.rrid_num* > 16.
+|{set:cellbgcolor:#FFFFFF} `permh` |31:0 |WARL |DC |Holds two bits per RRID that give the RRID's read and write permissions for memory domain _m_. Bit 2*(_s_-16) holds the read permission for RRID _s_, and bit 2*(_s_-16)+1 holds the write permission for RRID _s_, where _s_≥16. The register is implemented when `HWCFG1.rrid_num` > 16.
 |===

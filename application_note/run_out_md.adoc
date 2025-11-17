@@ -23,7 +23,7 @@ To support this "IOPMP gateway" functionality, `HWCFG3.rrid_transl_en` should be
 5+h|HWCFG3{set:cellbgcolor:#D3D3D3}
 5+h|0x0014
 h|Field |Bits |R/W |Default |Description
-|{set:cellbgcolor:#FFFFFF}rrid_transl_en |14:14 |R |IMP |Indicate if tagging a new RRID on the initiator port is supported.
-|rrid_transl_prog |15:15 |W1CS |IMP |A write-1-clear bit that is sticky to 0. Indicates if the *rrid_transl* field is programmable. Supported only for *rrid_transl_en*=1, otherwise, wired to 0.
-|rrid_transl |31:16 |WARL |IMP |The RRID tagged to outgoing transactions. Supported only for *rrid_transl_en*=1. It is writable only when *rrid_transl_prog*=1.
+|{set:cellbgcolor:#FFFFFF} `rrid_transl_en` |14:14 |R |IMP |Indicate if tagging a new RRID on the initiator port is supported.
+|`rrid_transl_prog` |15:15 |W1CS |IMP |A write-1-clear bit that is sticky to 0. Indicates if the `rrid_transl` field is programmable. Supported only for `rrid_transl_en`=1, otherwise, wired to 0.
+|`rrid_transl` |31:16 |WARL |IMP |The RRID tagged to outgoing transactions. Supported only for `rrid_transl_en`=1. It is writable only when `rrid_transl_prog`=1.
 |===

@@ -60,9 +60,9 @@ An RRID associated with a MD may not have full permissions on all memory regions
 === IOPMP Entry and IOPMP Entry Array
 // NOTE: This paragraph was simplified as part of the specification simplification.
 // Only memory region and the corresponding permissions are in the paragraph.
-The IOPMP entry array, contains *HWCFG1.entry_num* IOPMP entries, where the value zero is reserved. Each entry, starting from an index of zero, includes a specified memory region and the corresponding permissions.
+The IOPMP entry array, contains `HWCFG1.entry_num` IOPMP entries, where the value zero is reserved. Each entry, starting from an index of zero, includes a specified memory region and the corresponding permissions.
 
-For an entry indexed by _i_, *ENTRY_ADDR(_i_)*, *ENTRY_ADDRH(_i_)* and *ENTRY_CFG(_i_).a* encode the memory region in the same way as the RISC-V PMP. *ENTRY_ADDR(_i_)* and *ENTRY_ADDRH(_i_)* are the encoded address for the IOPMP with addresses greater than 34 bits. For addresses less than and equal to 34 bits, only *ENTRY_ADDR(_i_)* is in use. To determine whether *ENTRY_ADDRH(_i_)* are implemented, one can check *HWCFG0.addrh_en*. Please refer <<#HWCFG0, HWCFG0>> for more details of *HWCFG0.addrh_en*. *ENTRY_CFG(_i_).a* is the address mode, which are OFF, NA4, NAPOT, and TOR. Please refer to the RISC-V privileged spec cite:[PrivISA] for the details of the encoding schemes. *HWCFG0.tor_en* = 1 indicates the IOPMP supports TOR address mode.
+For an entry indexed by _i_, `ENTRY_ADDR(_i_)`, `ENTRY_ADDRH(_i_)` and `ENTRY_CFG(_i_).a` encode the memory region in the same way as the RISC-V PMP. `ENTRY_ADDR(_i_)` and `ENTRY_ADDRH(_i_)` are the encoded address for the IOPMP with addresses greater than 34 bits. For addresses less than and equal to 34 bits, only `ENTRY_ADDR(_i_)` is in use. To determine whether `ENTRY_ADDRH(_i_)` are implemented, one can check `HWCFG0.addrh_en`. Please refer <<#HWCFG0, HWCFG0>> for more details of `HWCFG0.addrh_en`. `ENTRY_CFG(_i_).a` is the address mode, which are OFF, NA4, NAPOT, and TOR. Please refer to the RISC-V privileged spec cite:[PrivISA] for the details of the encoding schemes. `HWCFG0.tor_en` = 1 indicates the IOPMP supports TOR address mode.
 
 [NOTE]
 ====
@@ -76,9 +76,9 @@ Since the address encoding scheme of TOR refers to the previous entry's memory r
 // Removed references to instruction fetch permission (x bit), chk_x field, and ENTRY_USER_CFG register.
 // Only basic read/write permissions and address mode configuration are now supported.
 
-*ENTRY_CFG(_i_).r/w* indicate the read access and write access permission and they are WARL. That is, an implementation can decide which bits are programmable or hardwired and which bit combinations are unwanted.
+`ENTRY_CFG(_i_).r/w` indicate the read access and write access permission and they are WARL. That is, an implementation can decide which bits are programmable or hardwired and which bit combinations are unwanted.
 
-*ENTRY_CFG(_i_)* contains the basic permission fields for read, write, and address mode configuration.
+`ENTRY_CFG(_i_)` contains the basic permission fields for read, write, and address mode configuration.
 
 // NOTE: The original description of ENTRY_USER_CFG(_i_) register was removed here
 // as part of the specification simplification. This register stored customized attributes
@@ -87,7 +87,7 @@ Since the address encoding scheme of TOR refers to the previous entry's memory r
 // NOTE: The following section describes entry availability based on HWCFG1.entry_num,
 // which is one of the fields retained in the simplified specification.
 
-Any entry with index &#8805; *HWCFG1.entry_num* is not available. That is,
+Any entry with index &#8805; `HWCFG1.entry_num` is not available. That is,
 
 * Registers of the entry are not implemented.
 * Address mode of the entry is treated as OFF when the IOPMP retrieves the entry in permission checks.
@@ -96,7 +96,7 @@ Memory domains are a way of dividing the IOPMP entry array into different subarr
 
 [NOTE]
 ====
-A memory domain may have an IOPMP entry with index &#8805; *HWCFG1.entry_num* due to its register encoding or implementation. The entry is not available.
+A memory domain may have an IOPMP entry with index &#8805; `HWCFG1.entry_num` due to its register encoding or implementation. The entry is not available.
 ====
 
 When an RRID is associated with a memory domain, it is also inherently associated with all the entries that belong to that memory domain.
@@ -115,7 +115,7 @@ The IOPMP uses entry-based permission checking to determine whether transactions
 
 When a transaction arrives at an IOPMP, the IOPMP first checks whether the RRID carried by the transaction is legal. If the RRID is illegal, the transaction is illegal with error type = "Unknown RRID" (0x06)".
 
-NOTE: Whether an RRID is legal is implementation-dependent, even though it < *HWCFG1.rrid_num*.
+NOTE: Whether an RRID is legal is implementation-dependent, even though it < `HWCFG1.rrid_num`.
 
 IOPMP entries are prioritized according to their index values. Entries with lower indices are assigned a higher priority. When multiple entries match a transaction, the entry with the lowest index (highest priority) takes precedence. 
 
@@ -127,7 +127,7 @@ An entry qualifies as a matching entry for an incoming transaction if:
 * It is associated with the RRID carried by the transaction; and
 * It holds the highest priority among entries that meet the previous criteria.
 
-The matching entry can grant a transaction according to its access type. If the matching entry allows the access type, the transaction is legal. Every entry can permit read and write access by its *r* and *w* bits, respectively.
+The matching entry can grant a transaction according to its access type. If the matching entry allows the access type, the transaction is legal. Every entry can permit read and write access by its `r` and `w` bits, respectively.
 
 The matching entry must match all bytes of a transaction, or the transaction is illegal with error type = "partial hit on a priority rule" (0x04), irrespective of its permission. If an entry is matched but doesn't grant transaction permission to operate, the transaction is illegal with error type = "illegal read access" (0x01) for read access transaction, "illegal write access/AMO" (0x02) for write access/atomic memory operation (AMO) transaction.
 
@@ -161,19 +161,19 @@ Upon detecting an illegal transaction, the IOPMP could initiate three of the fol
 
 * Log the error details in IOPMP error record registers.
 
-IOPMP can trigger an interrupt on an access violation. The *ERR_CFG.ie* bit serves as the global interrupt enable configuration bit. The interrupt pending indication is equivalent to the error valid indication; both are flagged through the *ERR_INFO.v* bit. On an illegal transaction, an interrupt is triggered if the global interrupt is enabled (*ERR_CFG.ie* = 1). The condition for the interrupt can be described as follows: 
+IOPMP can trigger an interrupt on an access violation. The `ERR_CFG.ie` bit serves as the global interrupt enable configuration bit. The interrupt pending indication is equivalent to the error valid indication; both are flagged through the `ERR_INFO.v` bit. On an illegal transaction, an interrupt is triggered if the global interrupt is enabled (`ERR_CFG.ie` = 1). The condition for the interrupt can be described as follows: 
 
-* Illegal read access (0x01): *ERR_CFG.ie* = 1
-* Illegal write access/AMO (0x02): *ERR_CFG.ie* = 1
+* Illegal read access (0x01): `ERR_CFG.ie = 1`
+* Illegal write access/AMO (0x02): `ERR_CFG.ie = 1`
 
-For illegal transactions, the interrupt is triggered when *ERR_CFG.ie* is set.
+For illegal transactions, the interrupt is triggered when `ERR_CFG.ie` is set.
 
-Transactions that violate the IOPMP rule will by default yield a bus error. The bus error response behavior on an IOPMP violation can be configured globally via the *ERR_CFG* register. The IOPMP will signal the bus to the presence of a violation but will suppress the bus error if *ERR_CFG.rs* is implemented and set to 1 on a violation. User-defined suppression behavior allows, for example, a read response of 0x0. 
+Transactions that violate the IOPMP rule will by default yield a bus error. The bus error response behavior on an IOPMP violation can be configured globally via the `ERR_CFG` register. The IOPMP will signal the bus to the presence of a violation but will suppress the bus error if `ERR_CFG.rs` is implemented and set to 1 on a violation. User-defined suppression behavior allows, for example, a read response of 0x0. 
 
-The bus error response behavior is controlled by the global bus error response suppression configuration bit *ERR_CFG.rs*. An IOPMP will respond with a bus error when a transaction is illegal and the bus error is not suppressed. The condition for a bus error response can be described as follows:  
+The bus error response behavior is controlled by the global bus error response suppression configuration bit `ERR_CFG.rs`. An IOPMP will respond with a bus error when a transaction is illegal and the bus error is not suppressed. The condition for a bus error response can be described as follows:  
 
-* Illegal read access (0x01): !*ERR_CFG.rs*
-* Illegal write access/AMO (0x02): !*ERR_CFG.rs*
+* Illegal read access (0x01): `!ERR_CFG.rs`
+* Illegal write access/AMO (0x02): `!ERR_CFG.rs`
 
 
 The error capture record maintains the specifics of the first illegal access detected, except for the condition:
@@ -181,7 +181,7 @@ The error capture record maintains the specifics of the first illegal access det
 * no interrupt regarding the access is triggered, and
 * no bus error is returned.
 
-An error capture only occurs when there is no pending error, that is, *ERR_INFO.v* = ‘0’. If a pending error exists (*v* = ‘1’), the record will not be updated, even if a new illegal access is detected. In other words, *v*  indicates whether the content of the capture record is valid and should be intentionally cleared in order to capture subsequent illegal accesses. One can write 1 to the bit to clear it. The error capture record is optional. If it is not implemented, *v* should be wired to zero. One can implement the error capture record, but doesn't implement the error entry index record (*ERR_REQID.eid*). In this case, *eid* should be wired to 0xffff.
+An error capture only occurs when there is no pending error, that is, `ERR_INFO.v` = ‘0’. If a pending error exists (`v` = ‘1’), the record will not be updated, even if a new illegal access is detected. In other words, `v`  indicates whether the content of the capture record is valid and should be intentionally cleared in order to capture subsequent illegal accesses. One can write 1 to the bit to clear it. The error capture record is optional. If it is not implemented, `v` should be wired to zero. One can implement the error capture record, but doesn't implement the error entry index record (`ERR_REQID.eid`). In this case, `eid` should be wired to 0xffff.
 
 The following table is a summary of error types:
 

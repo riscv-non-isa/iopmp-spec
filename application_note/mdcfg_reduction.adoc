@@ -5,9 +5,6 @@ In the baseline specification, a complete IOPMP check involves a sequential, two
 This application note provides a guideline for an optimized implementation model that **eliminates this second lookup stage**. This optimization reduces check latency, simplifies hardware logic, and saves area by removing the need for the MDCFG Table storage.
 
 ==== Each Memory Domain Has Exactly _k_ Entries
-
-:xrefstyle: short
-
 This format is the foundational mechanism for achieving the MDCFG Table optimization, and it is the basis for the <<rapid-k-model>> and <<compact-k-model>>. The primary motivation is to *remove the MDCFG Table and its associated lookup latency*.
 
 This is achieved by defining that each memory domain contains exactly _k_ entries, where _k_ is a fixed value (e.g., `HWCFG3.md_entry_num + 1`). By making _k_ a constant, the range of entry indexes for a given MD _m_ is no longer stored in a table but is *directly calculable* (e.g., Entry Indexes = `[_m_ * _k_, (_m_ * _k_) + _k_ - 1]`).
@@ -16,31 +13,31 @@ This optimization breaks the sequential data dependency of the two-stage lookup,
 
 [NOTE]
 ====
-_k_ * *HWCFG0.md_num* can be greater than *HWCFG1.num_entry*. Behavior of any entry with index &#8805; *HWCFG1.num_entry* is described on <<#IOPMP_ENTRY, IOPMP Entry and IOPMP Entry Array>>.
+_k_ * `HWCFG0.md_num` can be greater than `HWCFG1.num_entry`. Behavior of any entry with index &#8805; `HWCFG1.num_entry` is described on <<#IOPMP_ENTRY, IOPMP Entry and IOPMP Entry Array>>.
 ====
 
-For a particular case of _k_=1 (*HWCFG3.md_entry_num*=0), every memory domain has exactly one entry. One can skip the concept of the memory domain when using such an IOPMP.
+For a particular case of _k_=1 (`HWCFG3.md_entry_num`=0), every memory domain has exactly one entry. One can skip the concept of the memory domain when using such an IOPMP.
 
-The _k_ value also can be programmable. Users can use *HWCFG0.enable* as the lock bit of *HWCFG3.md_entry_num*.
+The _k_ value also can be programmable. Users can use `HWCFG0.enable` as the lock bit of `HWCFG3.md_entry_num`.
 
-To indicate the reduced table, one can use *HWCFG3.mdcfg_fmt* to indicate what reduced table format is implemented in an IOPMP.
+To indicate the reduced table, one can use `HWCFG3.mdcfg_fmt` to indicate what reduced table format is implemented in an IOPMP.
 
 [cols="<2,<1,<1,<1,<6"]
 |===
 5+h|HWCFG3{set:cellbgcolor:#D3D3D3}
 5+h|0x0014
 h|Field |Bits |R/W |Default |Description
-|{set:cellbgcolor:#FFFFFF}mdcfg_fmt |1:0 |R |IMP a|Indicate the MDCFG format:
+|{set:cellbgcolor:#FFFFFF} `mdcfg_fmt` |1:0 |R |IMP a|Indicate the MDCFG format:
 
 * 0x0: Format 0. MDCFG Table is implemented.
-* 0x1: Format 1. No MDCFG Table. *HWCFG3.md_entry_num* is fixed.
-* 0x2: Format 2. No MDCFG Table. *HWCFG3.md_entry_num* is programmable.
+* 0x1: Format 1. No MDCFG Table. `HWCFG3.md_entry_num` is fixed.
+* 0x2: Format 2. No MDCFG Table. `HWCFG3.md_entry_num` is programmable.
 * 0x3: reserved.
 
-|md_entry_num |11:4 |WARL |IMP a|When *HWCFG3.mdcfg_fmt* = 
+|`md_entry_num` |11:4 |WARL |IMP a|When `HWCFG3.mdcfg_fmt` = 
 
 * 0x0: must be zero
-* 0x1 or 0x2: *md_entry_num* indicates each memory domain has exactly (*md_entry_num* + 1) entries
+* 0x1 or 0x2: `md_entry_num` indicates each memory domain has exactly (`md_entry_num` + 1) entries
 
-*md_entry_num* is locked if *HWCFG0.enable* is 1.
+`md_entry_num` is locked if `HWCFG0.enable` is 1.
 |===
