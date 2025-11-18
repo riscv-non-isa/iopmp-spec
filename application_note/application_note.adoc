@@ -1,6 +1,7 @@
 :appendix-number: @
 [appendix]
 :appendix-caption!:
+[#APPICATION_NOTE]
 == Application Note
 
 :figure-caption: Figure
