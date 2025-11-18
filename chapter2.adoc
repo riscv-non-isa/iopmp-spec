@@ -45,9 +45,9 @@ Request Role ID, RRID for short, is a unique ID to identify a system-defined sec
 An IOPMP has one or multiple requestor ports, one or multiple receiver ports and one control port. A receiver port is where a transaction goes into the IOPMP, and a requestor port is where a transaction leaves it if the transaction passes all the checks. The control port is used to program the IOPMP.
 
 === Memory Domain
-// NOTE: This section was simplified as part of the specification simplification.
-// Only full model is described in the section.
-An RRID is an abstract representation of a transaction requestor. It encompasses one or more transaction requestors that are granted identical permissions. A memory domain, MD for short, is an abstract representation of a transaction destination that groups a set of memory regions for a specific purpose. MDs are indexed from zero. For example, a network interface controller, NIC, may have three memory regions: an RX region, a TX region, and a region of control registers. We could group them into one MD. If a processor can fully control the NIC, the processor can be associated with the MD.
+An Request-Role-ID (RRID) serves as an abstract identifier for a transaction initiator, representing one or more requestors that are assigned an identical set of potential access permissions. Conversely, a Memory Domain (MD) is an abstract construct representing a transaction destination. Its primary purpose is to logically group a set of memory regions that share a common functional or security objective, thereby simplifying the subsequent management. MDs are indexed starting from zero.
+
+For example, a Network Interface Controller (NIC) typically utilizes multiple memory areas, such as a Receive (RX) data buffer, a Transmit (TX) data buffer, and a set of control registers. These distinct regions, due to their association with the single NIC device and similar access requirements, can be efficiently consolidated into a single Memory Domain. If a processor (or other bus agent) is given full control over the NIC's operation, that agent may then be explicitly associated with this MD.
 
 It’s important to note that, generally speaking, a single RRID can be associated with multiple memory domains (MDs), and a MD can be associated with multiple RRIDs. SRCMD Table is a one of fundamental structures in IOPMP to indicate associations between RRIDs and MDs, which will be introduced in <<#SRCMD_TABLE, SRCMD Table>>.
 
@@ -104,6 +104,54 @@ When an RRID is associated with a memory domain, it is also inherently associate
 // NOTE: The original description of HWCFG0.no_w and HWCFG0.no_x fields was removed here
 // as part of the specification simplification. These fields were used to deny write
 // transactions and instruction fetch transactions globally, but are no longer supported.
+
+
+[#SRCMD_TABLE]
+=== SRCMD Table
+
+The SRCMD Table is an array indexed by RRID that associates each requestor with its memory domains. The table uses a bitmap approach where each RRID can be associated with multiple memory domains. When a IOPMP receives a transaction with RRID _s_, IOPMP first looks up the SRCMD Table to find out all the memory domains associated to requestor _s_. An IOPMP instance can support up to 65,535 requestors, the actual number of requestors can be implementation-defined and is indicated in `HWCFG1.rrid_num`. The SRCMD Table defines the mapping from a transaction requestor to its associated MDs.
+
+The register `SRCMD_EN(_s_)` must be implemented for each existing RRID _s_. Every bit in the 31-bit field `SRCMD_EN(_s_).md` indicates a memory domain. Bit _j_ in `SRCMD_EN(_s_).md` indicates if MD _j_ is associated with RRID _s_. If the number of MDs is more than 31, the register `SRCMD_ENH(_s_)` and its 32-bit field `SRCMD_ENH(_s_).mdh` can be implemented to support up to 63 memory domains. Bit _j_ in `SRCMD_ENH(_s_).mdh` indicates if MD (_j_ + 31) is associated with RRID _s_. For unimplemented memory domains, the corresponding bits should be hardwired read-only zero.
+
+Every `SRCMD_EN(_s_)` has 1-bit field `l` for SRCMD Table protection. The bit is described in <<#SRCMD_PROTECTION, SRCMD Table Protection>>.
+
+
+[#MDCFG_TABLE]
+=== MDCFG Table
+
+The MDCFG Table is used to map a memory domain to its own entries. It can be viewed as a partition of all entries in the IOPMP. The MDCFG defines which memory domain every entry belongs to. An entry can belong to at most one memory domain, but a memory domain can own zero or more entries. After retrieving all related entries, an IOPMP checks the transaction according to them.
+
+In the MDCFG Table, every memory domain _m_ has a register, `MDCFG(_m_)`. Field `MDCFG(_m_).t` represents the upper bound (not included) and field `MDCFG(_m_-1).t` represents the lower bound (included) for _m_ > 0. They form the index range of IOPMP entries belonging to the memory domain _m_. That is,
+
+
+* an entry with index _j_ belongs to MD _m_ if `MDCFG(_m_ - 1).t` &#8804; _j_ < `MDCFG(_m_).t`, where _m_ > 0.
+* an entry with index _j_ belongs to MD 0 if _j_ < `MDCFG(0).t`.
+
+Programmers should maintain proper settings in the MDCFG Table, where `MDCFG(_m_ + 1).t` should be greater than or equal to `MDCFG(_m_).t` for any legal MD m. Otherwise, the MDCFG table has an improper setting, that is, there exist two legal MDs _m_ and _k_, `MDCFG(_k_).t` > `MDCFG(_m_).t` for _k_ < _m_. In this case, we denote the MD _m_ has an improper setting.
+
+When the MDCFG Table has any improper setting, the belonging of IOPMP entries is implementation-dependent, but the following conditions should be held:
+
+* an entry must belong to at most one memory domain; and
+* the index of an entry in a lower-indexed memory domain should be lower than that in a higher-indexed memory domain.
+
+[NOTE]
+====
+For portability, programmers should ensure the MDCFG Table has a proper setting during the runtime. In the case that the process of programming or initializing the MDCFG Table causes an improper setting to occur transiently, one can deassociate effected MDs in SRCMD table before programming MDCFG table to avoid security issues. Even though the procedure may introduce extra steps, the table is not subject to change at a high frequency to hurt overall performance. Thus, the specification requires programmers to maintain a proper setting instead of requiring specific hardware behaviors on improper settings.
+====
+
+
+[NOTE]
+====
+Here are some reference behaviors for an improper setting, which may include, but are not limited to:
+
+. correct the values to make the table have a proper setting,
+. reject the write access to make an improper setting, or
+. leave the improper setting in the MDCFG Table, but the belonging of entries for all MDs _m_ having an improper setting becomes:
+.. no entry belongs to MD _m_, or
+.. no entry belongs to all MDs _m_ to (`HWCFG0.md_num` - 1).
+
+====
+
 
 [#IOPMP_priority_and_matching_logic]
 === Priority and Matching Logic
@@ -198,4 +246,5 @@ The following table is a summary of error types:
    |0x06        | Unknown RRID                      
    |0x07 ~ 0x0D | Reserved                          
    |0x0E ~ 0x0F | User-defined error               
+
 |===
