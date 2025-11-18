@@ -56,15 +56,15 @@ This chapter also introduces an additional transaction type (`ERR_INFO.ttype`) a
 [%autowidth, options="header"]
 |===
 5+h|Entry Array, _i_ = 0...`HWCFG1.entry_num`-1
-   |Offset                          |Register              |Field |Bits   |Related section(s)
+   |Offset                          |Register            |Field   |Bits   |Related section(s)
 .7+|`ENTRYOFFSET` +
-    + 0x8 + (_i_)*16             .7+|`ENTRY_CFG(_i_)`      |x     |2:2    |<<X_PERM>>
-                                                           |sire  |5:5 .6+|<<PEIS_PEES>>
-                                                           |siwe  |6:6  
-                                                           |sixe  |7:7  
-                                                           |sere  |8:8  
-                                                           |sewe  |9:9  
-                                                           |sexe  |10:10
+    + 0x8 + (_i_)*16             .7+|`ENTRY_CFG(_i_)`    |`x`     |2:2    |<<X_PERM>>
+                                                         |`sire`  |5:5 .6+|<<PEIS_PEES>>
+                                                         |`siwe`  |6:6  
+                                                         |`sixe`  |7:7  
+                                                         |`sere`  |8:8  
+                                                         |`sewe`  |9:9  
+                                                         |`sexe`  |10:10
 |===
 
 [#EXT_TTYPE]
