@@ -41,7 +41,7 @@ If an optional register is not implemented, the behavior is implementation-depen
 .3+|0x1000 2+|{set:cellbgcolor:#D3D3D3} SRCMD Table, _s_ = 0...`HWCFG1.rrid_num`-1
 |{set:cellbgcolor:#FFFFFF} `SRCMD_EN(_s_)`/ +
 `SRCMD_ENH(_s_)`    |The bitmapped MD enabling register of the requestor _s_ that `SRCMD_EN(_s_)[_m_]` indicates if the requestor is associated with MD _m_ and `SRCMD_ENH(_s_)[_m_]` indicates if the requestor is associated with MD (_m_+31). `SRCMD_ENH(_s_)` is optional.
-|{set:cellbgcolor:#FFFFFF} - |Other regions in offset 0x1000 to `ENTRYOFFSET`-1 are reserved.
+|{set:cellbgcolor:#FFFFFF} - |Other regions in offset 0x1000 to (0x1000 + `HWCFG1.rrid_num` × 32) are reserved.
 
 .5+|`ENTRYOFFSET`    2+|{set:cellbgcolor:#D3D3D3} Entry Array, _i_ =0...`HWCFG1.entry_num`-1
 |{set:cellbgcolor:#FFFFFF} `ENTRY_ADDR(_i_)`| Bit 33:2 of address (region) for entry _i_.
@@ -182,7 +182,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 5+h|ERR_CFG{set:cellbgcolor:#D3D3D3}
 5+h|0x0060
 h|Field                           |Bits   |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF} `l`    |0:0    |W1SS   |0          |Lock bit to *ERR_CFG* register.
+|{set:cellbgcolor:#FFFFFF} `l`    |0:0    |W1SS   |0          |Lock bit to `ERR_CFG` register.
 |{set:cellbgcolor:#FFFFFF} `ie`   |1:1    |WARL   |0          |Enable the interrupt of the IOPMP rule violation.
 |{set:cellbgcolor:#FFFFFF} `rs`   |2:2    |WARL   |0         a| 
 
@@ -194,7 +194,7 @@ To suppress an error response on an IOPMP rule violation.
 |===
 
 
-*ERR_INFO* captures more detailed error information.
+`ERR_INFO` captures more detailed error information.
 [cols="<2,<1,<1,<1,<6"]
 |===
 5+h|{set:cellbgcolor:#D3D3D3} ERR_INFO
