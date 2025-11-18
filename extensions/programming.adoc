@@ -49,9 +49,9 @@ Register `MDSTALL` and `MDSTALLH` control _rrid_stall_. `MDSTALL.md` and `MDSTAL
 
 Where:
 
-* ^ is bitwise logical exclusive OR operator, 
-* & is bitwise logical AND operator, and
-* Reduction_OR() is a function that applies bitwise logical OR across all input values.
+* `^` is bitwise logical exclusive OR operator, 
+* `&` is bitwise logical AND operator, and
+* `Reduction_OR()` is a function that applies bitwise logical OR across all input values.
 
 // NOTE:
 // Removed description about SRCMD Table Format 2.
