@@ -209,20 +209,11 @@ Upon detecting an illegal transaction, the IOPMP could initiate three of the fol
 
 * Log the error details in IOPMP error record registers.
 
-IOPMP can trigger an interrupt on an access violation. The `ERR_CFG.ie` bit serves as the global interrupt enable configuration bit. The interrupt pending indication is equivalent to the error valid indication; both are flagged through the `ERR_INFO.v` bit. On an illegal transaction, an interrupt is triggered if the global interrupt is enabled (`ERR_CFG.ie` = 1). The condition for the interrupt can be described as follows: 
-
-* Illegal read access (0x01): `ERR_CFG.ie = 1`
-* Illegal write access/AMO (0x02): `ERR_CFG.ie = 1`
-
-For illegal transactions, the interrupt is triggered when `ERR_CFG.ie` is set.
+IOPMP can trigger an interrupt on an access violation. The `ERR_CFG.ie` bit serves as the global interrupt enable configuration bit. The interrupt pending indication is equivalent to the error valid indication; both are flagged through the `ERR_INFO.v` bit. On an illegal transaction, an interrupt is triggered if the global interrupt is enabled (`ERR_CFG.ie` = 1).
 
 Transactions that violate the IOPMP rule will by default yield a bus error. The bus error response behavior on an IOPMP violation can be configured globally via the `ERR_CFG` register. The IOPMP will signal the bus to the presence of a violation but will suppress the bus error if `ERR_CFG.rs` is implemented and set to 1 on a violation. User-defined suppression behavior allows, for example, a read response of 0x0. 
 
-The bus error response behavior is controlled by the global bus error response suppression configuration bit `ERR_CFG.rs`. An IOPMP will respond with a bus error when a transaction is illegal and the bus error is not suppressed. The condition for a bus error response can be described as follows:  
-
-* Illegal read access (0x01): `!ERR_CFG.rs`
-* Illegal write access/AMO (0x02): `!ERR_CFG.rs`
-
+For error type = "User-defined error" (0x0E, 0x0F), behavior of interrupt and error response is user-defined.
 
 The error capture record maintains the specifics of the first illegal access detected, except for the condition:
 
