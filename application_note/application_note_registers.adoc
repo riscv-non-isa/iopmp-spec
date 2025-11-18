@@ -9,16 +9,18 @@ This section summarizes the additional registers and fields required when implem
 [%autowidth, options="header"]
 |===
   |Offset |Register |Field |Bits |Related section(s)
-.8+|0x0014 .8+|HWCFG3 |mdcfg_fmt |1:0 .2+|<<mdcfg-table-formats, MDCFG Table Reduction>>
-                     |md_entry_num |11:4
-                     |srcmd_fmt |3:2 |<<srcmd-table-formats, SRCMD Table Reduction>>
-                     |no_w |13:13 |<<Write Protection Devices>>
-                     |no_x |12:12 |<<Instruction Fetch Protection Devices>>
-                     |rrid_transl_en |14:14 .3+|<<Cascading IOPMP>>
-                     |rrid_transl_prog |15:15
-                     |rrid_transl |31:16
-  |0x1000 + (_m_) × 32 |SRCMD_PERM(_m_) 2+|All .2+|<<SRCMD_Table_Extension, SRCMD Table Extension>>
-  |0x1004 + (_m_) × 32 |SRCMD_PERMH(_m_) 2+|All
+.8+|0x0014 .8+|`HWCFG3` |`mdcfg_fmt` |1:0 .2+|<<mdcfg-table-formats>>
+                     |`md_entry_num` |11:4
+                     |`srcmd_fmt` |3:2 |<<srcmd-table-formats>>
+                     |`no_w` |13:13 |<<Write Protection Devices>>
+                     |`no_x` |12:12 |<<Instruction Fetch Protection Devices>>
+                     |`rrid_transl_en` |14:14 .3+|<<Cascading IOPMP>>
+                     |`rrid_transl_prog` |15:15
+                     |`rrid_transl` |31:16
+  |0x1000 + +
+  (_m_) × 32 |`SRCMD_PERM(_m_)` 2+|All .2+|<<SRCMD-MD-indexed>>
+  |0x1004 + +
+  (_m_) × 32 |`SRCMD_PERMH(_m_)` 2+|All
 |===
 
 :xrefstyle: {xrefstyle_bak}

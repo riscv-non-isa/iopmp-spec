@@ -1,14 +1,14 @@
 [#MFR]
 === Multi-Faults Record
-The primary error capture registers are designed to lock upon detecting the *first* violation to preserve its details. This behavior, while necessary for root cause analysis, creates a "blind spot". Once *ERR_INFO.v* is set, all *subsequent* violations from any RRID are ignored, and their occurrence is permanently lost. The secure monitor remains unaware of these additional faults until it handles the interrupt and clears the *ERR_INFO.v* bit, at which point it's too late to know what else has failed.
+The primary error capture registers are designed to lock upon detecting the *first* violation to preserve its details. This behavior, while necessary for root cause analysis, creates a "blind spot". Once `ERR_INFO.v` is set, all *subsequent* violations from any RRID are ignored, and their occurrence is permanently lost. The secure monitor remains unaware of these additional faults until it handles the interrupt and clears the `ERR_INFO.v` bit, at which point it's too late to know what else has failed.
 
 This extension, Multi-Faults Record (MFR), addresses this issue by providing a low-cost, secondary logging mechanism. It does not record the full details (like address or type) of subsequent faults. Instead, it maintains a simple, high-performance bitmap to log *which RRIDs* have generated at least one subsequent violation. This allows the secure monitor to efficiently identify all misbehaving agents during a single fault event, rather than only discovering the first one.
 
-The extension maintains a bit, referred to as SV[_s_], for each RRID _s_. When one or more subsequent violations are issued from an RRID, the corresponding bit is set. To retrieve these SVs, a 32-bit register *ERR_MFR* is used.
+The extension maintains a bit, referred to as SV[_s_], for each RRID _s_. When one or more subsequent violations are issued from an RRID, the corresponding bit is set. To retrieve these SVs, a 32-bit register `ERR_MFR` is used.
 
-To retrieve these SVs, a 32-bit register *ERR_MFR* is used. Every 16 contiguous SVs are grouped together into a record window, which is indexed by a 12-bit field, *svi*. When *ERR_MFR* is read, the IOPMP sequentially scans all record windows towards the last window from original position (*svi*) until a violation is found. Once the last available record window is scanned, the next record window to be scanned is the first record window (i.e., SV[0] ~ SV[15]). The original position can be set by writing an index of record window to *svi*. If found, the status bit *svs* is set, and *svi* indexes the window containing the first found set SV. The 16-bit field *svw* reflects the record window indexed by *svi*, where *svw[_j_]*=SV[*svi* * 16 + _j_]. After the register is read out, all bits in the record window are cleared. If not found, *svs* and *svw* return zeros and *svi* keeps the same. Moreover, the bit *svc* in the *ERR_INFO* indicates if any subsequent violation is in the log.
+To retrieve these SVs, a 32-bit register `ERR_MFR` is used. Every 16 contiguous SVs are grouped together into a record window, which is indexed by a 12-bit field, `svi`. When `ERR_MFR` is read, the IOPMP sequentially scans all record windows towards the last window from original position (`svi`) until a violation is found. Once the last available record window is scanned, the next record window to be scanned is the first record window (i.e., SV[0] ~ SV[15]). The original position can be set by writing an index of record window to `svi`. If found, the status bit `svs` is set, and `svi` indexes the window containing the first found set SV. The 16-bit field `svw` reflects the record window indexed by `svi`, where `svw[_j_]`=SV[`svi` * 16 + _j_]. After the register is read out, all bits in the record window are cleared. If not found, `svs` and `svw` return zeros and `svi` keeps the same. Moreover, the bit `svc` in the `ERR_INFO` indicates if any subsequent violation is in the log.
 
-The read only bit *HWCFG2.mfr_en* indicates if the IOPMP implements the extension.
+The read only bit `HWCFG2.mfr_en` indicates if the IOPMP implements the extension.
 
 [cols="<2,<1,<1,<1,<6"]
 |===
@@ -16,7 +16,7 @@ The read only bit *HWCFG2.mfr_en* indicates if the IOPMP implements the extensio
 5+h|0x0008
 h|Field                         |Bits   |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}
-mfr_en                          |31:31  |R      |IMP        |Indicate if the IOPMP implements Multi Faults Record, that is `ERR_MFR` and `ERR_INFO.svc`.
+`mfr_en`                        |31:31  |R      |IMP        |Indicate if the IOPMP implements Multi Faults Record, that is `ERR_MFR` and `ERR_INFO.svc`.
 |===
 
 [cols="<2,<1,<1,<1,<6"]
@@ -25,7 +25,7 @@ mfr_en                          |31:31  |R      |IMP        |Indicate if the IOP
 5+h|0x0064
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}
-svc                             |8:8        |R      |0          |Indicate there is a subsequent violation caught in `ERR_MFR`.
+`svc`                           |8:8        |R      |0          |Indicate there is a subsequent violation caught in `ERR_MFR`.
 Implemented only for `HWCFG2.mfr_en`=1, otherwise, ZERO.
 |===
 
@@ -33,11 +33,11 @@ Implemented only for `HWCFG2.mfr_en`=1, otherwise, ZERO.
 |===
 5+h|{set:cellbgcolor:#D3D3D3} ERR_MFR
 5+h|0x0074
-h|Field                         |Bits       |R/W    |Default    |Description
-  |{set:cellbgcolor:#FFFFFF}svw |15:0       |R      |DC         | Subsequent violations in the window indexed by `svi`. `svw[_j_]`=1 for the at lease one subsequent violation issued from RRID= `svi`*16 + _j_.
-  |{set:cellbgcolor:#FFFFFF}svi |27:16      |WARL   |0          | Window's index to search subsequent violations. When read, IOPMP sequentially scans all windows from `svi` until one subsequent violation is found. Once the last available window is scanned, the next window to be scanned is the first record window (index is 0). `svi` indexes the found subsequent violation or `svi` has been rounded back to the same value. After read, the window's content, `svw`, should be clean.
-  |{set:cellbgcolor:#FFFFFF}rsv |30:28      |ZERO   |0          |Must be zero on write, reserved for future.
-  |{set:cellbgcolor:#FFFFFF}svs |31:31      |R      |0         a|The status of this window's content:
+h|Field                           |Bits       |R/W    |Default    |Description
+  |{set:cellbgcolor:#FFFFFF}`svw` |15:0       |R      |DC         | Subsequent violations in the window indexed by `svi`. `svw[_j_]`=1 for the at lease one subsequent violation issued from RRID= `svi`*16 + _j_.
+  |{set:cellbgcolor:#FFFFFF}`svi` |27:16      |WARL   |0          | Window's index to search subsequent violations. When read, IOPMP sequentially scans all windows from `svi` until one subsequent violation is found. Once the last available window is scanned, the next window to be scanned is the first record window (index is 0). `svi` indexes the found subsequent violation or `svi` has been rounded back to the same value. After read, the window's content, `svw`, should be clean.
+  |{set:cellbgcolor:#FFFFFF}`rsv` |30:28      |ZERO   |0          |Must be zero on write, reserved for future.
+  |{set:cellbgcolor:#FFFFFF}`svs` |31:31      |R      |0         a|The status of this window's content:
 
 * 0x0 : no subsequent violation found
 * 0x1 : subsequent violation found
