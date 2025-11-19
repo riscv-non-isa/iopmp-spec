@@ -1,0 +1,99 @@
+[#EXT_REGS]
+=== Registers
+
+<<EXT_REGS_SUMMARY>>, <<EXT_SUMMARY_SRCMD>>, and <<EXT_SUMMARY_ENTRY>> provide summaries of registers, fields, and their corresponding sections.
+
+This chapter also introduces an additional transaction type (`ERR_INFO.ttype`) and two error types (`ERR_INFO.etype`). <<EXT_TTYPE>> and <<EXT_ETYPE>> list all transaction and error types defined in both the baseline specification and the extensions.
+
+:xrefstyle_bak: {xrefstyle}
+:xrefstyle: full
+
+[#EXT_REGS_SUMMARY]
+.Register and field summary of extensions between offset 0x0000 and 0x07FF.
+[%autowidth, options="header"]
+|===
+   |Offset    |Register    |Field            |Bits     |Related section(s)
+.10+|0x0010 .10+|`HWCFG2`  |`prio_entry`     |15:0  .3+|<<NON_PRIORITY_ENTRIES>>
+                           |`prio_ent_prog`  |16:16
+                           |`non_prio_en`    |17:17 
+                           |`rsv`            |25:18    |(Must be zero on write, reserved for future.)
+                           |`chk_x`          |26:26    |<<X_PERM>>
+                           |`pies`           |27:27 .2+|<<PEIS_PEES>>
+                           |`pees`           |28:28
+                           |`sps_en`         |29:29    |<<SPS_EXT>>
+                           |`stall_en`       |30:30    |<<Program_IOPMPs>>
+                           |`mfr_en`         |31:31    |<<MFR>>
+   |0x0030    |`MDSTALL`   2+|All                   .3+|<<Program_IOPMPs>>
+   |0x0034    |`MDSTALLH`  2+|All
+   |0x0038    |`RRIDSCP`   2+|All
+.3+|0x0060 .3+|`ERR_CFG`   |`msi_en`         |3:3      |<<MSI>>
+                           |`stall_fault_en` |4:4      |<<Program_IOPMPs>>
+                           |`msi_data`       |18:8     |<<MSI>>
+.4+|0x0064 .4+|`ERR_INFO`  |`ttype`          |2:1      |<<X_PERM>>
+                           |`msi_werr`       |3:3      |<<MSI>>
+                           |`etype`          |7:4      |<<X_PERM>> + 
+                                                      and <<Program_IOPMPs>>
+                           |`svc`            |8:8      |<<MFR>>
+   |0x0074 |`ERR_MFR`      2+|All                      |<<MFR>>
+   |0x0078 |`ERR_MSIADDR`  2+|All                   .2+|<<MSI>>
+   |0x007C |`ERR_MSIADDRH` 2+|All 
+|===
+
+[#EXT_SUMMARY_SRCMD]
+.Register summary of extensions in SRCMD Table.
+[%autowidth, options="header"]
+|===
+3+h|SRCMD Table, _m_ = 0...`HWCFG0.md_num`-1, _s_ = 0...`HWCFG1.rrid_num`-1.
+  h|Offset           h|Register          h|Related section(s)
+   |0x1008 + (_s_)*32 |`SRCMD_R(_s_)`  .4+|<<SPS_EXT>>
+   |0x100C + (_s_)*32 |`SRCMD_RH(_s_)`
+   |0x1010 + (_s_)*32 |`SRCMD_W(_s_)`
+   |0x1014 + (_s_)*32 |`SRCMD_WH(_s_)`
+|===
+
+[#EXT_SUMMARY_ENTRY]
+.Register and field summary of extensions in entry array.
+[%autowidth, options="header"]
+|===
+5+h|Entry Array, _i_ = 0...`HWCFG1.entry_num`-1
+   |Offset                          |Register            |Field   |Bits   |Related section(s)
+.7+|`ENTRYOFFSET` +
+    + 0x8 + (_i_)*16             .7+|`ENTRY_CFG(_i_)`    |`x`     |2:2    |<<X_PERM>>
+                                                         |`sire`  |5:5 .6+|<<PEIS_PEES>>
+                                                         |`siwe`  |6:6  
+                                                         |`sixe`  |7:7  
+                                                         |`sere`  |8:8  
+                                                         |`sewe`  |9:9  
+                                                         |`sexe`  |10:10
+|===
+
+[#EXT_TTYPE]
+.All transaction types of the baseline specification and extension.
+[%autowidth, cols="<1,<5,<6", options="header"]
+|===
+ 2+| Transaction type                 |Related section(s)
+   |0x00        | Reserved         .3+|(baseline specification)
+   |0x01        | Read access        
+   |0x02        | Write acces/AMO    
+   |0x03        | Instruction fetch   |<<X_PERM>>
+|===
+
+[#EXT_ETYPE]
+.All error types of the baseline specification and extension.
+[%autowidth, cols="<1,<5,<6", options="header"]
+|===
+ 2+| Error type                                        |Related section(s)
+   |0x00        | No error                          .3+|(baseline specification)
+   |0x01        | Illegal read access
+   |0x02        | Illegal write access/AMO
+   |0x03        | Illegal instruction fetch            |<<X_PERM>>
+   |0x04        | Partial hit on a priority rule    .3+|(baseline specification)
+   |0x05        | Not hit any rule 
+   |0x06        | Unknown RRID
+   |0x07        | Error due to a stalled transaction   |<<Program_IOPMPs>>
+   |0x08 ~ 0x0D | Reserved                          .2+|(baseline specification)
+   |0x0E ~ 0x0F | User-defined error               
+|===
+
+:xrefstyle: {xrefstyle_bak}
+:xrefstyle_bak!:
