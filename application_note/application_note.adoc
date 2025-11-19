@@ -32,4 +32,4 @@ include::run_out_md.adoc[]
 include::iopmp_models.adoc[]
 
 // Bibliography
-include::bibliography.adoc[]
+// include::bibliography.adoc[]

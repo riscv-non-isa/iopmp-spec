@@ -1,6 +1,6 @@
 === Write Protection Devices
 
-Systems that are primarily used as read-only memory regions, such as Flash memory or ROM, can leverage global write protection to reduce implementation complexity and hardware overhead. The IOPMP provides the `no_w` configuration bit in the `HWCFG3` register to enable this functionality.
+Systems that are primarily used as read-only memory regions, such as Flash memory or read-only memory (ROM), can leverage global write protection to reduce implementation complexity and hardware overhead. The IOPMP provides the `no_w` configuration bit in the `HWCFG3` register to enable this functionality.
 
 When `no_w` is set to 1, the IOPMP denies all write transactions regardless of entry rule configurations, reporting them with error type "no rule matched" (0x05). This global configuration strategy eliminates the need for per-entry write permission checking logic and removes the requirement to configure write permission bits in individual entry rules, thereby reducing hardware resources and implementation complexity.
 
