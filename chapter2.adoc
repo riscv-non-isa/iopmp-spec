@@ -164,7 +164,7 @@ To grant an AMO transaction permission, both read access permission and write ac
 
 [NOTE]
 ====
-Some AMO implementations of I/O agents are using a non-atomic read-modify-write sequence which could contain a read access transaction and a write access transaction, not single AMO transaction. Therefore, IOPMP possiblly captures error type = "illegal read access" (0x01) when read permission for the read-modify-write sequence from the I/O agents is not granted.
+Some AMO implementations of I/O agents are using a non-atomic read-modify-write sequence which could contain a read access transaction and a write access transaction, not single AMO transaction. Therefore, IOPMP possibly captures error type = "illegal read access" (0x01) when read permission for the read-modify-write sequence from the I/O agents is not granted.
 ====
 
 [#IOPMP_BLOCK_DIAGRAM]

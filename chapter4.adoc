@@ -156,7 +156,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 5+h|0x0048
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF} `l`  |0:0        |W1SS   |0          | Lock bit to `MDCFGLCK` register.
-|f                              |6:1        |WARL   |IMP        | Indicate the number of locked MDCFG entries - `MDCFG(_m_)` is locked for _m_ < `f`. 
+|`f`                            |6:1        |WARL   |IMP        | Indicate the number of locked MDCFG entries - `MDCFG(_m_)` is locked for _m_ < `f`. 
 On write, the field only accepts the value larger than the previous value until the next reset cycle; otherwise, there is no effect.
 |{set:cellbgcolor:#FFFFFF} `rsv`|31:7       |ZERO   |0          | Must be zero on write, reserved for future
 |===
@@ -290,7 +290,7 @@ h|Field                          |Bits       |R/W    |Default    |Description
 5+h|0x1000 + (_s_) × 32
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF} `l`  |0:0        |W1SS   |0          | A sticky lock bit. When set, locks `SRCMD_EN(_s_)` and `SRCMD_ENH(_s_)`.
-|md                             |31:1       |WARL   |DC         | `md[_m_]` = 1 indicates MD _m_ is associated with RRID _s_.
+|`md`                           |31:1       |WARL   |DC         | `md[_m_]` = 1 indicates MD _m_ is associated with RRID _s_.
 |===
 
 [cols="<2,<1,<1,<1,<6"]
