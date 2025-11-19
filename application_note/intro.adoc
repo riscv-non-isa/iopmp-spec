@@ -13,6 +13,7 @@ Each section addresses a specific implementation strategy or use case, providing
 
 The techniques described in this application note are optional and implementation-specific. System designers should evaluate their requirements and select appropriate strategies based on their specific constraints and objectives.
 
+////
 === Glossary and Acronyms
 
 .Glossary and Acronyms
@@ -22,3 +23,4 @@ The techniques described in this application note are optional and implementatio
 |IOPMP| Physical Memory Protection Unit for Input/Output Devices <<APPNOTE_IOPMP>>, a RISC-V non-ISA specification
 |ROM| read-only memory
 |===
+////

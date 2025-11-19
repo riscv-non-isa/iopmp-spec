@@ -1,6 +1,7 @@
 :appendix-number: @
 [appendix]
 :appendix-caption!:
+[#APPICATION_NOTE]
 == Application Note
 
 :figure-caption: Figure
@@ -15,7 +16,7 @@ include::application_note_registers.adoc[]
 // Write Protection Devices 
 include::write_protection_devices.adoc[]
 
-// Instruction Fectch Protection Devices 
+// Instruction Fetch Protection Devices 
 include::x_protection_devices.adoc[]
 
 // SRCMD Table Reduction (includes Source-enforcement as Format 1)
@@ -31,4 +32,4 @@ include::run_out_md.adoc[]
 include::iopmp_models.adoc[]
 
 // Bibliography
-include::bibliography.adoc[]
+// include::bibliography.adoc[]

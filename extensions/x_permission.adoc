@@ -60,7 +60,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 
 - 0x00 = reserved
 - 0x01 = read access
-- 0x02 = write acces/AMO
+- 0x02 = write access/AMO
 - 0x03 = instruction fetch
 |`etype`                        |7:4        |R      |0         a|Indicated the type of violation:
 

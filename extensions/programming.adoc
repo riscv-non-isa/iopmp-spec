@@ -2,7 +2,7 @@
 :numbered:
 === Safe Runtime Configuration
 
-This section introduces an extension to stall transations by RRIDs and describes how to use the extension to update IOPMP's settings safely in runtime.
+This section introduces an extension to stall transactions by RRIDs and describes how to use the extension to update IOPMP's settings safely in runtime.
 
 At times, attempting to configuring all IOPMP settings when the system starts can be difficult or even impossible, especially before I/O agents are active or connected to the system. As a result, it is necessary to update IOPMP settings during runtime. 
 
@@ -49,9 +49,9 @@ Register `MDSTALL` and `MDSTALLH` control _rrid_stall_. `MDSTALL.md` and `MDSTAL
 
 Where:
 
-* ^ is bitwise logical exclusive OR operator, 
-* & is bitwise logical AND operator, and
-* Reduction_OR() is a function that applies bitwise logical OR across all input values.
+* `^` is bitwise logical exclusive OR operator, 
+* `&` is bitwise logical AND operator, and
+* `Reduction_OR()` is a function that applies bitwise logical OR across all input values.
 
 // NOTE:
 // Removed description about SRCMD Table Format 2.
