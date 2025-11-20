@@ -44,7 +44,7 @@ h|Field                         |Bits   |R/W    |Default    |Description
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}
 `rsv`                           |0:0        |ZERO   |0          |Must be zero on write, reserved for future.
-|md                             |31:1       |WARL   |DC         |`md[_m_]` = 1 indicates RRID _s_ has read access and instruction fetch permission to the corresponding MD _m_. 
+|`md`                           |31:1       |WARL   |DC         |`md[_m_]` = 1 indicates RRID _s_ has read access and instruction fetch permission to the corresponding MD _m_. 
 |===
 
 [cols="<2,<1,<1,<1,<6"]
@@ -63,7 +63,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}
 `rsv`                           |0:0        |ZERO   |0          |Must be zero on write, reserved for future.
-|md                             |31:1       |WARL   |DC         |`md[_m_]` = 1 indicates RRID _s_ has write permission to the corresponding MD _m_. 
+|`md`                           |31:1       |WARL   |DC         |`md[_m_]` = 1 indicates RRID _s_ has write permission to the corresponding MD _m_. 
 |===
 
 [cols="<2,<1,<1,<1,<6"]
