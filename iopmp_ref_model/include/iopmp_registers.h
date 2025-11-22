@@ -23,7 +23,8 @@
 #define HWCFG0_OFFSET         0x08
 #define HWCFG1_OFFSET         0x0C
 #define HWCFG2_OFFSET         0x10
-#define ENTRYOFFSET_OFFSET    0x14
+#define HWCFG3_OFFSET         0x14
+#define ENTRYOFFSET_OFFSET    0x2C
 #define MDSTALL_OFFSET        0x30
 #define MDSTALLH_OFFSET       0x34
 #define RRISCP_OFFSET         0x38
@@ -69,7 +70,6 @@ void rrid_stall_update(uint8_t exempt);
 // 1. vendor ID
 // 2. Specification Version
 typedef union {
-
     struct {
         uint32_t vendor  : 24;              // The vendor ID
         uint32_t specver : 8;               // The specification version
@@ -86,100 +86,93 @@ typedef union {
     uint32_t raw;
 } implementation_t;
 
-// HWCFG0 register is one of hrdware configuration registers reporting
+// HWCFG0 register is one of hardware configuration registers reporting
 // features supported by IOPMP. each bit if bot clear indicates
 // presence of that feature in IOPMP
 typedef union {
     struct {
-        uint32_t mdcfg_fmt          : 2;    // Indicate the MDCFG format
-                                            //  -> 0x0: Format 0. MDCFG table is implemented.
-                                            //  -> 0x1: Format 1. No MDCFG table. HWCFG.md_entry_num is fixed.
-                                            //  -> 0x2: Format 2. No MDCFG table. HWCFG.md_entry_num is programmable.
-                                            //  -> 0x3: reserved.
-
-        uint32_t srcmd_fmt          : 2;    // Indicate the MDCFG format
-                                            //  -> 0x0: Format 0. SRCMD_EN(s) and SRCMD_ENH(s) are available.
-                                            //  -> 0x1: Format 1. No SRCMD table.
-                                            //  -> 0x2: Format 2. SRCMD_PERM(m) and SRCMD_PERMH(m) are available.
-                                            //  -> 0x3: reserved.
-
-        uint32_t tor_en             : 1;    // Indicate if TOR is supported
-
-        uint32_t sps_en             : 1;    // Indicate secondary permission settings is supported; which are SRCMD_R/RH(i)
-                                            // and SRCMD_W/WH registers
-
-        uint32_t user_cfg_en        : 1;    // Indicate if user customized attributes is supported; which are
-                                            // ENTRY_USER_CFG(i) registers.
-
-        uint32_t prient_prog        : 1;    // A write-1-clear bit is sticky to 0 and indicates if HWCFG2.prio_entry
-                                            // is programmable. Reset to 1 if the implementation supports programmable
-                                            // prio_entry, otherwise, wired to 0.
-
-        uint32_t rrid_transl_en     : 1;    // Indicate the if tagging a new RRID on the requestor port is supported
-
-        uint32_t rrid_transl_prog   : 1;    // A write-1-set bit is sticky to 0 and indicate if the field sid_transl
-                                            // is programmable. Support only for rrid_transl_en=1, otherwise, wired to 0.
-
-        uint32_t chk_x              : 1;    // Indicate if the IOPMP implements the check of an
-                                            // instruction fetch. On chk_x=0, all fields of illegal
-                                            // instruction fetches are ignored, including
-                                            // HWCFG0.no_x, ENTRY_CFG(i).sixe, ENTRY_CFG(
-                                            // i).esxe, and ENTRY_CFG(i).x. It should be wired to
-                                            // zero if there is no indication for an instruction fetch
-                                            // otherwise, it should depend on x-bit in ENTRY_CFG(i).
-
-        uint32_t no_x               : 1;    // For chk_x=1, the IOPMP with no_x=1 always fails on
-                                            // an instruction fetch; otherwise, it should depend on
-                                            // x-bit in ENTRY_CFG(i). For chk_x=0, no_x has no
-                                            // effect
-
-        uint32_t no_w               : 1;    // Indicate if the IOPMP always fails write accesses
-
-        uint32_t stall_en           : 1;    // Indicate if the IOPMP implements stall-related features, which are MDSTALL,
-                                            // MDSTALLH, and RRIDSCP registers.
-
-        uint32_t peis               : 1;    // Indicate if the IOPMP implements interrupt suppression per entry
-
-        uint32_t pees               : 1;    // Indicate if the IOPMP implements the error suppression per entry
-
-        uint32_t mfr_en             : 1;    // Indicate if the IOPMP implements Multi Faults Record Extension
-
-        uint32_t md_entry_num       : 7;    // When HWCFG0.mdcfg_fmt =
-                                            //  -> 0x0: must be zero
-                                            //  -> 0x1 or 0x2: md_entry_num indicates each memory domain exactly has
-                                            //    (md_entry_num + 1) entries in a memory domain
-                                            // md_entry_num is locked if HWCFG0.enable is 1.
-
-        uint32_t md_num             : 6;    // Indicate the supported number of MD in the instance
-
-        uint32_t addrh_en           : 1;    // Indicate if the IOPMP implements ENTRY_ADDRH(i)
-
         uint32_t enable             : 1;    // Indicate if the IOPMP checks transactions by default.
                                             // If it is implemented, it should be initial to 0 and sticky to 1.
                                             // If it is not implemented, it should be wired to 1.
+        uint32_t rsv                : 23;   // Must be zero on write, reserved for future.
+        uint32_t md_num             : 6;    // Indicate the supported number of MD in the instance
+        uint32_t addrh_en           : 1;    // Indicate if ENTRY_ADDRH(i) and ERR_REQADDRH are available.
+        uint32_t tor_en             : 1;    // Indicate if TOR is supported
     };
     uint32_t raw;
 } hwcfg0_t;
 
-// HWCFG1 register is one of hrdware configuration
+// HWCFG1 register is one of hardware configuration
 // registers reporting features supported by IOPMP.
 typedef union {
     struct {
         uint32_t rrid_num  : 16;            // Indicate the supported number of RRID in the instance
-        uint32_t entry_num : 16;            // Indicate the supported number of entries in the instance
+        uint32_t entry_num : 16;            // Indicate the supported number of entries in the instance, which should be
+                                            // larger than zero.
     };
     uint32_t raw;
 } hwcfg1_t;
 
-// HWCFG2 register is one of hrdware configuration
-// registers reporting features supported by IOPMP.
+// HWCFG2 register is one of hardware configuration registers indicating the
+// extended configurations of current IOPMP instance for extension.
 typedef union {
     struct {
-        uint32_t prio_entry  : 16;          // Indicate the supported number of RRID in the instance
-        uint32_t rrid_transl : 16;          // Indicate the supported number of entries in the instance
+        uint32_t prio_entry    : 16;        // Indicate the number of entries matched with priority. These rules should
+                                            // be placed in the lowest order. Within these rules, the lower order has a
+                                            // higher priority.
+        uint32_t prio_ent_prog : 1;         // A write-1-clear bit is sticky to 0 and indicates if HWCFG2.prio_entry
+                                            // is programmable. Reset to 1 if the implementation supports programmable
+                                            // prio_entry, otherwise, wired to 0.
+        uint32_t rsv           : 9;         // Must be zero on write, reserved for future.
+        uint32_t chk_x         : 1;         // Indicate if the IOPMP implements the check of an instruction fetch.
+        uint32_t peis          : 1;         // Indicate if the IOPMP implements interrupt suppression per entry,
+                                            // including fields sire and siwe in ENTRY_CFG(i), i = 0…HWCFG1.entry_num-1.
+        uint32_t pees          : 1;         // Indicate if the IOPMP implements the error suppression per entry,
+                                            // including fields sere and sewe in ENTRY_CFG(i), i = 0…HWCFG1.entry_num-1.
+        uint32_t sps_en        : 1;         // Indicates secondary permission settings are supported; which are
+                                            // SRCMD_R/RH(s) and SRCMD_W/WH(s) registers, s = 0…HWCFG1.rrid_num - 1.
+        uint32_t stall_en      : 1;         // Indicate if the IOPMP implements stall-related features, which are MDSTALL,
+                                            // MDSTALLH, and RRIDSCP registers.
+        uint32_t mfr_en        : 1;         // Indicate if the IOPMP implements Multi Faults Record, that is ERR_MFR and
+                                            // ERR_INFO.svc.
     };
     uint32_t raw;
 } hwcfg2_t;
+
+// HWCFG3 register is one of hardware configuration registers indicating the
+// extended configurations of current IOPMP instance for application note.
+typedef union {
+    struct {
+        uint32_t mdcfg_fmt        : 2;      // Indicate the MDCFG format
+                                            //  -> 0x0: Format 0. MDCFG table is implemented.
+                                            //  -> 0x1: Format 1. No MDCFG table. HWCFG3.md_entry_num is fixed.
+                                            //  -> 0x2: Format 2. No MDCFG table. HWCFG3.md_entry_num is programmable.
+                                            //  -> 0x3: reserved.
+        uint32_t srcmd_fmt        : 2;      // Indicate the SRCMD Table format
+                                            //  -> 0x0: Format 0 (baseline). SRCMD_EN(s) and SRCMD_ENH(s) are available.
+                                            //  -> 0x1: Format 1. Exclusive Format. No SRCMD Table. RRID i associates
+                                            //     exclusively with memory domain i, i = 0…HWCFG0.md_num-1.
+                                            //  -> 0x2: Format 2. MD-indexed Format. SRCMD_PERM(m) and SRCMD_PERMH(m)
+                                            //     are available.
+                                            //  -> 0x3: reserved.
+        uint32_t md_entry_num     : 8;      // When HWCFG3.mdcfg_fmt =
+                                            //  -> 0x0: must be zero
+                                            //  -> 0x1 or 0x2: md_entry_num indicates each memory domain has exactly
+                                            //    (md_entry_num + 1) entries
+                                            // md_entry_num is locked if HWCFG0.enable is 1.
+        uint32_t no_x             : 1;      // For HWCFG2.chk_x=1, when no_x=1, the IOPMP denies all instruction fetch
+                                            // transactions; otherwise, it depends on the x-bit in ENTRY_CFG(i). For
+                                            // chk_x=0, no_x has no effect.
+        uint32_t no_w             : 1;      // Indicate if the IOPMP always denies write accesses as if no rule matched.
+        uint32_t rrid_transl_en   : 1;      // Indicate the if tagging a new RRID on the initiator port is supported
+        uint32_t rrid_transl_prog : 1;      // A write-1-clear bit that is sticky to 0. Indicates if the rrid_transl
+                                            // field is programmable. Supported only for rrid_transl_en=1, otherwise,
+                                            // wired to 0.
+        uint32_t rrid_transl      : 16;     // The RRID tagged to outgoing transactions. Supported only for
+                                            // rrid_transl_en=1. It is writable only when rrid_transl_prog=1.
+    };
+    uint32_t raw;
+} hwcfg3_t;
 
 // ENTRYOFFSET register ndicates the internal address
 // offsets of each table.
@@ -341,7 +334,7 @@ typedef union {
                                             // 0x0E ~ 0x0F = user-defined error
 
         uint32_t svc   : 1;                 // Indicate there is a subsequent violation caught in ERR_MFR.
-                                            // Implemented only for HWCFG0.mfr_en=1,
+                                            // Implemented only for HWCFG2.mfr_en=1,
 
         uint32_t rsv   : 23;                // reserved for future use
     };
@@ -587,25 +580,24 @@ typedef union {
                                             // 0x2: NA4
                                             // 0x3: NAPOT
 
-        uint32_t sire : 1;                  // To suppress interrupt for an illegal read access caught by the entry
-        uint32_t siwe : 1;                  // Suppress interrupt for write violations caught by the entry
-        uint32_t sixe : 1;                  // Suppress interrupt on an illegal instruction fetch caught by the entry
+        uint32_t sire : 1;                  // Suppress interrupt for an illegal read access caught by the entry.
+        uint32_t siwe : 1;                  // Suppress interrupt for an illegal write access/AMO caught by the entry.
+        uint32_t sixe : 1;                  // Suppress interrupt on an illegal instruction fetch caught by the entry.
         uint32_t sere : 1;                  // Supress the (bus) error on an illegal read access caught by the entry
-                                            // 0x0: the response by ERR_CFG.rre
-                                            // 0x1: do not respond an error. User to define the behavior,
-                                            //      e.g., respond a success with an implementation-dependent
-                                            //      value to the requestor.
-
+                                            // * 0x0: respond an error if ERR_CFG.rs is 0x0.
+                                            // * 0x1: do not respond an error. User to define the behavior,
+                                            //        e.g., respond a success with an implementation-dependent value to
+                                            //        the initiator.
         uint32_t sewe : 1;                  // Supress the (bus) error on an illegal write access caught by the entry
-                                            //• 0x0: the response by ERR_CFG.rwe
-                                            //• 0x1: do not respond an error. User to define the behavior,
-                                            //       e.g., respond a success if response is needed
-        uint32_t sexe : 1;                  //       upress the (bus) error on an illegal instruction fetch
-                                            //       caught by the entry
-                                            // 0x0: the response by ERR_CFG.rxe
-                                            // 0x1: do not respond an error. User to define the behavior,
-                                            //      e.g., respond a success with an implementation-dependent
-                                            //      value to the requestor.
+                                            // * 0x0: respond an error if ERR_CFG.rs is 0x0.
+                                            // * 0x1: do not respond an error. User to define the behavior,
+                                            //        e.g., respond a success if response is needed
+        uint32_t sexe : 1;                  // Suppress the (bus) error on an illegal instruction fetch caught by the
+                                            // entry:
+                                            // * 0x0: the response by ERR_CFG.rxe
+                                            // * 0x1: do not respond an error. User to define the behavior,
+                                            //        e.g., respond a success with an implementation-dependent value to
+                                            //        the requestor.
         uint32_t rsv  : 21;                 // Must be zero on write, reserved for future
     };
     uint32_t raw;
@@ -637,8 +629,9 @@ typedef union {
         hwcfg0_t         hwcfg0;
         hwcfg1_t         hwcfg1;
         hwcfg2_t         hwcfg2;
+        hwcfg3_t         hwcfg3;
+        uint32_t         reserved0[5];
         entryoffset_t    entryoffset;
-        uint32_t         reserved0[6];
         #if (IOPMP_STALL_EN)
         mdstall_t        mdstall;
         mdstallh_t       mdstallh;

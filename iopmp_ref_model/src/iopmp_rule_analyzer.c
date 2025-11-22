@@ -118,9 +118,9 @@ iopmpMatchStatus_t iopmpCheckPerms(uint16_t rrid, perm_type_e req_perm, entry_cf
 
     // Extract hardware configuration flags
 #if (SRCMD_FMT == 0)
-    bool sps_en = g_reg_file.hwcfg0.sps_en;  // Software privilege separation enable
+    bool sps_en = g_reg_file.hwcfg2.sps_en; // Software privilege separation enable
 #endif
-    bool chk_x  = g_reg_file.hwcfg0.chk_x;    // Execute permission check enable
+    bool chk_x  = g_reg_file.hwcfg2.chk_x;  // Execute permission check enable
 
     // Common permission checks
     bool read_allowed    = false;
@@ -194,9 +194,9 @@ iopmpMatchStatus_t iopmpCheckPerms(uint16_t rrid, perm_type_e req_perm, entry_cf
 iopmpMatchStatus_t iopmpRuleAnalyzer(iopmp_trans_req_t trans_req, uint64_t prev_iopmpaddr, uint64_t iopmpaddr, entry_cfg_t iopmpcfg, uint8_t md, int is_priority) {
     iopmpMatchStatus_t match_status = ENTRY_MATCH;  // Default to full match
     uint64_t start_addr, end_addr;
-    bool no_w  = g_reg_file.hwcfg0.no_w;      // Write restriction
-    bool no_x  = g_reg_file.hwcfg0.no_x;      // Execute restriction
-    bool chk_x = g_reg_file.hwcfg0.chk_x;    // Execute permission check enable
+    bool no_w  = g_reg_file.hwcfg3.no_w;      // Write restriction
+    bool no_x  = g_reg_file.hwcfg3.no_x;      // Execute restriction
+    bool chk_x = g_reg_file.hwcfg2.chk_x;     // Execute permission check enable
     if ((no_w && (trans_req.perm == WRITE_ACCESS)) || (no_x && (trans_req.perm == INSTR_FETCH) && chk_x)) { return ENTRY_NOTMATCH; }
 
     // Set up the address range; if range setup fails, return not matched
