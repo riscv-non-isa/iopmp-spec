@@ -8,7 +8,7 @@
 
 #define IOPMP_TOR_EN            1
 #define IOPMP_SPS_EN            1
-#define IOPMP_PARIENT_PROG      0
+#define IOPMP_PRIO_ENT_PROG     0
 #define IOPMP_RRID_TRANSL_EN    1
 #define IOPMP_RRID_TRANSL_PROG  0
 #define IOPMP_CHK_X             1

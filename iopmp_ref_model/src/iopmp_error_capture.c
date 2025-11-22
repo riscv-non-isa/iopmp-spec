@@ -45,7 +45,7 @@ void errorCapture(perm_type_e trans_type, uint8_t error_type, uint16_t rrid, uin
     // If an error was previously logged, handle a subsequent violation
     }
 #if (IOPMP_MFR_EN)
-    else if (!checkRridSv(rrid) && g_reg_file.hwcfg0.mfr_en && (!error_suppress | !intrpt_suppress)) {
+    else if (!checkRridSv(rrid) && g_reg_file.hwcfg2.mfr_en && (!error_suppress | !intrpt_suppress)) {
         // Update violation window
         setRridSv(rrid);
     }
