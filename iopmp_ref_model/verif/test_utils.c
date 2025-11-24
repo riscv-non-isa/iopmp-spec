@@ -134,7 +134,11 @@ void receiver_port(uint16_t rrid, uint64_t addr, uint32_t length, uint32_t size,
   * @brief Set Enable High
  **/
 void set_hwcfg0_enable(){
-    write_register(0x0008,read_register(0x0008,4) | 0x80000000,4);  // Set Enable after Programming
+    hwcfg0_t hwcfg0;
+
+    hwcfg0.raw = read_register(HWCFG0_OFFSET, 4);
+    hwcfg0.enable = true;
+    write_register(HWCFG0_OFFSET, hwcfg0.raw, 4);
 }
 
 /**
