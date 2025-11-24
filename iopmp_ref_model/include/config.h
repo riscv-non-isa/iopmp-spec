@@ -8,7 +8,6 @@
 
 #define IOPMP_TOR_EN            1
 #define IOPMP_SPS_EN            1
-#define IOPMP_PRIO_ENT_PROG     0
 #define IOPMP_RRID_TRANSL_EN    1
 #define IOPMP_RRID_TRANSL_PROG  0
 #define IOPMP_CHK_X             1
@@ -23,7 +22,9 @@
 #define IOPMP_ADDRH_EN          1
 #define IOPMP_ENABLE            0
 #define IOPMP_ENTRY_NUM         512
-#define IOPMP_PRIO_ENTRY        16
+#define IOPMP_PRIO_ENTRY        16          // Depends on IOPMP_NON_PRIO_EN. If IOPMP_NON_PRIO_EN=0 the value should equal to IOPMP_ENTRY_NUM.
+#define IOPMP_PRIO_ENT_PROG     0           // Depends on IOPMP_NON_PRIO_EN.
+#define IOPMP_NON_PRIO_EN       1
 #define IOPMP_RRID_TRANSL       48
 
 #define USER                    0x80        // User-defined value for error suppression success responses.

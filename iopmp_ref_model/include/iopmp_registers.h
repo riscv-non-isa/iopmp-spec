@@ -123,7 +123,8 @@ typedef union {
         uint32_t prio_ent_prog : 1;         // A write-1-clear bit is sticky to 0 and indicates if HWCFG2.prio_entry
                                             // is programmable. Reset to 1 if the implementation supports programmable
                                             // prio_entry, otherwise, wired to 0.
-        uint32_t rsv           : 9;         // Must be zero on write, reserved for future.
+        uint32_t non_prio_en   : 1;         // Indicates whether the IOPMP supports non-priority entries.
+        uint32_t rsv           : 8;         // Must be zero on write, reserved for future.
         uint32_t chk_x         : 1;         // Indicate if the IOPMP implements the check of an instruction fetch.
         uint32_t peis          : 1;         // Indicate if the IOPMP implements interrupt suppression per entry,
                                             // including fields sire and siwe in ENTRY_CFG(i), i = 0…HWCFG1.entry_num-1.
