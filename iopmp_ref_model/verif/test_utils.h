@@ -76,18 +76,18 @@ extern void set_hwcfg0_enable();
     { printf("\x1B[32mPASS\x1B[0m\n"); }
 
 // Transaction Check Macro: Verifies transaction response against expected values
-#define CHECK_IOPMP_TRANS(RSP_STATUS, ERR_TYPE)                                                         \
-    FAIL_IF((iopmp_trans_rsp.rrid != iopmp_trans_req.rrid));                                            \
-    FAIL_IF((iopmp_trans_rsp.status != (RSP_STATUS)));                                                  \
-    err_info_temp.raw = read_register(0x0064, 4);                                                       \
-    if (iopmp_trans_rsp.status == IOPMP_ERROR) {                                                        \
-        FAIL_IF((err_info_temp.v != 1));                                                                \
-        FAIL_IF((err_info_temp.ttype != iopmp_trans_req.perm));                                         \
-        FAIL_IF((err_info_temp.etype != (ERR_TYPE)));                                                   \
-        FAIL_IF((read_register(0x0068, 4) != (uint32_t)((iopmp_trans_req.addr >> 2) & 0xFFFFFFFF)));    \
-        FAIL_IF((read_register(0x006C, 4) != (uint32_t)((iopmp_trans_req.addr >> 34) & 0xFFFFFFFF)));   \
-        if (bus_error == 0) { FAIL_IF((err_info_temp.msi_werr != 0)); }                                 \
-        else { FAIL_IF((err_info_temp.msi_werr != 1)); }                                                \
-    } else {                                                                                            \
-        FAIL_IF((err_info_temp.v != 0));                                                                \
+#define CHECK_IOPMP_TRANS(RSP_STATUS, ERR_TYPE)                                                                     \
+    FAIL_IF((iopmp_trans_rsp.rrid != iopmp_trans_req.rrid));                                                        \
+    FAIL_IF((iopmp_trans_rsp.status != (RSP_STATUS)));                                                              \
+    err_info_temp.raw = read_register(ERR_INFO_OFFSET, 4);                                                          \
+    if (iopmp_trans_rsp.status == IOPMP_ERROR) {                                                                    \
+        FAIL_IF((err_info_temp.v != 1));                                                                            \
+        FAIL_IF((err_info_temp.ttype != iopmp_trans_req.perm));                                                     \
+        FAIL_IF((err_info_temp.etype != (ERR_TYPE)));                                                               \
+        FAIL_IF((read_register(ERR_REQADDR_OFFSET, 4) != (uint32_t)((iopmp_trans_req.addr >> 2) & 0xFFFFFFFF)));    \
+        FAIL_IF((read_register(ERR_REQADDRH_OFFSET, 4) != (uint32_t)((iopmp_trans_req.addr >> 34) & 0xFFFFFFFF)));  \
+        if (bus_error == 0) { FAIL_IF((err_info_temp.msi_werr != 0)); }                                             \
+        else { FAIL_IF((err_info_temp.msi_werr != 1)); }                                                            \
+    } else {                                                                                                        \
+        FAIL_IF((err_info_temp.v != 0));                                                                            \
     }
