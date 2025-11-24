@@ -797,7 +797,7 @@ int main()
     write_register(ERR_INFO_OFFSET, 0, 4);
     END_TEST();
 
-#if ((STALL_BUF_DEPTH != 0) & (IMP_RRIDSCP))
+#if (IOPMP_STALL_EN && (STALL_BUF_DEPTH != 0) && (IMP_RRIDSCP))
     START_TEST("Stall MD Feature");
     reset_iopmp();
     configure_srcmd_n(SRCMD_EN, 5, 0x10, 4);
@@ -817,7 +817,7 @@ int main()
     FAIL_IF((iopmp_trans_rsp.rrid != 5));
     write_register(ERR_INFO_OFFSET, 0, 4);
     END_TEST();
-#elif (IMP_RRIDSCP)
+#elif (IOPMP_STALL_EN && IMP_RRIDSCP)
     // Set STALL_BUF_DEPTH zero to test this feature
     START_TEST("Faulting Stalled Transactions Feature");
     reset_iopmp();
