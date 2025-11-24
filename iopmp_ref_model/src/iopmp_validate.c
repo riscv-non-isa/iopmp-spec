@@ -133,7 +133,11 @@ void iopmp_validate_access(iopmp_trans_req_t *trans_req, iopmp_trans_rsp_t* iopm
             uint64_t prev_addr     = (cur_entry == 0) ? 0 : CONCAT32(iopmp_entries.entry_table[cur_entry - 1].entry_addrh.addrh, iopmp_entries.entry_table[cur_entry - 1].entry_addr.addr);
             uint64_t curr_addr     = CONCAT32(iopmp_entries.entry_table[cur_entry].entry_addrh.addrh, iopmp_entries.entry_table[cur_entry].entry_addr.addr);
             entry_cfg_t entry_cfg  = iopmp_entries.entry_table[cur_entry].entry_cfg;
-            bool is_priority_entry = (cur_entry < g_reg_file.hwcfg2.prio_entry);
+            #if (IOPMP_NON_PRIO_EN)
+                bool is_priority_entry = (cur_entry < g_reg_file.hwcfg2.prio_entry);
+            #else
+                bool is_priority_entry = true;
+            #endif
 
             // Analyze entry for match
             iopmpMatchStatus = iopmpRuleAnalyzer(*trans_req, prev_addr, curr_addr, entry_cfg, cur_md, is_priority_entry);
