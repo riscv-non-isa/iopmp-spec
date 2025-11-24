@@ -328,6 +328,7 @@ reg_intf_dw read_register(uint64_t offset, uint8_t num_bytes) {
     return g_reg_file.regs4[offset / num_bytes];
 }
 
+#if (IOPMP_STALL_EN)
 /**
  * @brief Updates the stall status for each RRID based on memory domain stall conditions.
  *
@@ -364,6 +365,8 @@ void rrid_stall_update(uint8_t exempt) {
         #endif
     }
 }
+#endif
+
 /**
  * @brief Writes data to a memory-mapped register identified by the specified offset.
  *
