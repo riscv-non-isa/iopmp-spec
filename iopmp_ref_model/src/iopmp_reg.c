@@ -53,11 +53,14 @@ int reset_iopmp() {
 
     // Hardware Configuration
     g_reg_file.hwcfg0.enable           = IOPMP_ENABLE;
+    g_reg_file.hwcfg0.HWCFG2_en        = IMP_HWCFG2;
+    g_reg_file.hwcfg0.HWCFG3_en        = IMP_HWCFG3;
     g_reg_file.hwcfg0.md_num           = IOPMP_MD_NUM;
     g_reg_file.hwcfg0.addrh_en         = IOPMP_ADDRH_EN;
     g_reg_file.hwcfg0.tor_en           = IOPMP_TOR_EN;
     g_reg_file.hwcfg1.rrid_num         = IOPMP_RRID_NUM;
     g_reg_file.hwcfg1.entry_num        = IOPMP_ENTRY_NUM;
+#if (IMP_HWCFG2)
 #if (IOPMP_NON_PRIO_EN)
     g_reg_file.hwcfg2.prio_entry       = IOPMP_PRIO_ENTRY;
     g_reg_file.hwcfg2.prio_ent_prog    = IOPMP_PRIO_ENT_PROG;
@@ -72,6 +75,11 @@ int reset_iopmp() {
     g_reg_file.hwcfg2.sps_en           = IOPMP_SPS_EN;
     g_reg_file.hwcfg2.stall_en         = IOPMP_STALL_EN;
     g_reg_file.hwcfg2.mfr_en           = IOPMP_MFR_EN;
+#else   // IMP_HWCFG2=0
+    g_reg_file.reserved12              = 0;
+#endif
+
+#if (IMP_HWCFG3)
     // Set the MDCFG Format - Based on compiled model
 #ifdef MDCFG_FMT
     g_reg_file.hwcfg3.mdcfg_fmt        = MDCFG_FMT;
@@ -94,6 +102,9 @@ int reset_iopmp() {
 #else
     g_reg_file.hwcfg3.rrid_transl_prog = 0;
     g_reg_file.hwcfg3.rrid_transl      = 0;
+#endif
+#else   // IMP_HWCFG3=0
+    g_reg_file.reserved13              = 0;
 #endif
 
     g_reg_file.entryoffset.raw         = ENTRY_OFFSET;
@@ -391,8 +402,12 @@ void write_register(uint64_t offset, reg_intf_dw data, uint8_t num_bytes) {
 
   // Initialize temporary registers
     hwcfg0_t         hwcfg0_temp         = { .raw = lwr_data4 };
+#if (IMP_HWCFG2)
     hwcfg2_t         hwcfg2_temp         = { .raw = lwr_data4 };
+#endif
+#if (IMP_HWCFG3)
     hwcfg3_t         hwcfg3_temp         = { .raw = lwr_data4 };
+#endif
     entrylck_t       entrylck_temp       = { .raw = upr_data4 };
     err_cfg_t        err_cfg_temp        = { .raw = lwr_data4 };
     entry_addr_t     entry_addr_temp     = { .raw = lwr_data4 };
@@ -476,6 +491,7 @@ void write_register(uint64_t offset, reg_intf_dw data, uint8_t num_bytes) {
         // This register is read only
         return;
 
+#if (IMP_HWCFG2)
     case HWCFG2_OFFSET:
         #if (IOPMP_NON_PRIO_EN)
             if (g_reg_file.hwcfg2.prio_ent_prog) {
@@ -484,7 +500,9 @@ void write_register(uint64_t offset, reg_intf_dw data, uint8_t num_bytes) {
             g_reg_file.hwcfg2.prio_ent_prog &= ~hwcfg2_temp.prio_ent_prog;
         #endif
         break;
+#endif
 
+#if (IMP_HWCFG3)
     case HWCFG3_OFFSET:
         #if (MDCFG_FMT == 2)
             if (!g_reg_file.hwcfg0.enable) {
@@ -498,6 +516,7 @@ void write_register(uint64_t offset, reg_intf_dw data, uint8_t num_bytes) {
             g_reg_file.hwcfg3.rrid_transl_prog &= ~hwcfg3_temp.rrid_transl_prog;
         #endif
         break;
+#endif
 
     case ENTRYOFFSET_OFFSET:
         // This register is read only

@@ -60,6 +60,14 @@
     typedef uint64_t reg_intf_dw;
 #endif
 
+// Indicate if HWCFG2 is implemented.
+#define IMP_HWCFG2              (IOPMP_NON_PRIO_EN | IOPMP_CHK_X | \
+                                 IOPMP_PEIS | IOPMP_PEES | IOPMP_SPS_EN | \
+                                 IOPMP_STALL_EN | IOPMP_MFR_EN)
+// Indicate if HWCFG3 is implemented.
+#define IMP_HWCFG3              ((MDCFG_FMT > 0) | (SRCMD_FMT > 0) | \
+                                 IOPMP_NO_X | IOPMP_NO_W | IOPMP_RRID_TRANSL_EN)
+
 extern int reset_iopmp(void);
 extern reg_intf_dw read_register(uint64_t offset, uint8_t num_bytes);
 extern void write_register(uint64_t offset, reg_intf_dw data, uint8_t num_bytes);
@@ -94,7 +102,9 @@ typedef union {
         uint32_t enable             : 1;    // Indicate if the IOPMP checks transactions by default.
                                             // If it is implemented, it should be initial to 0 and sticky to 1.
                                             // If it is not implemented, it should be wired to 1.
-        uint32_t rsv                : 23;   // Must be zero on write, reserved for future.
+        uint32_t HWCFG2_en          : 1;    // Indicate if HWCFG2 is implemented.
+        uint32_t HWCFG3_en          : 1;    // Indicate if HWCFG3 is implemented.
+        uint32_t rsv                : 21;   // Must be zero on write, reserved for future.
         uint32_t md_num             : 6;    // Indicate the supported number of MD in the instance
         uint32_t addrh_en           : 1;    // Indicate if ENTRY_ADDRH(i) and ERR_REQADDRH are available.
         uint32_t tor_en             : 1;    // Indicate if TOR is supported
@@ -629,8 +639,14 @@ typedef union {
         implementation_t implementation;
         hwcfg0_t         hwcfg0;
         hwcfg1_t         hwcfg1;
-        hwcfg2_t         hwcfg2;
-        hwcfg3_t         hwcfg3;
+        union {
+            hwcfg2_t     hwcfg2;
+            uint32_t     reserved12;
+        };
+        union {
+            hwcfg3_t     hwcfg3;
+            uint32_t     reserved13;
+        };
         uint32_t         reserved0[5];
         entryoffset_t    entryoffset;
         #if (IOPMP_STALL_EN)
