@@ -26,7 +26,8 @@ extern const struct iopmp_driver *const iopmp_drivers[];
 
 #define IS_ALIGNED(x, a)    (((x) & ((a) - 1)) == 0)
 
-#define MAX_MD_ENTRY_NUM    ((1UL << 7) - 1)
+#define MD_ENTRY_NUM_BITS   8
+#define MAX_MD_ENTRY_NUM    ((1UL << MD_ENTRY_NUM_BITS) - 1)
 
 #define IOPMP_ADDR_SHIFT    2
 
@@ -133,13 +134,13 @@ enum iopmp_error iopmp_lock_prio_entry_num(IOPMP_t *iopmp)
 {
     assert(iopmp_is_initialized(iopmp));
 
-    if (!iopmp->prient_prog)
+    if (!iopmp->prio_ent_prog)
         return IOPMP_OK;
 
-    /* If HWCFG0.prient_prog is not wired to 0, this operation is mandatory */
+    /* If HWCFG2.prio_ent_prog is not wired to 0, this operation is mandatory */
     assert(iopmp->ops_generic->lock_prio_entry_num);
     iopmp->ops_generic->lock_prio_entry_num(iopmp);
-    iopmp->prient_prog = false; /* update local cache */
+    iopmp->prio_ent_prog = false; /* update local cache */
 
     return IOPMP_OK;
 }
@@ -155,7 +156,7 @@ enum iopmp_error iopmp_lock_rrid_transl(IOPMP_t *iopmp)
         return IOPMP_OK;
 
     /*
-     * If HWCFG0.rrid_transl_prog is not wired to 0, this operation is mandatory
+     * If HWCFG3.rrid_transl_prog is not wired to 0, this operation is mandatory
      */
     assert(iopmp->ops_generic->lock_rrid_transl);
     iopmp->ops_generic->lock_rrid_transl(iopmp);
@@ -186,14 +187,14 @@ enum iopmp_error iopmp_set_prio_entry_num(IOPMP_t *iopmp, uint16_t *num_entry)
 
     assert(iopmp_is_initialized(iopmp));
 
-    if (!iopmp->prient_prog)
+    if (!iopmp->prio_ent_prog)
         return IOPMP_ERR_REG_IS_LOCKED;
 
     if (!num_entry)
         return IOPMP_ERR_INVALID_PARAMETER;
 
     /*
-     * If HWCFG0.rrid_transl_prog is not wired to 0, this operation is mandatory
+     * If HWCFG2.prio_ent_prog is not wired to 0, this operation is mandatory
      */
     assert(iopmp->ops_generic->set_prio_entry_num);
     ret = iopmp->ops_generic->set_prio_entry_num(iopmp, num_entry);
@@ -219,11 +220,11 @@ enum iopmp_error iopmp_set_rrid_transl(IOPMP_t *iopmp, uint16_t *rrid_transl)
         return IOPMP_ERR_INVALID_PARAMETER;
 
     /*
-     * If HWCFG0.rrid_transl_en is not wired to 0, this operation is mandatory
+     * If HWCFG3.rrid_transl_prog is not wired to 0, this operation is mandatory
      */
     assert(iopmp->ops_generic->set_rrid_transl);
     ret = iopmp->ops_generic->set_rrid_transl(iopmp, rrid_transl);
-    /* HWCFG2.rrid_transl is WARL field. We always update local cache for it */
+    /* HWCFG3.rrid_transl is WARL field. We always update local cache for it */
     iopmp->rrid_transl = *rrid_transl;
 
     return ret;
@@ -724,7 +725,7 @@ enum iopmp_error iopmp_set_stall_violation_en(IOPMP_t *iopmp, bool *enable)
     if (iopmp->stall_violation_en == *enable)   /* Already set */
         return IOPMP_OK;
 
-    /* If HWCFG0.stall_en=1, this operation is mandatory */
+    /* If HWCFG2.stall_en=1, this operation is mandatory */
     assert(iopmp->ops_generic->set_stall_violation_en);
     ret = iopmp->ops_generic->set_stall_violation_en(iopmp, enable);
     iopmp->stall_violation_en = *enable;
@@ -775,7 +776,7 @@ enum iopmp_error iopmp_mfr_get_sv_window(IOPMP_t *iopmp, uint16_t *svi,
     if (!svi || !svw)
         return IOPMP_ERR_INVALID_PARAMETER;
 
-    /* If HWCFG0.mfr_en=1, this operation is mandatory */
+    /* If HWCFG2.mfr_en=1, this operation is mandatory */
     assert(iopmp->ops_generic->get_sv_window);
     return iopmp->ops_generic->get_sv_window(iopmp, svi, svw);
 }
@@ -1329,11 +1330,11 @@ enum iopmp_error iopmp_set_md_entry_num(IOPMP_t *iopmp, uint32_t *md_entry_num)
     if (iopmp->md_entry_num == *md_entry_num)
         return IOPMP_OK;
 
-    /* HWCFG0.md_entry_num is locked if HWCFG0.enable is 1 */
+    /* HWCFG3.md_entry_num is locked if HWCFG0.enable is 1 */
     if (iopmp->enable)
         return IOPMP_ERR_REG_IS_LOCKED;
 
-    /* HWCFG0.md_entry_num only has 7 bits */
+    /* HWCFG3.md_entry_num only has 8 bits */
     if (*md_entry_num > MAX_MD_ENTRY_NUM)
         return IOPMP_ERR_OUT_OF_BOUNDS;
 

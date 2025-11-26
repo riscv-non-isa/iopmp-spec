@@ -34,44 +34,18 @@
     #define IOPMP_IMPLEMENTATION_IMPID_MASK     GENMASK_32(31, 0)
 
 #define IOPMP_HWCFG0_BASE                       0x0008
-    #define IOPMP_HWCFG0_MDCFG_FMT_SHIFT        0
-    #define IOPMP_HWCFG0_MDCFG_FMT_MASK         GENMASK_32(1, 0)
-    #define IOPMP_HWCFG0_SRCMD_FMT_SHIFT        2
-    #define IOPMP_HWCFG0_SRCMD_FMT_MASK         GENMASK_32(3, 2)
-    #define IOPMP_HWCFG0_TOR_EN_SHIFT           4
-    #define IOPMP_HWCFG0_TOR_EN_MASK            GENMASK_32(4, 4)
-    #define IOPMP_HWCFG0_SPS_EN_SHIFT           5
-    #define IOPMP_HWCFG0_SPS_EN_MASK            GENMASK_32(5, 5)
-    #define IOPMP_HWCFG0_USER_CFG_EN_SHIFT      6
-    #define IOPMP_HWCFG0_USER_CFG_EN_MASK       GENMASK_32(6, 6)
-    #define IOPMP_HWCFG0_PRIENT_PROG_SHIFT      7
-    #define IOPMP_HWCFG0_PRIENT_PROG_MASK       GENMASK_32(7, 7)
-    #define IOPMP_HWCFG0_RRID_TRANSL_EN_SHIFT   8
-    #define IOPMP_HWCFG0_RRID_TRANSL_EN_MASK    GENMASK_32(8, 8)
-    #define IOPMP_HWCFG0_RRID_TRANSL_PROG_SHIFT 9
-    #define IOPMP_HWCFG0_RRID_TRANSL_PROG_MASK  GENMASK_32(9, 9)
-    #define IOPMP_HWCFG0_CHK_X_SHIFT            10
-    #define IOPMP_HWCFG0_CHK_X_MASK             GENMASK_32(10, 10)
-    #define IOPMP_HWCFG0_NO_X_SHIFT             11
-    #define IOPMP_HWCFG0_NO_X_MASK              GENMASK_32(11, 11)
-    #define IOPMP_HWCFG0_NO_W_SHIFT             12
-    #define IOPMP_HWCFG0_NO_W_MASK              GENMASK_32(12, 12)
-    #define IOPMP_HWCFG0_STALL_EN_SHIFT         13
-    #define IOPMP_HWCFG0_STALL_EN_MASK          GENMASK_32(13, 13)
-    #define IOPMP_HWCFG0_PEIS_SHIFT             14
-    #define IOPMP_HWCFG0_PEIS_MASK              GENMASK_32(14, 14)
-    #define IOPMP_HWCFG0_PEES_SHIFT             15
-    #define IOPMP_HWCFG0_PEES_MASK              GENMASK_32(15, 15)
-    #define IOPMP_HWCFG0_MFR_EN_SHIFT           16
-    #define IOPMP_HWCFG0_MFR_EN_MASK            GENMASK_32(16, 16)
-    #define IOPMP_HWCFG0_MD_ENTRY_NUM_SHIFT     17
-    #define IOPMP_HWCFG0_MD_ENTRY_NUM_MASK      GENMASK_32(23, 17)
+    #define IOPMP_HWCFG0_ENABLE_SHIFT           0
+    #define IOPMP_HWCFG0_ENABLE_MASK            GENMASK_32(0, 0)
+    #define IOPMP_HWCFG0_HWCFG2_EN_SHIFT        1
+    #define IOPMP_HWCFG0_HWCFG2_EN_MASK         GENMASK_32(1, 1)
+    #define IOPMP_HWCFG0_HWCFG3_EN_SHIFT        2
+    #define IOPMP_HWCFG0_HWCFG3_EN_MASK         GENMASK_32(2, 2)
     #define IOPMP_HWCFG0_MD_NUM_SHIFT           24
     #define IOPMP_HWCFG0_MD_NUM_MASK            GENMASK_32(29, 24)
     #define IOPMP_HWCFG0_ADDRH_EN_SHIFT         30
-    #define IOPMP_HWCFG0_ADDRH_EN_MASK          GENMASK_32(31, 30)
-    #define IOPMP_HWCFG0_ENABLE_SHIFT           31
-    #define IOPMP_HWCFG0_ENABLE_MASK            GENMASK_32(31, 31)
+    #define IOPMP_HWCFG0_ADDRH_EN_MASK          GENMASK_32(30, 30)
+    #define IOPMP_HWCFG0_TOR_EN_SHIFT           31
+    #define IOPMP_HWCFG0_TOR_EN_MASK            GENMASK_32(31, 31)
 
 #define IOPMP_HWCFG1_BASE                       0x000C
     #define IOPMP_HWCFG1_RRID_NUM_SHIFT         0
@@ -82,16 +56,48 @@
 #define IOPMP_HWCFG2_BASE                       0x0010
     #define IOPMP_HWCFG2_PRIO_ENTRY_SHIFT       0
     #define IOPMP_HWCFG2_PRIO_ENTRY_MASK        GENMASK_32(15, 0)
-    #define IOPMP_HWCFG2_RRID_TRANSL_SHIFT      16
-    #define IOPMP_HWCFG2_RRID_TRANSL_MASK       GENMASK_32(31, 16)
+    #define IOPMP_HWCFG2_PRIO_ENT_PROG_SHIFT    16
+    #define IOPMP_HWCFG2_PRIO_ENT_PROG_MASK     GENMASK_32(16, 16)
+    #define IOPMP_HWCFG2_NON_PRIO_EN_SHIFT      17
+    #define IOPMP_HWCFG2_NON_PRIO_EN_MASK       GENMASK_32(17, 17)
+    #define IOPMP_HWCFG2_CHK_X_SHIFT            26
+    #define IOPMP_HWCFG2_CHK_X_MASK             GENMASK_32(26, 26)
+    #define IOPMP_HWCFG2_PEIS_SHIFT             27
+    #define IOPMP_HWCFG2_PEIS_MASK              GENMASK_32(27, 27)
+    #define IOPMP_HWCFG2_PEES_SHIFT             28
+    #define IOPMP_HWCFG2_PEES_MASK              GENMASK_32(28, 28)
+    #define IOPMP_HWCFG2_SPS_EN_SHIFT           29
+    #define IOPMP_HWCFG2_SPS_EN_MASK            GENMASK_32(29, 29)
+    #define IOPMP_HWCFG2_STALL_EN_SHIFT         30
+    #define IOPMP_HWCFG2_STALL_EN_MASK          GENMASK_32(30, 30)
+    #define IOPMP_HWCFG2_MFR_EN_SHIFT           31
+    #define IOPMP_HWCFG2_MFR_EN_MASK            GENMASK_32(31, 31)
 
-#define IOPMP_ENTRY_OFFSET_BASE                 0x0014
-    #define IOPMP_ENTRYOFFSET_SHIFT             0
-    #define IOPMP_ENTRYOFFSET_MASK              GENMASK_32(31, 0)
+#define IOPMP_HWCFG3_BASE                       0x0014
+    #define IOPMP_HWCFG3_MDCFG_FMT_SHIFT        0
+    #define IOPMP_HWCFG3_MDCFG_FMT_MASK         GENMASK_32(1, 0)
+    #define IOPMP_HWCFG3_SRCMD_FMT_SHIFT        2
+    #define IOPMP_HWCFG3_SRCMD_FMT_MASK         GENMASK_32(3, 2)
+    #define IOPMP_HWCFG3_MD_ENTRY_NUM_SHIFT     4
+    #define IOPMP_HWCFG3_MD_ENTRY_NUM_MASK      GENMASK_32(11, 4)
+    #define IOPMP_HWCFG3_NO_X_SHIFT             12
+    #define IOPMP_HWCFG3_NO_X_MASK              GENMASK_32(12, 12)
+    #define IOPMP_HWCFG3_NO_W_SHIFT             13
+    #define IOPMP_HWCFG3_NO_W_MASK              GENMASK_32(13, 13)
+    #define IOPMP_HWCFG3_RRID_TRANSL_EN_SHIFT   14
+    #define IOPMP_HWCFG3_RRID_TRANSL_EN_MASK    GENMASK_32(14, 14)
+    #define IOPMP_HWCFG3_RRID_TRANSL_PROG_SHIFT 15
+    #define IOPMP_HWCFG3_RRID_TRANSL_PROG_MASK  GENMASK_32(15, 15)
+    #define IOPMP_HWCFG3_RRID_TRANSL_SHIFT      16
+    #define IOPMP_HWCFG3_RRID_TRANSL_MASK       GENMASK_32(31, 16)
 
-#define IOPMP_HWCFG_USER_BASE                   0x002C
+#define IOPMP_HWCFG_USER_BASE                   0x0028
     #define IOPMP_HWCFG_USER_SHIFT              0
     #define IOPMP_HWCFG_USER_MASK               GENMASK_32(31, 0)
+
+#define IOPMP_ENTRY_OFFSET_BASE                 0x002C
+    #define IOPMP_ENTRYOFFSET_SHIFT             0
+    #define IOPMP_ENTRYOFFSET_MASK              GENMASK_32(31, 0)
 
 /* Programming Protection Registers */
 #define IOPMP_MDSTALL_BASE                      0x0030
@@ -373,9 +379,6 @@ static void write_hwcfg0(IOPMP_t *iopmp, uint32_t mask, uint32_t val)
     uint32_t hwcfg0;
 
     hwcfg0 = io_read32(iopmp->addr + IOPMP_HWCFG0_BASE);
-    /* Clear W1C fields: prient_prog & rrid_transl_prog */
-    hwcfg0 &= ~(IOPMP_HWCFG0_PRIENT_PROG_MASK |
-                IOPMP_HWCFG0_RRID_TRANSL_PROG_MASK);
     hwcfg0 = (hwcfg0 & ~mask) | (val & mask);
     io_write32(iopmp->addr + IOPMP_HWCFG0_BASE, hwcfg0);
 }
@@ -385,8 +388,21 @@ static void write_hwcfg2(IOPMP_t *iopmp, uint32_t mask, uint32_t val)
     uint32_t hwcfg2;
 
     hwcfg2 = io_read32(iopmp->addr + IOPMP_HWCFG2_BASE);
+    /* Clear W1CS field: prio_ent_prog */
+    hwcfg2 &= ~IOPMP_HWCFG2_PRIO_ENT_PROG_MASK;
     hwcfg2 = (hwcfg2 & ~mask) | (val & mask);
     io_write32(iopmp->addr + IOPMP_HWCFG2_BASE, hwcfg2);
+}
+
+static void write_hwcfg3(IOPMP_t *iopmp, uint32_t mask, uint32_t val)
+{
+    uint32_t hwcfg3;
+
+    hwcfg3 = io_read32(iopmp->addr + IOPMP_HWCFG3_BASE);
+    /* Clear W1CS field: rrid_transl_prog */
+    hwcfg3 &= ~IOPMP_HWCFG3_RRID_TRANSL_PROG_MASK;
+    hwcfg3 = (hwcfg3 & ~mask) | (val & mask);
+    io_write32(iopmp->addr + IOPMP_HWCFG3_BASE, hwcfg3);
 }
 
 static void write_err_cfg(IOPMP_t *iopmp, uint32_t mask, uint32_t val)
@@ -401,7 +417,7 @@ static void write_err_cfg(IOPMP_t *iopmp, uint32_t mask, uint32_t val)
 static void detect_stall_function(IOPMP_t *iopmp)
 {
     /*
-     * HWCFG0.stall_en indicates if the IOPMP implements stall-related features,
+     * HWCFG2.stall_en indicates if the IOPMP implements stall-related features,
      * which are MDSTALL, MDSTALLH, and RRIDSCP registers.
      */
     if (iopmp->stall_en) {
@@ -470,8 +486,8 @@ static void generic_enable(IOPMP_t *iopmp)
  */
 static void generic_lock_prio_entry_num(IOPMP_t *iopmp)
 {
-    write_hwcfg0(iopmp, IOPMP_HWCFG0_PRIENT_PROG_MASK,
-                 IOPMP_HWCFG0_PRIENT_PROG_MASK);
+    write_hwcfg2(iopmp, IOPMP_HWCFG2_PRIO_ENT_PROG_MASK,
+                 IOPMP_HWCFG2_PRIO_ENT_PROG_MASK);
 }
 
 /**
@@ -481,8 +497,8 @@ static void generic_lock_prio_entry_num(IOPMP_t *iopmp)
  */
 static void generic_lock_rrid_transl(IOPMP_t *iopmp)
 {
-    write_hwcfg0(iopmp, IOPMP_HWCFG0_RRID_TRANSL_PROG_MASK,
-                 IOPMP_HWCFG0_RRID_TRANSL_PROG_MASK);
+    write_hwcfg3(iopmp, IOPMP_HWCFG3_RRID_TRANSL_PROG_MASK,
+                 IOPMP_HWCFG3_RRID_TRANSL_PROG_MASK);
 }
 
 /**
@@ -513,7 +529,7 @@ static enum iopmp_error generic_set_prio_entry_num(IOPMP_t *iopmp,
 }
 
 /**
- * \brief Set IOPMP HWCFG2.rrid_transl
+ * \brief Set IOPMP HWCFG3.rrid_transl
  *
  * \param[in] iopmp             The IOPMP instance to be set
  * \param[in,out] rrid_transl   Input the value of rrid_transl to be set. Output
@@ -527,14 +543,14 @@ static enum iopmp_error generic_set_rrid_transl(IOPMP_t *iopmp,
                                                 uint16_t *rrid_transl)
 {
     uint16_t __rrid_transl = *rrid_transl;
-    uint32_t hwcfg2;
+    uint32_t hwcfg3;
 
-    write_hwcfg2(iopmp, IOPMP_HWCFG2_RRID_TRANSL_MASK,
-                 (__rrid_transl << IOPMP_HWCFG2_RRID_TRANSL_SHIFT));
+    write_hwcfg3(iopmp, IOPMP_HWCFG3_RRID_TRANSL_MASK,
+                 (__rrid_transl << IOPMP_HWCFG3_RRID_TRANSL_SHIFT));
 
-    /* HWCFG2.rrid_transl is WARL field. Read it back to check the value */
-    hwcfg2 = io_read32(iopmp->addr + IOPMP_HWCFG2_BASE);
-    *rrid_transl = EXTRACT_FIELD(hwcfg2, IOPMP_HWCFG2_RRID_TRANSL);
+    /* HWCFG3.rrid_transl is WARL field. Read it back to check the value */
+    hwcfg3 = io_read32(iopmp->addr + IOPMP_HWCFG3_BASE);
+    *rrid_transl = EXTRACT_FIELD(hwcfg3, IOPMP_HWCFG3_RRID_TRANSL);
 
     return (__rrid_transl == *rrid_transl) ? IOPMP_OK : IOPMP_ERR_ILLEGAL_VALUE;
 }
@@ -1231,13 +1247,13 @@ enum iopmp_error mdcfg_fmt_2_set_md_entry_num(IOPMP_t *iopmp,
                                               uint32_t *md_entry_num)
 {
     uint32_t __md_entry_num = *md_entry_num;
-    uint32_t hwcfg0;
+    uint32_t hwcfg3;
 
-    hwcfg0 = MAKE_FIELD_32(__md_entry_num, IOPMP_HWCFG0_MD_ENTRY_NUM);
-    write_hwcfg0(iopmp, IOPMP_HWCFG0_MD_ENTRY_NUM_MASK, hwcfg0);
-    /* HWCFG0.md_entry_num is WARL field. Read it back to check it */
-    hwcfg0 = io_read32(iopmp->addr + IOPMP_HWCFG0_BASE);
-    *md_entry_num = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_MD_ENTRY_NUM);
+    hwcfg3 = MAKE_FIELD_32(__md_entry_num, IOPMP_HWCFG3_MD_ENTRY_NUM);
+    write_hwcfg3(iopmp, IOPMP_HWCFG3_MD_ENTRY_NUM_MASK, hwcfg3);
+    /* HWCFG3.md_entry_num is WARL field. Read it back to check it */
+    hwcfg3 = io_read32(iopmp->addr + IOPMP_HWCFG3_BASE);
+    *md_entry_num = EXTRACT_FIELD(hwcfg3, IOPMP_HWCFG3_MD_ENTRY_NUM);
 
     return (__md_entry_num == *md_entry_num) ? IOPMP_OK :
                                                IOPMP_ERR_ILLEGAL_VALUE;
@@ -1308,7 +1324,7 @@ srcmd_fmt_2_set_md_permission_multi(IOPMP_t *iopmp, uint32_t mdidx,
 
 /**
  * \brief Set a global entry into IOPMP for SRCMD_FMT=2 and MDCFG_FMT=1 and
- * HWCFG0.md_entry_num=0 (K=1)
+ * HWCFG3.md_entry_num=0 (K=1)
  *
  * \param[in] iopmp             The IOPMP instance to be written
  * \param[in] entry             The pointer to the entry
@@ -1319,7 +1335,7 @@ srcmd_fmt_2_set_md_permission_multi(IOPMP_t *iopmp, uint32_t mdidx,
  *         the actual value
  *
  * \note This operation is only supported by SRCMD_FMT=2 and MDCFG_FMT=1 and
- *       HWCFG0.md_entry_num=0 (K=1)
+ *       HWCFG3.md_entry_num=0 (K=1)
  */
 static enum iopmp_error srcmd_fmt_2_mdcfg_fmt_1_md_entry_num_0_set_entry(
     IOPMP_t *iopmp, const struct iopmp_entry *entry, uint32_t entry_idx)
@@ -1488,14 +1504,27 @@ __init_common(IOPMP_t *iopmp, uintptr_t addr,
               uint8_t srcmd_fmt, uint8_t mdcfg_fmt,
               struct iopmp_operations_specific *ops_specific)
 {
-    uint32_t data, hwcfg0;
-    uint8_t hwcfg0_srcmd_fmt, hwcfg0_mdcfg_fmt;
+    uint32_t data, hwcfg0, hwcfg3;
+    uint8_t hwcfg3_srcmd_fmt, hwcfg3_mdcfg_fmt;
+    bool hwcfg2_en, hwcfg3_en;
 
-    /* Read HWCFG0 first to check srcmd_fmt and mdcfg_fmt */
+    /* Read HWCFG0 and HWCFG3 first to check srcmd_fmt and mdcfg_fmt */
     hwcfg0 = io_read32(addr + IOPMP_HWCFG0_BASE);
-    hwcfg0_mdcfg_fmt = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_MDCFG_FMT);
-    hwcfg0_srcmd_fmt = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_SRCMD_FMT);
-    if (srcmd_fmt != hwcfg0_srcmd_fmt || mdcfg_fmt != hwcfg0_mdcfg_fmt)
+    hwcfg2_en = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_HWCFG2_EN);
+    hwcfg3_en = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_HWCFG3_EN);
+
+    if (hwcfg3_en) {
+        hwcfg3 = io_read32(addr + IOPMP_HWCFG3_BASE);
+        hwcfg3_mdcfg_fmt = EXTRACT_FIELD(hwcfg3, IOPMP_HWCFG3_MDCFG_FMT);
+        hwcfg3_srcmd_fmt = EXTRACT_FIELD(hwcfg3, IOPMP_HWCFG3_SRCMD_FMT);
+    } else {
+        hwcfg3 = 0;
+        /* The Full Model is the default IOPMP configuration */
+        hwcfg3_mdcfg_fmt = IOPMP_MDCFG_FMT_0;
+        hwcfg3_srcmd_fmt = IOPMP_SRCMD_FMT_0;
+    }
+
+    if (srcmd_fmt != hwcfg3_srcmd_fmt || mdcfg_fmt != hwcfg3_mdcfg_fmt)
         return IOPMP_ERR_NOT_SUPPORTED;
 
     /* Set base address and address width of IOPMP */
@@ -1513,26 +1542,10 @@ __init_common(IOPMP_t *iopmp, uintptr_t addr,
     iopmp->impid = EXTRACT_FIELD(data, IOPMP_IMPLEMENTATION_IMPID);
 
     /* Record HWCFG0 into local data structure */
-    iopmp->mdcfg_fmt = hwcfg0_mdcfg_fmt;
-    iopmp->srcmd_fmt = hwcfg0_srcmd_fmt;
-    iopmp->tor_en = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_TOR_EN);
-    iopmp->sps_en = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_SPS_EN);
-    iopmp->user_cfg_en = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_USER_CFG_EN);
-    iopmp->prient_prog = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_PRIENT_PROG);
-    iopmp->rrid_transl_en = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_RRID_TRANSL_EN);
-    iopmp->rrid_transl_prog = EXTRACT_FIELD(hwcfg0,
-                                            IOPMP_HWCFG0_RRID_TRANSL_PROG);
-    iopmp->chk_x = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_CHK_X);
-    iopmp->no_x = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_NO_X);
-    iopmp->no_w = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_NO_W);
-    iopmp->stall_en = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_STALL_EN);
-    iopmp->peis = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_PEIS);
-    iopmp->pees = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_PEES);
-    iopmp->mfr_en = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_MFR_EN);
-    iopmp->md_entry_num = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_MD_ENTRY_NUM);
+    iopmp->enable = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_ENABLE);
     iopmp->md_num = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_MD_NUM);
     iopmp->addrh_en = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_ADDRH_EN);
-    iopmp->enable = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_ENABLE);
+    iopmp->tor_en = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_TOR_EN);
 
     /* Read HWCFG1 */
     data = io_read32(iopmp->addr + IOPMP_HWCFG1_BASE);
@@ -1540,11 +1553,35 @@ __init_common(IOPMP_t *iopmp, uintptr_t addr,
     iopmp->rrid_num = EXTRACT_FIELD(data, IOPMP_HWCFG1_RRID_NUM);
     iopmp->entry_num = EXTRACT_FIELD(data, IOPMP_HWCFG1_ENTRY_NUM);
 
-    /* Read HWCFG2 */
-    data = io_read32(iopmp->addr + IOPMP_HWCFG2_BASE);
-    /* Record into local data structure */
-    iopmp->prio_entry_num = EXTRACT_FIELD(data, IOPMP_HWCFG2_PRIO_ENTRY);
-    iopmp->rrid_transl = EXTRACT_FIELD(data, IOPMP_HWCFG2_RRID_TRANSL);
+    /* Read HWCFG2 if it is implemented */
+    if (hwcfg2_en) {
+        /* Record into local data structure */
+        data = io_read32(iopmp->addr + IOPMP_HWCFG2_BASE);
+        iopmp->prio_entry_num = EXTRACT_FIELD(data, IOPMP_HWCFG2_PRIO_ENTRY);
+        iopmp->prio_ent_prog = EXTRACT_FIELD(data, IOPMP_HWCFG2_PRIO_ENT_PROG);
+        iopmp->non_prio_en = EXTRACT_FIELD(data, IOPMP_HWCFG2_NON_PRIO_EN);
+        iopmp->chk_x = EXTRACT_FIELD(data, IOPMP_HWCFG2_CHK_X);
+        iopmp->peis = EXTRACT_FIELD(data, IOPMP_HWCFG2_PEIS);
+        iopmp->pees = EXTRACT_FIELD(data, IOPMP_HWCFG2_PEES);
+        iopmp->sps_en = EXTRACT_FIELD(data, IOPMP_HWCFG2_SPS_EN);
+        iopmp->stall_en = EXTRACT_FIELD(data, IOPMP_HWCFG2_STALL_EN);
+        iopmp->mfr_en = EXTRACT_FIELD(data, IOPMP_HWCFG2_MFR_EN);
+    }
+
+    /* Read HWCFG3 if it is implemented */
+    if (hwcfg3_en) {
+        /* Record into local data structure */
+        iopmp->mdcfg_fmt = hwcfg3_mdcfg_fmt;
+        iopmp->srcmd_fmt = hwcfg3_srcmd_fmt;
+        iopmp->md_entry_num = EXTRACT_FIELD(hwcfg3, IOPMP_HWCFG3_MD_ENTRY_NUM);
+        iopmp->no_x = EXTRACT_FIELD(hwcfg3, IOPMP_HWCFG3_NO_X);
+        iopmp->no_w = EXTRACT_FIELD(hwcfg3, IOPMP_HWCFG3_NO_W);
+        iopmp->rrid_transl_en = EXTRACT_FIELD(hwcfg3,
+                                              IOPMP_HWCFG3_RRID_TRANSL_EN);
+        iopmp->rrid_transl_prog = EXTRACT_FIELD(hwcfg3,
+                                                IOPMP_HWCFG3_RRID_TRANSL_PROG);
+        iopmp->rrid_transl = EXTRACT_FIELD(hwcfg3, IOPMP_HWCFG3_RRID_TRANSL);
+    }
 
     /* Read ENTRY_OFFSET */
     data = io_read32(iopmp->addr + IOPMP_ENTRY_OFFSET_BASE);

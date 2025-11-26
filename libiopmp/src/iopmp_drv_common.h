@@ -337,10 +337,10 @@ enum iopmp_error mdcfg_fmt_0_set_md_entry_top(IOPMP_t *iopmp, uint32_t mdidx,
                                               uint32_t *entry_top);
 
 /**
- * \brief Set the value of HWCFG0.md_entry_num
+ * \brief Set the value of HWCFG3.md_entry_num
  *
  * \param[in] iopmp             The IOPMP instance to be set
- * \param[in,out] md_entry_num  Input the value of HWCFG0.md_entry_num. Output
+ * \param[in,out] md_entry_num  Input the value of HWCFG3.md_entry_num. Output
  *                              WARL value
  *
  * \retval IOPMP_OK if successes
@@ -392,7 +392,7 @@ srcmd_fmt_2_set_md_permission_multi(IOPMP_t *iopmp, uint32_t mdidx,
 
 /**
  * \brief Set the global entries into IOPMP for SRCMD_FMT=2 and MDCFG_FMT=1
- * and HWCFG0.md_entry_num=0 (K=1)
+ * and HWCFG3.md_entry_num=0 (K=1)
  *
  * \param[in] iopmp             The IOPMP instance to be written
  * \param[in] entry_array       The array of entries
@@ -404,7 +404,7 @@ srcmd_fmt_2_set_md_permission_multi(IOPMP_t *iopmp, uint32_t mdidx,
  *         the actual value
  *
  * \note This operation is only supported by SRCMD_FMT=2 and MDCFG_FMT=1 and
- *       HWCFG0.md_entry_num=0 (K=1)
+ *       HWCFG3.md_entry_num=0 (K=1)
  */
 enum iopmp_error srcmd_fmt_2_mdcfg_fmt_1_md_entry_num_0_set_entries(
     IOPMP_t *iopmp, const struct iopmp_entry *entry_array,
