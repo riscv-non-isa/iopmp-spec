@@ -98,16 +98,16 @@ struct iopmp_instance {
         unsigned int tor_en : 1;
         /** Flag to indicate SPS(secondary permission settings) is supported */
         unsigned int sps_en : 1;
-        /** Flag to indicate if user customized attributes is supported */
-        unsigned int user_cfg_en : 1;
         /** Flag to indicates if HWCFG2.prio_entry is programmable */
-        unsigned int prient_prog : 1;
+        unsigned int prio_ent_prog : 1;
+        /** Flag to indicates whether the IOPMP supports non-priority entries */
+        unsigned int non_prio_en : 1;
         /**
          * Flag to indicate the if tagging a new RRID on the initiator port is
          * supported
          */
         unsigned int rrid_transl_en : 1;
-        /** Flag to indicate if the field HWCFG2.rrid_transl is programmable */
+        /** Flag to indicate if the field HWCFG3.rrid_transl is programmable */
         unsigned int rrid_transl_prog : 1;
         /**
          * Flag to indicate if the IOPMP implements the check of an instruction
@@ -237,7 +237,7 @@ struct iopmp_entry {
      * Additional 64-bit data that can be used in specific model.
      *
      * For example, it can be used as SRCMD_PERM(H) in SRCMD_FMT=2, MDCFG_FMT=1
-     * and HWCFG0.md_entry_num=0 (K=1). In this configuration, each MD has
+     * and HWCFG3.md_entry_num=0 (K=1). In this configuration, each MD has
      * exactly single entry. User can set SRCMD_PERM(H) and entry in single
      * entry API call.
      */
@@ -396,9 +396,9 @@ enum iopmp_srcmd_fmt {
 enum iopmp_mdcfg_fmt {
     /** Format 0. MDCFG Table is implemented */
     IOPMP_MDCFG_FMT_0,
-    /** Format 1. No MDCFG Table. HWCFG.md_entry_num is fixed */
+    /** Format 1. No MDCFG Table. HWCFG3.md_entry_num is fixed */
     IOPMP_MDCFG_FMT_1,
-    /** Format 2. No MDCFG Table. HWCFG.md_entry_num is programmable */
+    /** Format 2. No MDCFG Table. HWCFG3.md_entry_num is programmable */
     IOPMP_MDCFG_FMT_2,
     /** Reserved */
     IOPMP_MDCFG_FMT_RESERVED,
@@ -682,11 +682,11 @@ static inline uint32_t iopmp_get_granularity(IOPMP_t *iopmp)
 }
 
 /**
- * \brief Get HWCFG0.mdcfg_fmt of the IOPMP
+ * \brief Get HWCFG3.mdcfg_fmt of the IOPMP
  *
  * \param[in] iopmp             The IOPMP instance to be got
  *
- * \return HWCFG0.mdcfg_fmt of the IOPMP
+ * \return HWCFG3.mdcfg_fmt of the IOPMP
  */
 static inline enum iopmp_mdcfg_fmt iopmp_get_mdcfg_fmt(IOPMP_t *iopmp)
 {
@@ -694,11 +694,11 @@ static inline enum iopmp_mdcfg_fmt iopmp_get_mdcfg_fmt(IOPMP_t *iopmp)
 }
 
 /**
- * \brief Get HWCFG0.srcmd_fmt of the IOPMP
+ * \brief Get HWCFG3.srcmd_fmt of the IOPMP
  *
  * \param[in] iopmp             The IOPMP instance to be got
  *
- * \return HWCFG0.srcmd_fmt of the IOPMP
+ * \return HWCFG3.srcmd_fmt of the IOPMP
  */
 static inline enum iopmp_srcmd_fmt iopmp_get_srcmd_fmt(IOPMP_t *iopmp)
 {
@@ -723,8 +723,8 @@ static inline bool iopmp_get_support_tor(IOPMP_t *iopmp)
  *
  * \param[in] iopmp             The IOPMP instance to be checked
  *
- * \retval 1 if HWCFG0.sps_en = 1 and the SPS operations are implemented
- * \retval 0 if HWCFG0.sps_en = 0
+ * \retval 1 if HWCFG2.sps_en = 1 and the SPS operations are implemented
+ * \retval 0 if HWCFG2.sps_en = 0
  */
 static inline bool iopmp_get_support_sps(IOPMP_t *iopmp)
 {
@@ -732,29 +732,16 @@ static inline bool iopmp_get_support_sps(IOPMP_t *iopmp)
 }
 
 /**
- * \brief Check if the IOPMP supports user customized attributes
- *
- * \param[in] iopmp             The IOPMP instance to be checked
- *
- * \retval 1 if HWCFG0.user_cfg_en = 1
- * \retval 0 if HWCFG0.user_cfg_en = 0
- */
-static inline bool iopmp_get_support_user_entry_cfg(IOPMP_t *iopmp)
-{
-    return iopmp->user_cfg_en;
-}
-
-/**
  * \brief Check if HWCFG2.prio_entry is programmable
  *
  * \param[in] iopmp             The IOPMP instance to be checked
  *
- * \retval 1 if HWCFG0.prient_prog = 1
- * \retval 0 if HWCFG0.prient_prog = 0
+ * \retval 1 if HWCFG2.prio_ent_prog = 1
+ * \retval 0 if HWCFG2.prio_ent_prog = 0
  */
 static inline bool iopmp_get_support_programmable_prio_entry(IOPMP_t *iopmp)
 {
-    return iopmp->prient_prog;
+    return iopmp->prio_ent_prog;
 }
 
 /**
@@ -762,8 +749,8 @@ static inline bool iopmp_get_support_programmable_prio_entry(IOPMP_t *iopmp)
  *
  * \param[in] iopmp             The IOPMP instance to be checked
  *
- * \retval 1 if HWCFG0.rrid_transl_en = 1
- * \retval 0 if HWCFG0.rrid_transl_en = 0
+ * \retval 1 if HWCFG3.rrid_transl_en = 1
+ * \retval 0 if HWCFG3.rrid_transl_en = 0
  */
 static inline bool iopmp_get_support_rrid_transl(IOPMP_t *iopmp)
 {
@@ -771,12 +758,12 @@ static inline bool iopmp_get_support_rrid_transl(IOPMP_t *iopmp)
 }
 
 /**
- * \brief Check if HWCFG2.rrid_transl is programmable
+ * \brief Check if HWCFG3.rrid_transl is programmable
  *
  * \param[in] iopmp             The IOPMP instance to be checked
  *
- * \retval 1 if HWCFG0.rrid_transl_prog = 1
- * \retval 0 if HWCFG0.rrid_transl_prog = 0
+ * \retval 1 if HWCFG3.rrid_transl_prog = 1
+ * \retval 0 if HWCFG3.rrid_transl_prog = 0
  */
 static inline bool iopmp_get_rrid_transl_prog(IOPMP_t *iopmp)
 {
@@ -784,11 +771,11 @@ static inline bool iopmp_get_rrid_transl_prog(IOPMP_t *iopmp)
 }
 
 /**
- * \brief Get the value of HWCFG2.rrid_transl
+ * \brief Get the value of HWCFG3.rrid_transl
  *
  * \param[in] iopmp             The IOPMP instance to be got
  *
- * \return HWCFG2.rrid_transl
+ * \return HWCFG3.rrid_transl
  */
 static inline uint16_t iopmp_get_rrid_transl(IOPMP_t *iopmp)
 {
@@ -800,8 +787,8 @@ static inline uint16_t iopmp_get_rrid_transl(IOPMP_t *iopmp)
  *
  * \param[in] iopmp             The IOPMP instance to be checked
  *
- * \retval 1 if HWCFG0.rrid_transl_prog = 1
- * \retval 0 if HWCFG0.rrid_transl_prog = 0
+ * \retval 1 if HWCFG3.rrid_transl_prog = 1
+ * \retval 0 if HWCFG3.rrid_transl_prog = 0
  */
 static inline bool iopmp_get_support_chk_x(IOPMP_t *iopmp)
 {
@@ -813,8 +800,8 @@ static inline bool iopmp_get_support_chk_x(IOPMP_t *iopmp)
  *
  * \param[in] iopmp             The IOPMP instance to be checked
  *
- * \retval 1 if HWCFG0.no_x = 1
- * \retval 0 if HWCFG0.no_x = 0
+ * \retval 1 if HWCFG3.no_x = 1
+ * \retval 0 if HWCFG3.no_x = 0
  */
 static inline bool iopmp_get_no_x(IOPMP_t *iopmp)
 {
@@ -827,8 +814,8 @@ static inline bool iopmp_get_no_x(IOPMP_t *iopmp)
  *
  * \param[in] iopmp             The IOPMP instance to be checked
  *
- * \retval 1 if HWCFG0.no_w = 1
- * \retval 0 if HWCFG0.no_w = 0
+ * \retval 1 if HWCFG3.no_w = 1
+ * \retval 0 if HWCFG3.no_w = 0
  */
 static inline bool iopmp_get_no_w(IOPMP_t *iopmp)
 {
@@ -840,8 +827,8 @@ static inline bool iopmp_get_no_w(IOPMP_t *iopmp)
  *
  * \param[in] iopmp             The IOPMP instance to be checked
  *
- * \retval 1 if HWCFG0.stall_en = 1
- * \retval 0 if HWCFG0.stall_en = 0
+ * \retval 1 if HWCFG2.stall_en = 1
+ * \retval 0 if HWCFG2.stall_en = 0
  */
 static inline bool iopmp_get_support_stall(IOPMP_t *iopmp)
 {
@@ -853,8 +840,8 @@ static inline bool iopmp_get_support_stall(IOPMP_t *iopmp)
  *
  * \param[in] iopmp             The IOPMP instance to be checked
  *
- * \retval 1 if HWCFG0.peis = 1
- * \retval 0 if HWCFG0.peis = 0
+ * \retval 1 if HWCFG2.peis = 1
+ * \retval 0 if HWCFG2.peis = 0
  */
 static inline bool iopmp_get_support_peis(IOPMP_t *iopmp)
 {
@@ -866,8 +853,8 @@ static inline bool iopmp_get_support_peis(IOPMP_t *iopmp)
  *
  * \param[in] iopmp             The IOPMP instance to be checked
  *
- * \retval 1 if HWCFG0.pees = 1
- * \retval 0 if HWCFG0.pees = 0
+ * \retval 1 if HWCFG2.pees = 1
+ * \retval 0 if HWCFG2.pees = 0
  */
 static inline bool iopmp_get_support_pees(IOPMP_t *iopmp)
 {
@@ -879,8 +866,8 @@ static inline bool iopmp_get_support_pees(IOPMP_t *iopmp)
  *
  * \param[in] iopmp             The IOPMP instance to be checked
  *
- * \retval 1 if HWCFG0.mfr_en = 1
- * \retval 0 if HWCFG0.mfr_en = 0
+ * \retval 1 if HWCFG2.mfr_en = 1
+ * \retval 0 if HWCFG2.mfr_en = 0
  */
 static inline bool iopmp_get_support_mfr(IOPMP_t *iopmp)
 {
@@ -931,7 +918,7 @@ static inline bool iopmp_get_enable(IOPMP_t *iopmp)
  *
  * \param[in] iopmp             The IOPMP instance to be got
  *
- * \return HWCFG2.rrid_num
+ * \return HWCFG1.rrid_num
  */
 static inline uint32_t iopmp_get_rrid_num(IOPMP_t *iopmp)
 {
@@ -943,7 +930,7 @@ static inline uint32_t iopmp_get_rrid_num(IOPMP_t *iopmp)
  *
  * \param[in] iopmp             The IOPMP instance to be got
  *
- * \return HWCFG2.entry_num
+ * \return HWCFG1.entry_num
  */
 static inline uint32_t iopmp_get_entry_num(IOPMP_t *iopmp)
 {
@@ -1296,7 +1283,7 @@ enum iopmp_error iopmp_get_specver(IOPMP_t *iopmp, uint32_t *specver);
 enum iopmp_error iopmp_get_impid(IOPMP_t *iopmp, uint32_t *impid);
 
 /**
- * \brief Lock number of priority entry if the IOPMP HWCFG0.prient_prog=1
+ * \brief Lock number of priority entry if the IOPMP HWCFG2.prio_ent_prog=1
  *
  * \param[in] iopmp             The IOPMP instance
  *
@@ -1308,7 +1295,7 @@ enum iopmp_error iopmp_lock_prio_entry_num(IOPMP_t *iopmp);
 
 /**
  * \brief Lock the RRID tagged to outgoing transactions if the IOPMP
- * HWCFG0.rrid_transl_prog=1
+ * HWCFG3.rrid_transl_prog=1
  *
  * \param[in] iopmp             The IOPMP instance
  *
@@ -1337,7 +1324,7 @@ enum iopmp_error iopmp_set_enable(IOPMP_t *iopmp);
  *                              priority. Output WARL value.
  *
  * \retval IOPMP_OK if successes
- * \retval IOPMP_ERR_REG_IS_LOCKED if HWCFG0.prient_prog is 0
+ * \retval IOPMP_ERR_REG_IS_LOCKED if HWCFG2.prio_ent_prog is 0
  * \retval IOPMP_ERR_INVALID_PARAMETER if \p num_entry is NULL
  * \retval IOPMP_ERR_ILLEGAL_VALUE if the written \p num_entry does not match
  *         the actual value. The actual value is output via \p num_entry
@@ -1352,7 +1339,7 @@ enum iopmp_error iopmp_set_prio_entry_num(IOPMP_t *iopmp, uint16_t *num_entry);
  *                              Output WARL value
  *
  * \retval IOPMP_OK if successes
- * \retval IOPMP_ERR_REG_IS_LOCKED if HWCFG0.rrid_transl_prog is 0
+ * \retval IOPMP_ERR_REG_IS_LOCKED if HWCFG3.rrid_transl_prog is 0
  * \retval IOPMP_ERR_INVALID_PARAMETER if given \p rrid_transl is NULL
  * \retval IOPMP_ERR_ILLEGAL_VALUE if the written \p rrid_transl does not match
  *         the actual value. The actual value is output via \p rrid_transl
@@ -2121,7 +2108,7 @@ enum iopmp_error iopmp_set_md_entry_association(IOPMP_t *iopmp, uint32_t mdidx,
 }
 
 /**
- * \brief Get value of HWCFG0.md_entry_num if IOPMP model is xxx-K
+ * \brief Get value of HWCFG3.md_entry_num if IOPMP model is xxx-K
  *
  * \param[in] iopmp             The IOPMP instance to be got
  * \param[out] md_entry_num     The pointer to an integer to return value
@@ -2132,7 +2119,7 @@ enum iopmp_error iopmp_set_md_entry_association(IOPMP_t *iopmp, uint32_t mdidx,
 enum iopmp_error iopmp_get_md_entry_num(IOPMP_t *iopmp, uint32_t *md_entry_num);
 
 /**
- * \brief Program value of HWCFG0.md_entry_num
+ * \brief Program value of HWCFG3.md_entry_num
  *
  * \param[in] iopmp             The IOPMP instance to be programmed
  * \param[in,out] md_entry_num  Input the drsired value of md_entry_num. Output
@@ -2198,7 +2185,7 @@ enum iopmp_error iopmp_set_md_entry_num(IOPMP_t *iopmp, uint32_t *md_entry_num);
  *       provides neither of them, the iopmp_set_entries() and similar APIs
  *       won't check the priority on the entry.
  * \note Currently, the \p private_data is used in a specific model with SRCMD
- *       format 2 and MDCFG format 1 and HWCFG0.md_entry_num=0 configurations.
+ *       format 2 and MDCFG format 1 and HWCFG3.md_entry_num=0 configurations.
  *       In this case, the \p private_data encodes {SRCMD_PERM(H) | SRCMD_PERM}
  *       for the entry associated with a single MD.
  */

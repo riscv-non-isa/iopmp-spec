@@ -1,7 +1,7 @@
 # libiopmp - A Library to Program RISC-V IOPMP
 
 The `libiopmp` is intended to be driver of RISC-V IOPMP which:
-* Complies with IOPMP specification **v0.8**
+* Complies with IOPMP specification **v0.8.1**
 * Operates one or multiple IOPMPs
 * Supports several IOPMP models and configurations
 * Extensible for adding vendor-customized IOPMP driver
