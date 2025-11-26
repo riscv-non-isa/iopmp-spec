@@ -1288,8 +1288,8 @@ enum iopmp_error iopmp_get_impid(IOPMP_t *iopmp, uint32_t *impid);
  * \param[in] iopmp             The IOPMP instance
  *
  * \retval IOPMP_OK if successes
- * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support lock the
- *         number of entries matched with priority
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support non-priority
+ *         entries
  */
 enum iopmp_error iopmp_lock_prio_entry_num(IOPMP_t *iopmp);
 
@@ -1324,6 +1324,8 @@ enum iopmp_error iopmp_set_enable(IOPMP_t *iopmp);
  *                              priority. Output WARL value.
  *
  * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not support non-priority
+ *         entries
  * \retval IOPMP_ERR_REG_IS_LOCKED if HWCFG2.prio_ent_prog is 0
  * \retval IOPMP_ERR_INVALID_PARAMETER if \p num_entry is NULL
  * \retval IOPMP_ERR_ILLEGAL_VALUE if the written \p num_entry does not match

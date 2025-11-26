@@ -134,6 +134,9 @@ enum iopmp_error iopmp_lock_prio_entry_num(IOPMP_t *iopmp)
 {
     assert(iopmp_is_initialized(iopmp));
 
+    if (!iopmp->non_prio_en)
+        return IOPMP_ERR_NOT_SUPPORTED;
+
     if (!iopmp->prio_ent_prog)
         return IOPMP_OK;
 
@@ -186,6 +189,9 @@ enum iopmp_error iopmp_set_prio_entry_num(IOPMP_t *iopmp, uint16_t *num_entry)
     enum iopmp_error ret;
 
     assert(iopmp_is_initialized(iopmp));
+
+    if (!iopmp->non_prio_en)
+        return IOPMP_ERR_NOT_SUPPORTED;
 
     if (!iopmp->prio_ent_prog)
         return IOPMP_ERR_REG_IS_LOCKED;
