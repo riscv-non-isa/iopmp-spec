@@ -1566,6 +1566,9 @@ __init_common(IOPMP_t *iopmp, uintptr_t addr,
         iopmp->sps_en = EXTRACT_FIELD(data, IOPMP_HWCFG2_SPS_EN);
         iopmp->stall_en = EXTRACT_FIELD(data, IOPMP_HWCFG2_STALL_EN);
         iopmp->mfr_en = EXTRACT_FIELD(data, IOPMP_HWCFG2_MFR_EN);
+    } else {
+        /* All entries are priority entries */
+        iopmp->prio_entry_num = iopmp->entry_num;
     }
 
     /* Read HWCFG3 if it is implemented */
