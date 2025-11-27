@@ -758,31 +758,6 @@ static inline bool iopmp_get_support_rrid_transl(IOPMP_t *iopmp)
 }
 
 /**
- * \brief Check if HWCFG3.rrid_transl is programmable
- *
- * \param[in] iopmp             The IOPMP instance to be checked
- *
- * \retval 1 if HWCFG3.rrid_transl_prog = 1
- * \retval 0 if HWCFG3.rrid_transl_prog = 0
- */
-static inline bool iopmp_get_rrid_transl_prog(IOPMP_t *iopmp)
-{
-    return iopmp->rrid_transl_prog;
-}
-
-/**
- * \brief Get the value of HWCFG3.rrid_transl
- *
- * \param[in] iopmp             The IOPMP instance to be got
- *
- * \return HWCFG3.rrid_transl
- */
-static inline uint16_t iopmp_get_rrid_transl(IOPMP_t *iopmp)
-{
-    return iopmp->rrid_transl;
-}
-
-/**
  * \brief Check if the IOPMP implements the check of an instruction fetch
  *
  * \param[in] iopmp             The IOPMP instance to be checked
@@ -1334,6 +1309,32 @@ enum iopmp_error iopmp_set_enable(IOPMP_t *iopmp);
 enum iopmp_error iopmp_set_prio_entry_num(IOPMP_t *iopmp, uint16_t *num_entry);
 
 /**
+ * \brief Check if HWCFG3.rrid_transl is programmable
+ *
+ * \param[in] iopmp             The IOPMP instance to be got
+ * \param[out] rrid_transl_prog Output true if HWCFG3.rrid_transl is
+ *                              programmable. Otherwise output false.
+ *
+ * \retval IOPMP_OK if HWCFG3.rrid_transl_en is 1
+ * \retval IOPMP_ERR_NOT_SUPPORTED if HWCFG3.rrid_transl_en is 0
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p rrid_transl_prog is NULL
+ */
+enum iopmp_error iopmp_get_rrid_transl_prog(IOPMP_t *iopmp,
+                                            bool *rrid_transl_prog);
+
+/**
+ * \brief Get the RRID tagged to outgoing transactions
+ *
+ * \param[in] iopmp             The IOPMP instance to be got
+ * \param[out] rrid_transl      Output the RRID tagged to outgoing transactions
+ *
+ * \retval IOPMP_OK if HWCFG3.rrid_transl_en is 1
+ * \retval IOPMP_ERR_NOT_SUPPORTED if HWCFG3.rrid_transl_en is 0
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p rrid_transl is NULL
+ */
+enum iopmp_error iopmp_get_rrid_transl(IOPMP_t *iopmp, uint16_t *rrid_transl);
+
+/**
  * \brief Set the RRID tagged to outgoing transactions
  *
  * \param[in] iopmp             The IOPMP instance to be set
@@ -1341,6 +1342,7 @@ enum iopmp_error iopmp_set_prio_entry_num(IOPMP_t *iopmp, uint16_t *num_entry);
  *                              Output WARL value
  *
  * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if HWCFG3.rrid_transl_en is 0
  * \retval IOPMP_ERR_REG_IS_LOCKED if HWCFG3.rrid_transl_prog is 0
  * \retval IOPMP_ERR_INVALID_PARAMETER if given \p rrid_transl is NULL
  * \retval IOPMP_ERR_ILLEGAL_VALUE if the written \p rrid_transl does not match

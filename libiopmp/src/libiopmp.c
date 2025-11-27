@@ -210,6 +210,35 @@ enum iopmp_error iopmp_set_prio_entry_num(IOPMP_t *iopmp, uint16_t *num_entry)
     return ret;
 }
 
+enum iopmp_error iopmp_get_rrid_transl_prog(IOPMP_t *iopmp,
+                                            bool *rrid_transl_prog)
+{
+    assert(iopmp_is_initialized(iopmp));
+
+    if (!iopmp->rrid_transl_en)
+        return IOPMP_ERR_NOT_SUPPORTED;
+
+    if (!rrid_transl_prog)
+        return IOPMP_ERR_INVALID_PARAMETER;
+
+    *rrid_transl_prog = iopmp->rrid_transl_prog;
+    return IOPMP_OK;
+}
+
+enum iopmp_error iopmp_get_rrid_transl(IOPMP_t *iopmp, uint16_t *rrid_transl)
+{
+    assert(iopmp_is_initialized(iopmp));
+
+    if (!iopmp->rrid_transl_en)
+        return IOPMP_ERR_NOT_SUPPORTED;
+
+    if (!rrid_transl)
+        return IOPMP_ERR_INVALID_PARAMETER;
+
+    *rrid_transl = iopmp->rrid_transl;
+    return IOPMP_OK;
+}
+
 enum iopmp_error iopmp_set_rrid_transl(IOPMP_t *iopmp, uint16_t *rrid_transl)
 {
     enum iopmp_error ret;
