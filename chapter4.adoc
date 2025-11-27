@@ -78,8 +78,8 @@ h|Field                            |Bits   |R/W    |Default    |Description
 5+h|0x0008
 h|Field                             |Bits   |R/W    |Default   |Description
 |{set:cellbgcolor:#FFFFFF} `enable` |0:0    |W1SS   |0         |Indicate if the IOPMP checks transactions by default. If it is implemented, it should be initial to 0 and sticky to 1. If it is not implemented, it should be wired to 1.
-|`HWCFG2_en`                        |1:1    |W1SS   |0         |Indicate if `HWCFG2` is implemented.
-|`HWCFG3_en`                        |2:2    |W1SS   |0         |Indicate if `HWCFG3` is implemented.
+|`HWCFG2_en`                        |1:1    |R      |IMP       |Indicate if `HWCFG2` is implemented.
+|`HWCFG3_en`                        |2:2    |R      |IMP       |Indicate if `HWCFG3` is implemented.
 |`rsv`                              |23:3   |ZERO   |0         |Must be zero on write, reserved for future.
 |`md_num`                           |29:24  |R      |IMP       |Indicate the supported number of MD in the instance.
 |`addrh_en`                         |30:30  |R      |IMP       |Indicate if `ENTRY_ADDRH(_i_)` and `ERR_REQADDRH` are available.

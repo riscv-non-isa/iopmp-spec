@@ -18,7 +18,7 @@ This chapter also introduces an additional transaction type (`ERR_INFO.ttype`) a
                            |`non_prio_en`    |17:17 
                            |`rsv`            |25:18    |(Must be zero on write, reserved for future.)
                            |`chk_x`          |26:26    |<<X_PERM>>
-                           |`pies`           |27:27 .2+|<<PEIS_PEES>>
+                           |`peis`           |27:27 .2+|<<PEIS_PEES>>
                            |`pees`           |28:28
                            |`sps_en`         |29:29    |<<SPS_EXT>>
                            |`stall_en`       |30:30    |<<Program_IOPMPs>>
