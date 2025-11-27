@@ -20,6 +20,7 @@ int main(void)
     IOPMP_t iopmp = {0};
     enum iopmp_error ret;
     uintptr_t addr;
+    uint16_t val_u16;
     uint32_t val_u32;
     int val_int;
     bool val_bool;
@@ -140,8 +141,13 @@ int main(void)
     END_TEST();
 
     START_TEST("Check IOPMP rrid_transl is programmable or not");
-    val_bool = iopmp_get_rrid_transl_prog(&iopmp);
-    FAIL_IF(val_bool != hwcfg3.rrid_transl_prog);
+    ret = iopmp_get_rrid_transl_prog(&iopmp, &val_bool);
+    if (hwcfg3.rrid_transl_en) {
+        FAIL_IF(ret != IOPMP_OK);
+        FAIL_IF(val_bool != hwcfg3.rrid_transl_prog);
+    } else {
+        FAIL_IF(ret != IOPMP_ERR_NOT_SUPPORTED);
+    }
     END_TEST();
 
     START_TEST("Check IOPMP implements the check of instruction fetch or not");
@@ -210,8 +216,13 @@ int main(void)
     END_TEST();
 
     START_TEST("Get the RRID tagged to outgoing transactions");
-    val_u32 = iopmp_get_rrid_transl(&iopmp);
-    FAIL_IF(val_u32 != hwcfg3.rrid_transl);
+    ret = iopmp_get_rrid_transl(&iopmp, &val_u16);
+    if (hwcfg3.rrid_transl_en) {
+        FAIL_IF(ret != IOPMP_OK);
+        FAIL_IF(val_u16 != hwcfg3.rrid_transl);
+    } else {
+        FAIL_IF(ret != IOPMP_ERR_NOT_SUPPORTED);
+    }
     END_TEST();
 
     START_TEST("Get vendor ID correctly");
