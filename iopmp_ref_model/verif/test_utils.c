@@ -79,35 +79,38 @@ uint8_t write_memory(uint64_t *data, uint64_t addr, uint32_t size) {
 /**
   * @brief SRCMD Table Configurations
   *
+  * @param iopmp The IOPMP instance.
   * @param srcmd_reg It could be SRCMD_EN, SRCMD_ENH, SRCMD_R, SRCMD_RH, SRCMD_W, SRCMD_WH.
   * @param srcmd_idx It could be any legal SRCMD Table Index.
   * @param data Value that you want to write in this register.
   * @param num_bytes It could be 4-Byte write or 8-Byte Write.
  **/
-void configure_srcmd_n(uint8_t srcmd_reg, uint16_t srcmd_idx, reg_intf_dw data, uint8_t num_bytes){
-    write_register(SRCMD_TABLE_BASE_OFFSET + srcmd_reg + (srcmd_idx * 32), data, num_bytes);
+void configure_srcmd_n(iopmp_dev_t *iopmp, uint8_t srcmd_reg, uint16_t srcmd_idx, reg_intf_dw data, uint8_t num_bytes){
+    write_register(iopmp, SRCMD_TABLE_BASE_OFFSET + srcmd_reg + (srcmd_idx * 32), data, num_bytes);
 }
 /**
   * @brief MDCFG Table Configurations
   *
+  * @param iopmp The IOPMP instance.
   * @param md_idx It could be any legal MDCFG Table Index.
   * @param data Value that you want to write in this register.
   * @param num_bytes It could be 4-Byte write or 8-Byte Write.
  **/
-void configure_mdcfg_n(uint8_t md_idx, reg_intf_dw data, uint8_t num_bytes){
-    write_register(MDCFG_TABLE_BASE_OFFSET + (md_idx * 4), data, num_bytes);
+void configure_mdcfg_n(iopmp_dev_t *iopmp, uint8_t md_idx, reg_intf_dw data, uint8_t num_bytes){
+    write_register(iopmp, MDCFG_TABLE_BASE_OFFSET + (md_idx * 4), data, num_bytes);
 }
 
 /**
   * @brief Entry Table Configurations
   *
+  * @param iopmp The IOPMP instance.
   * @param entry_reg It could be ENTRY_ADDR, ENTRY_ADDRH, ENTRY_CFG, ENTRY_USER_CFG.
   * @param entry_idx It could be any legal Entry Table Index.
   * @param data Value that you want to write in this register.
   * @param num_bytes It could be 4-Byte write or 8-Byte Write.
  **/
-void configure_entry_n(uint8_t entry_reg, uint64_t entry_idx, reg_intf_dw data, uint8_t num_bytes){
-    write_register(ENTRY_TABLE_BASE_OFFSET + entry_reg + (entry_idx * 16), data, num_bytes);    // (364 >> 2) and keeping lsb 0
+void configure_entry_n(iopmp_dev_t *iopmp, uint8_t entry_reg, uint64_t entry_idx, reg_intf_dw data, uint8_t num_bytes){
+    write_register(iopmp, ENTRY_TABLE_BASE_OFFSET + entry_reg + (entry_idx * 16), data, num_bytes);    // (364 >> 2) and keeping lsb 0
 }
 
 /**
@@ -132,32 +135,35 @@ void receiver_port(uint16_t rrid, uint64_t addr, uint32_t length, uint32_t size,
 
 /**
   * @brief Set Enable High
+  *
+  * @param iopmp The IOPMP instance.
  **/
-void set_hwcfg0_enable(){
+void set_hwcfg0_enable(iopmp_dev_t *iopmp) {
     hwcfg0_t hwcfg0;
 
-    hwcfg0.raw = read_register(HWCFG0_OFFSET, 4);
+    hwcfg0.raw = read_register(iopmp, HWCFG0_OFFSET, 4);
     hwcfg0.enable = true;
-    write_register(HWCFG0_OFFSET, hwcfg0.raw, 4);
+    write_register(iopmp, HWCFG0_OFFSET, hwcfg0.raw, 4);
 }
 
 /**
   * @brief error_record_check
   *
+  * @param iopmp The IOPMP instance.
   * @param err_type RRID Of the Bus Initiator
   * @param req_perm Address to be checked
   * @param req_addr Errored Address
   * @param err_rcd Set if error should be recorded
  **/
-int error_record_chk(uint8_t err_type, uint8_t req_perm, uint64_t req_addr, bool err_rcd){
+int error_record_chk(iopmp_dev_t *iopmp, uint8_t err_type, uint8_t req_perm, uint64_t req_addr, bool err_rcd) {
     err_info_t err_info_temp;
-    err_info_temp.raw = read_register(ERR_INFO_OFFSET, 4);
+    err_info_temp.raw = read_register(iopmp, ERR_INFO_OFFSET, 4);
     if (err_rcd){
         FAIL_IF((err_info_temp.v != 1));
         FAIL_IF((err_info_temp.ttype != req_perm));
         FAIL_IF((err_info_temp.etype != (err_type)));
-        FAIL_IF((read_register(ERR_REQADDR_OFFSET, 4) != (uint32_t)((req_addr >> 2) & 0xFFFFFFFF)));
-        FAIL_IF((read_register(ERR_REQADDRH_OFFSET, 4) != (uint32_t)((req_addr >> 34) & 0xFFFFFFFF)));
+        FAIL_IF((read_register(iopmp, ERR_REQADDR_OFFSET, 4) != (uint32_t)((req_addr >> 2) & 0xFFFFFFFF)));
+        FAIL_IF((read_register(iopmp, ERR_REQADDRH_OFFSET, 4) != (uint32_t)((req_addr >> 34) & 0xFFFFFFFF)));
     } else {
         FAIL_IF((err_info_temp.v == 1));
     }
