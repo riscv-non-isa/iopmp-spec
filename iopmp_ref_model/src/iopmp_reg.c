@@ -344,7 +344,7 @@ reg_intf_dw read_register(uint64_t offset, uint8_t num_bytes) {
  *
  * @param exempt A flag indicating whether the RRID stall status should be exempted.
  */
-void rrid_stall_update(uint8_t exempt) {
+static void rrid_stall_update(uint8_t exempt) {
     uint64_t stall_by_md;
 
     // Combine the high and low parts of the 'mdstall' register to create a full 64-bit stall mask.

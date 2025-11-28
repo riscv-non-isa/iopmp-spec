@@ -15,6 +15,27 @@
 
 #include "iopmp.h"
 
+#if (IOPMP_MFR_EN)
+/**
+  * @brief Sets the corresponding bit in the error subsequent violations (SV) structure for a given RRID.
+  *
+  * @param rrid Resource Record ID (RRID) whose corresponding bit needs to be set in the SV structure.
+  */
+static void setRridSv(uint16_t rrid) {
+    err_svs.sv[rrid/16].svw |= (1 << (rrid % 16));
+}
+
+/**
+  * @brief Checks if the corresponding bit in the error subsequent violations (SV) structure is set for a given RRID.
+  *
+  * @param rrid Resource Record ID (RRID) to check in the SV structure.
+  * @return int Returns 1 if the bit corresponding to the RRID is set, otherwise returns 0.
+  */
+static int checkRridSv(uint16_t rrid) {
+    return (err_svs.sv[rrid/16].svw >> (rrid % 16)) & 0x1;
+}
+#endif
+
 /**
   * @brief Captures and logs error information for a transaction request.
   *
@@ -63,24 +84,3 @@ void errorCapture(perm_type_e trans_type, uint8_t error_type, uint16_t rrid, uin
     if (!err_reqinfo_v)
         generate_interrupt(intrpt);
 }
-
-#if (IOPMP_MFR_EN)
-/**
-  * @brief Sets the corresponding bit in the error subsequent violations (SV) structure for a given RRID.
-  *
-  * @param rrid Resource Record ID (RRID) whose corresponding bit needs to be set in the SV structure.
-  */
-void setRridSv(uint16_t rrid) {
-    err_svs.sv[rrid/16].svw |= (1 << (rrid % 16));
-}
-
-/**
-  * @brief Checks if the corresponding bit in the error subsequent violations (SV) structure is set for a given RRID.
-  *
-  * @param rrid Resource Record ID (RRID) to check in the SV structure.
-  * @return int Returns 1 if the bit corresponding to the RRID is set, otherwise returns 0.
-  */
-int checkRridSv(uint16_t rrid) {
-    return (err_svs.sv[rrid/16].svw >> (rrid % 16)) & 0x1;
-}
-#endif
