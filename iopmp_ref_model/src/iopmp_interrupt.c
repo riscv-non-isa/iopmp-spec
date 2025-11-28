@@ -18,34 +18,35 @@
  * is disabled, it generates a wired signal interrupt. When MSI is enabled, it constructs the MSI address
  * and data, writes them to memory, and handles any potential bus errors during the write operation.
  *
+ * @param iopmp The IOPMP instance.
  * @param intrpt Pointer to a variable to store the interrupt flag.
  */
-void generate_interrupt(uint8_t *intrpt) {
+void generate_interrupt(iopmp_dev_t *iopmp, uint8_t *intrpt) {
     // Extract configuration values for clarity
-    const uint8_t msi_enabled = g_reg_file.err_cfg.msi_en;
-    const uint8_t interrupt_enabled = g_reg_file.err_cfg.ie;
+    const uint8_t msi_enabled = iopmp->reg_file.err_cfg.msi_en;
+    const uint8_t interrupt_enabled = iopmp->reg_file.err_cfg.ie;
     *intrpt = 0;
     // Check if interrupts are not enabled
     if (interrupt_enabled) {
         // Check if interrupts are not suppressed
-        if (!intrpt_suppress) {
+        if (!iopmp->intrpt_suppress) {
             *intrpt = !msi_enabled;
             #if (MSI_EN)
-                if (msi_enabled && !g_reg_file.err_info.msi_werr) {
+                if (msi_enabled && !iopmp->reg_file.err_info.msi_werr) {
                     // Construct MSI address and data for enabled MSI.
                     // {MSI_ADDRH[64:34], MSI_ADDR[33:2], 2'b00}
                     #if (IOPMP_ADDRH_EN)
-                        uint64_t msi_addr = CONCAT32(g_reg_file.err_msiaddrh.raw, g_reg_file.err_msiaddr.raw);
+                        uint64_t msi_addr = CONCAT32(iopmp->reg_file.err_msiaddrh.raw, iopmp->reg_file.err_msiaddr.raw);
                     #else
-                        uint64_t msi_addr = CONCAT32(0, g_reg_file.err_msiaddr.raw << 2);
+                        uint64_t msi_addr = CONCAT32(0, iopmp->reg_file.err_msiaddr.raw << 2);
                     #endif
-                    uint64_t msi_data = g_reg_file.err_cfg.msidata;
+                    uint64_t msi_data = iopmp->reg_file.err_cfg.msidata;
                     // Write MSI data to memory
                     uint8_t status = write_memory(&msi_data, msi_addr, MSI_DATA_BYTE);
 
                     // Handle bus errors during MSI write
                     if (status == BUS_ERROR) {
-                        g_reg_file.err_info.msi_werr = 1;
+                        iopmp->reg_file.err_info.msi_werr = 1;
                     }
                 }
             #endif

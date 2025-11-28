@@ -10,30 +10,22 @@
 
 #include "iopmp.h"
 
-iopmp_regs_t    g_reg_file;
-iopmp_entries_t iopmp_entries;
-#if (IOPMP_MFR_EN)
-err_mfrs_t      err_svs;
-#endif
-int             intrpt_suppress;
-int             error_suppress;
-int             stall_cntr;
-
 /**
   * @brief Processes the IOPMP transaction request, traversing the SRCMD and MDCFG tables
   *        and entry array to match address and permissions.
   *
+  * @param iopmp The IOPMP instance.
   * @param trans_req The transaction request with required address, permissions, etc.
   * @param intrpt Pointer to the interrupt flag.
   * @return iopmp_trans_rsp_t Response structure with transaction status.
  **/
-void iopmp_validate_access(iopmp_trans_req_t *trans_req, iopmp_trans_rsp_t* iopmp_trans_rsp, uint8_t *intrpt) {
+void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iopmp_trans_rsp_t* iopmp_trans_rsp, uint8_t *intrpt) {
     iopmp_trans_rsp->rrid         = trans_req->rrid;
     iopmp_trans_rsp->rrid_stalled = 0;
     iopmp_trans_rsp->user         = 0;
     iopmp_trans_rsp->status       = IOPMP_ERROR;
     #if (IOPMP_RRID_TRANSL_EN)
-        iopmp_trans_rsp->rrid_transl = g_reg_file.hwcfg3.rrid_transl;
+        iopmp_trans_rsp->rrid_transl = iopmp->reg_file.hwcfg3.rrid_transl;
     #endif
 
     // Check to block invalid combination
@@ -42,8 +34,8 @@ void iopmp_validate_access(iopmp_trans_req_t *trans_req, iopmp_trans_rsp_t* iopm
         assert(trans_req->is_amo == 0);
     }
 
-    intrpt_suppress = 0;
-    error_suppress  = 0;
+    iopmp->intrpt_suppress = 0;
+    iopmp->error_suppress  = 0;
     int lwr_entry, upr_entry;
 
     #if (SRCMD_FMT == 0)
@@ -62,35 +54,35 @@ void iopmp_validate_access(iopmp_trans_req_t *trans_req, iopmp_trans_rsp_t* iopm
         nonPrioRuleStatus = NOT_HIT_ANY_RULE;
     #endif
     // IOPMP always allow the transaction when enable = 0
-    if (!g_reg_file.hwcfg0.enable) {
+    if (!iopmp->reg_file.hwcfg0.enable) {
         iopmp_trans_rsp->status = IOPMP_SUCCESS;
         return ;
     }
     // Check for valid RRID; if invalid, capture error and return
     if (trans_req->rrid >= IOPMP_RRID_NUM) {
         // Initially, check for global error suppression
-        error_suppress = g_reg_file.err_cfg.rs;
+        iopmp->error_suppress = iopmp->reg_file.err_cfg.rs;
         #if (ERROR_CAPTURE_EN)
-            errorCapture(trans_req->perm, UNKNOWN_RRID, trans_req->rrid, 0, trans_req->addr, intrpt);
+            errorCapture(iopmp, trans_req->perm, UNKNOWN_RRID, trans_req->rrid, 0, trans_req->addr, intrpt);
         #endif
         // In case of error suppression, success response is returned, with user defined value on initiator port
         // NOTE: You can change the `user` value
-        if (error_suppress) { iopmp_trans_rsp->status = IOPMP_SUCCESS; iopmp_trans_rsp->user = USER; }
+        if (iopmp->error_suppress) { iopmp_trans_rsp->status = IOPMP_SUCCESS; iopmp_trans_rsp->user = USER; }
         return ;
     }
 
-    if (rrid_stall[trans_req->rrid]) {
-        if (stall_cntr != STALL_BUF_DEPTH){
+    if (iopmp->rrid_stall[trans_req->rrid]) {
+        if (iopmp->stall_cntr != STALL_BUF_DEPTH){
             iopmp_trans_rsp->rrid_stalled = 1;
-            stall_cntr++;
+            iopmp->stall_cntr++;
             return ;
         }
-        else if (g_reg_file.err_cfg.stall_violation_en) {
-            error_suppress = g_reg_file.err_cfg.rs;
+        else if (iopmp->reg_file.err_cfg.stall_violation_en) {
+            iopmp->error_suppress = iopmp->reg_file.err_cfg.rs;
             #if (ERROR_CAPTURE_EN)
-                errorCapture(trans_req->perm, STALLED_TRANSACTION, trans_req->rrid, 0, trans_req->addr, intrpt);
+                errorCapture(iopmp, trans_req->perm, STALLED_TRANSACTION, trans_req->rrid, 0, trans_req->addr, intrpt);
             #endif
-            if (error_suppress) { iopmp_trans_rsp->status = IOPMP_SUCCESS; iopmp_trans_rsp->user = USER; }
+            if (iopmp->error_suppress) { iopmp_trans_rsp->status = IOPMP_SUCCESS; iopmp_trans_rsp->user = USER; }
             return ;
         }
     }
@@ -98,11 +90,11 @@ void iopmp_validate_access(iopmp_trans_req_t *trans_req, iopmp_trans_rsp_t* iopm
     // Read SRCMD table based on `rrid`
     #if (SRCMD_FMT == 0)
         #if (SRC_ENFORCEMENT_EN == 1)
-            srcmd_en  = g_reg_file.srcmd_table[0].srcmd_en;
-            srcmd_enh = g_reg_file.srcmd_table[0].srcmd_enh;
+            srcmd_en  = iopmp->reg_file.srcmd_table[0].srcmd_en;
+            srcmd_enh = iopmp->reg_file.srcmd_table[0].srcmd_enh;
         #else
-            srcmd_en  = g_reg_file.srcmd_table[trans_req->rrid].srcmd_en;
-            srcmd_enh = g_reg_file.srcmd_table[trans_req->rrid].srcmd_enh;
+            srcmd_en  = iopmp->reg_file.srcmd_table[trans_req->rrid].srcmd_en;
+            srcmd_enh = iopmp->reg_file.srcmd_table[trans_req->rrid].srcmd_enh;
         #endif
     #endif
 
@@ -122,25 +114,25 @@ void iopmp_validate_access(iopmp_trans_req_t *trans_req, iopmp_trans_rsp_t* iopm
         #endif
 
         #if (MDCFG_FMT == 0)
-            lwr_entry = (cur_md == 0) ? 0 : g_reg_file.mdcfg[cur_md - 1].t;
-            upr_entry = g_reg_file.mdcfg[cur_md].t;
+            lwr_entry = (cur_md == 0) ? 0 : iopmp->reg_file.mdcfg[cur_md - 1].t;
+            upr_entry = iopmp->reg_file.mdcfg[cur_md].t;
         #else
-            lwr_entry = cur_md * (g_reg_file.hwcfg3.md_entry_num + 1);
-            upr_entry = ((cur_md + 1) * (g_reg_file.hwcfg3.md_entry_num + 1));
+            lwr_entry = cur_md * (iopmp->reg_file.hwcfg3.md_entry_num + 1);
+            upr_entry = ((cur_md + 1) * (iopmp->reg_file.hwcfg3.md_entry_num + 1));
         #endif
 
         for (int cur_entry = lwr_entry; cur_entry <= upr_entry; cur_entry++) {
-            uint64_t prev_addr     = (cur_entry == 0) ? 0 : CONCAT32(iopmp_entries.entry_table[cur_entry - 1].entry_addrh.addrh, iopmp_entries.entry_table[cur_entry - 1].entry_addr.addr);
-            uint64_t curr_addr     = CONCAT32(iopmp_entries.entry_table[cur_entry].entry_addrh.addrh, iopmp_entries.entry_table[cur_entry].entry_addr.addr);
-            entry_cfg_t entry_cfg  = iopmp_entries.entry_table[cur_entry].entry_cfg;
+            uint64_t prev_addr     = (cur_entry == 0) ? 0 : CONCAT32(iopmp->iopmp_entries.entry_table[cur_entry - 1].entry_addrh.addrh, iopmp->iopmp_entries.entry_table[cur_entry - 1].entry_addr.addr);
+            uint64_t curr_addr     = CONCAT32(iopmp->iopmp_entries.entry_table[cur_entry].entry_addrh.addrh, iopmp->iopmp_entries.entry_table[cur_entry].entry_addr.addr);
+            entry_cfg_t entry_cfg  = iopmp->iopmp_entries.entry_table[cur_entry].entry_cfg;
             #if (IOPMP_NON_PRIO_EN)
-                bool is_priority_entry = (cur_entry < g_reg_file.hwcfg2.prio_entry);
+                bool is_priority_entry = (cur_entry < iopmp->reg_file.hwcfg2.prio_entry);
             #else
                 bool is_priority_entry = true;
             #endif
 
             // Analyze entry for match
-            iopmpMatchStatus = iopmpRuleAnalyzer(*trans_req, prev_addr, curr_addr, entry_cfg, cur_md, is_priority_entry);
+            iopmpMatchStatus = iopmpRuleAnalyzer(iopmp, *trans_req, prev_addr, curr_addr, entry_cfg, cur_md, is_priority_entry);
 
             if (iopmpMatchStatus == ENTRY_MATCH) {
                 iopmp_trans_rsp->status = IOPMP_SUCCESS;
@@ -148,8 +140,8 @@ void iopmp_validate_access(iopmp_trans_req_t *trans_req, iopmp_trans_rsp_t* iopm
             } else if (iopmpMatchStatus != ENTRY_NOTMATCH) {
                 if (!is_priority_entry) {
                     #if (ERROR_CAPTURE_EN)
-                        nonPrioErrorSup    |= error_suppress;
-                        nonPrioIntrSup     |= intrpt_suppress;
+                        nonPrioErrorSup |= iopmp->error_suppress;
+                        nonPrioIntrSup  |= iopmp->intrpt_suppress;
                         if (firstIllegalAccess) {
                             nonPrioRuleStatus  = iopmpMatchStatus;
                             nontPrioRuleNum    = cur_entry;
@@ -159,25 +151,25 @@ void iopmp_validate_access(iopmp_trans_req_t *trans_req, iopmp_trans_rsp_t* iopm
                     continue;
                 }
                 #if (ERROR_CAPTURE_EN)
-                    errorCapture(trans_req->perm, iopmpMatchStatus, trans_req->rrid, cur_entry, trans_req->addr, intrpt);
+                    errorCapture(iopmp, trans_req->perm, iopmpMatchStatus, trans_req->rrid, cur_entry, trans_req->addr, intrpt);
                 #endif
                 // In case of error suppression, success response is returned, with user defined value on initiator port
                 // NOTE: You can change the `user` value
-                if (error_suppress) { iopmp_trans_rsp->status = IOPMP_SUCCESS; iopmp_trans_rsp->user = USER; }
+                if (iopmp->error_suppress) { iopmp_trans_rsp->status = IOPMP_SUCCESS; iopmp_trans_rsp->user = USER; }
                 return ;  // Error found, capture and return response
             }
         }
     }
 
     // If No rule hits, enable error suppression based on global error suppression bit
-    if (nonPrioRuleStatus == NOT_HIT_ANY_RULE) { error_suppress = g_reg_file.err_cfg.rs; }
-    else { error_suppress = nonPrioErrorSup; intrpt_suppress = nonPrioIntrSup; }
+    if (nonPrioRuleStatus == NOT_HIT_ANY_RULE) { iopmp->error_suppress = iopmp->reg_file.err_cfg.rs; }
+    else { iopmp->error_suppress = nonPrioErrorSup; iopmp->intrpt_suppress = nonPrioIntrSup; }
 
     #if (ERROR_CAPTURE_EN)
-        errorCapture(trans_req->perm, nonPrioRuleStatus, trans_req->rrid, nontPrioRuleNum, trans_req->addr, intrpt);
+        errorCapture(iopmp, trans_req->perm, nonPrioRuleStatus, trans_req->rrid, nontPrioRuleNum, trans_req->addr, intrpt);
     #endif
     // Return response with default status if no match/error occurs
     // In case of error suppression, success response is returned, with user defined value on initiator port
     // NOTE: You can change the `user` value
-    if (error_suppress) { iopmp_trans_rsp->status = IOPMP_SUCCESS; iopmp_trans_rsp->user = USER; }
+    if (iopmp->error_suppress) { iopmp_trans_rsp->status = IOPMP_SUCCESS; iopmp_trans_rsp->user = USER; }
 }
