@@ -53,20 +53,21 @@
 #define MASK_BIT_POS(BIT_POS) ((1U << BIT_POS) - 1)
 #define GET_BIT(VAL, BIT_NUM) ((VAL >> BIT_NUM) & 1)
 
-// Global Variables: Definitions for IOPMP global variables
-extern iopmp_regs_t g_reg_file;        // Global register file for IOPMP
-extern iopmp_entries_t iopmp_entries;  // IOPMP entry table
-extern err_mfrs_t err_svs;             // Error status vector
-extern int intrpt_suppress;            // Set when interrupt is suppressed
-extern int error_suppress;             // Set when error is suppressed
-extern int rrid_stall[IOPMP_RRID_NUM]; // Stall status array for requester IDs
-extern int stall_cntr;                 // Counts stalled transactions
+typedef struct iopmp_dev_t {
+    iopmp_regs_t reg_file;          // Register file for IOPMP
+    iopmp_entries_t iopmp_entries;  // IOPMP entry table
+    err_mfrs_t err_svs;             // Error status vector
+    int intrpt_suppress;            // Set when interrupt is suppressed
+    int error_suppress;             // Set when error is suppressed
+    int rrid_stall[IOPMP_RRID_NUM]; // Stall status array for requester IDs
+    int stall_cntr;                 // Counts stalled transactions
+} iopmp_dev_t;
 
-extern uint8_t write_memory(uint64_t *data, uint64_t addr, uint32_t size);
+uint8_t write_memory(uint64_t *data, uint64_t addr, uint32_t size);
 
 // Function Declarations: Core IOPMP operations
-iopmpMatchStatus_t iopmpRuleAnalyzer(iopmp_trans_req_t trans_req, uint64_t prev_iopmpaddr, uint64_t iopmpaddr, entry_cfg_t iopmpcfg, uint8_t md, int is_priority);
-void errorCapture(perm_type_e trans_type, uint8_t error_type, uint16_t rrid, uint16_t entry_id, uint64_t err_addr, uint8_t *intrpt);
-void generate_interrupt(uint8_t *intrpt);
+iopmpMatchStatus_t iopmpRuleAnalyzer(iopmp_dev_t *iopmp, iopmp_trans_req_t trans_req, uint64_t prev_iopmpaddr, uint64_t iopmpaddr, entry_cfg_t iopmpcfg, uint8_t md, int is_priority);
+void errorCapture(iopmp_dev_t *iopmp, perm_type_e trans_type, uint8_t error_type, uint16_t rrid, uint16_t entry_id, uint64_t err_addr, uint8_t *intrpt);
+void generate_interrupt(iopmp_dev_t *iopmp, uint8_t *intrpt);
 
 #endif // IOPMP_H
