@@ -68,11 +68,6 @@
 #define IMP_HWCFG3              ((MDCFG_FMT > 0) | (SRCMD_FMT > 0) | \
                                  IOPMP_NO_X | IOPMP_NO_W | IOPMP_RRID_TRANSL_EN)
 
-extern int reset_iopmp(void);
-extern reg_intf_dw read_register(uint64_t offset, uint8_t num_bytes);
-extern void write_register(uint64_t offset, reg_intf_dw data, uint8_t num_bytes);
-void rrid_stall_update(uint8_t exempt);
-
 // VERSION register is a read-only register reporting
 // IOPMP comfiguration information of the instance:
 // 1. vendor ID

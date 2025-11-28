@@ -37,7 +37,7 @@
   * @param iopmpcfg IOPMP entry configuration
   * @return 0 on success, 1 if the IOPMP entry is disabled
  **/
-int iopmpAddrRange(uint64_t *startAddr, uint64_t *endAddr, uint64_t prev_iopmpaddr, uint64_t iopmpaddr, entry_cfg_t iopmpcfg) {
+static int iopmpAddrRange(uint64_t *startAddr, uint64_t *endAddr, uint64_t prev_iopmpaddr, uint64_t iopmpaddr, entry_cfg_t iopmpcfg) {
     uint64_t napot_mask;
     // Check if IOPMP entry is OFF
     if (iopmpcfg.a == IOPMP_OFF) { return 1; }
@@ -72,7 +72,7 @@ int iopmpAddrRange(uint64_t *startAddr, uint64_t *endAddr, uint64_t prev_iopmpad
   * @param is_priority Flag indicating if the entry has priority
   * @return 0 for a full match, ENTRY_NOTMATCH for no match, or PARTIAL_HIT_ON_PRIORITY for a partial match with priority
  **/
-int iopmpMatchAddr(iopmp_trans_req_t trans_req, uint64_t lo, uint64_t hi, int is_priority) {
+static int iopmpMatchAddr(iopmp_trans_req_t trans_req, uint64_t lo, uint64_t hi, int is_priority) {
     // Validate range
     if (hi < lo) { return ENTRY_NOTMATCH; }  // Invalid range, no match
 
@@ -99,7 +99,7 @@ int iopmpMatchAddr(iopmp_trans_req_t trans_req, uint64_t lo, uint64_t hi, int is
   * @param is_amo Indicates the AMO Access
   * @return ENTRY_MATCH if permission is granted, specific ILLEGAL_* code if denied
  **/
-iopmpMatchStatus_t iopmpCheckPerms(uint16_t rrid, perm_type_e req_perm, entry_cfg_t iopmpcfg, uint8_t md, bool is_amo) {
+static iopmpMatchStatus_t iopmpCheckPerms(uint16_t rrid, perm_type_e req_perm, entry_cfg_t iopmpcfg, uint8_t md, bool is_amo) {
 
     #if (SRCMD_FMT == 0)
         uint64_t srcmd_r, srcmd_w;
