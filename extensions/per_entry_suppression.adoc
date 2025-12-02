@@ -92,7 +92,7 @@ h|Field                         |Bits       |R/W       |Default    |Description
 * 0x0: respond an error if `ERR_CFG.rs` is 0x0. 
 * 0x1: do not respond an error. User to define the behavior, e.g., respond a success with an implementation-dependent value to the initiator.
 
-|`sewe`                         |9:9        |WARL      |IMP       a|Suppress the (bus) error on an illegal write access caught by the entry:
+|`sewe`                         |9:9        |WARL      |IMP       a|Suppress the (bus) error on an illegal write access/AMO caught by the entry:
 
 * 0x0: respond an error if `ERR_CFG.rs` is 0x0. 
 * 0x1: do not respond an error. User to define the behavior, e.g., respond a success if response is needed
