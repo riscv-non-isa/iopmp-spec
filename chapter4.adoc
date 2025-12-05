@@ -250,7 +250,7 @@ h|Field                            |Bits       |R/W    |Default    |Description
 5+h|0x0070
 h|Field                           |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF} `rrid` |15:0       |R      |DC         |Indicate the errored RRID.
-|{set:cellbgcolor:#FFFFFF} `eid`  |31:16      |R      |DC         |Indicates the index pointing to the entry that catches the violation. If no entry is hit, that is, `ERR_INFO.etype`=0x05, 0x06 or 0x07, the value of this field is invalid. If the field is not implemented, it should be wired to 0xffff.
+|{set:cellbgcolor:#FFFFFF} `eid`  |31:16      |R      |DC         |Indicates the index pointing to the entry that catches the violation. If no entry is hit, for example, `ERR_INFO.etype`= 0x05 or 0x06, the value of this field is invalid. If the field is not implemented, it should be wired to 0xffff.
 |===
 
 `ERR_USER(0:7)` are optional registers to provide users to define their own error capture information.
