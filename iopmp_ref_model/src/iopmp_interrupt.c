@@ -35,11 +35,12 @@ void generate_interrupt(iopmp_dev_t *iopmp, uint8_t *intrpt) {
                 if (msi_enabled && !iopmp->reg_file.err_info.msi_werr) {
                     // Construct MSI address and data for enabled MSI.
                     // {MSI_ADDRH[64:34], MSI_ADDR[33:2], 2'b00}
-                    #if (IOPMP_ADDRH_EN)
-                        uint64_t msi_addr = CONCAT32(iopmp->reg_file.err_msiaddrh.raw, iopmp->reg_file.err_msiaddr.raw);
-                    #else
-                        uint64_t msi_addr = CONCAT32(0, iopmp->reg_file.err_msiaddr.raw << 2);
-                    #endif
+                    uint64_t msi_addr;
+                    if (iopmp->reg_file.hwcfg0.addrh_en) {
+                        msi_addr = CONCAT32(iopmp->reg_file.err_msiaddrh.raw, iopmp->reg_file.err_msiaddr.raw);
+                    } else {
+                        msi_addr = CONCAT32(0, iopmp->reg_file.err_msiaddr.raw << 2);
+                    }
                     uint64_t msi_data = iopmp->reg_file.err_cfg.msidata;
                     // Write MSI data to memory
                     uint8_t status = write_memory(&msi_data, msi_addr, MSI_DATA_BYTE);
