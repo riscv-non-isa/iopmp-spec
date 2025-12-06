@@ -56,7 +56,7 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     iopmp->reg_file.implementation.raw      = cfg->impid;
 
     // Hardware Configuration
-    iopmp->reg_file.hwcfg0.enable           = IOPMP_ENABLE;
+    iopmp->reg_file.hwcfg0.enable           = cfg->enable;
     iopmp->reg_file.hwcfg0.HWCFG2_en        = IMP_HWCFG2;
     iopmp->reg_file.hwcfg0.HWCFG3_en        = IMP_HWCFG3;
     iopmp->reg_file.hwcfg0.md_num           = IOPMP_MD_NUM;
