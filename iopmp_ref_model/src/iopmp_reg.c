@@ -60,7 +60,7 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     iopmp->reg_file.hwcfg0.HWCFG2_en        = IMP_HWCFG2;
     iopmp->reg_file.hwcfg0.HWCFG3_en        = IMP_HWCFG3;
     iopmp->reg_file.hwcfg0.md_num           = IOPMP_MD_NUM;
-    iopmp->reg_file.hwcfg0.addrh_en         = IOPMP_ADDRH_EN;
+    iopmp->reg_file.hwcfg0.addrh_en         = cfg->addrh_en;
     iopmp->reg_file.hwcfg0.tor_en           = cfg->tor_en;
     iopmp->reg_file.hwcfg1.rrid_num         = IOPMP_RRID_NUM;
     iopmp->reg_file.hwcfg1.entry_num        = IOPMP_ENTRY_NUM;
@@ -285,9 +285,7 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
     entrylck_t       entrylck_temp       = { .raw = upr_data4 };
     err_cfg_t        err_cfg_temp        = { .raw = lwr_data4 };
     entry_addr_t     entry_addr_temp     = { .raw = lwr_data4 };
-#if (IOPMP_ADDRH_EN)
     entry_addrh_t    entry_addrh_temp    = { .raw = upr_data4 };
-#endif
     entry_cfg_t      entry_cfg_temp      = { .raw = lwr_data4 };
     entry_user_cfg_t entry_user_cfg_temp = { .raw = upr_data4 };
 
@@ -299,9 +297,7 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
 // Conditional block for msi addr
 #if (MSI_EN)
     err_msiaddr_t    err_msiaddr_temp    = { .raw = lwr_data4 };
-#if (IOPMP_ADDRH_EN)
     err_msiaddrh_t   err_msiaddrh_temp   = { .raw = upr_data4 };
-#endif
 #endif
 
 // Conditional block for SRCMD format
@@ -513,11 +509,11 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
         break;
 
     case ERR_MSIADDRH_OFFSET:
-        #if (IOPMP_ADDRH_EN)
+        if (iopmp->reg_file.hwcfg0.addrh_en) {
             iopmp->reg_file.err_msiaddrh.raw = (!iopmp->reg_file.err_cfg.l) ?
                                                err_msiaddrh_temp.raw :
                                                iopmp->reg_file.err_msiaddrh.raw;
-        #endif
+        }
         break;
 #endif
 
@@ -666,13 +662,13 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
                 // Entry Addr Register
                 case 0:
                     iopmp->iopmp_entries.entry_table[ENTRY_TABLE_INDEX(offset)].entry_addr.addr = entry_addr_temp.addr;
-                    if ((num_bytes == 4) || !IOPMP_ADDRH_EN) break;
+                    if ((num_bytes == 4) || !iopmp->reg_file.hwcfg0.addrh_en) break;
 
                 // Entry Addrh Register
                 case 1:
-                    #if (IOPMP_ADDRH_EN)
+                    if (iopmp->reg_file.hwcfg0.addrh_en) {
                         iopmp->iopmp_entries.entry_table[ENTRY_TABLE_INDEX(offset)].entry_addrh.addrh = entry_addrh_temp.addrh;
-                    #endif
+                    }
                     break;
 
                 // Entry Cfg Register

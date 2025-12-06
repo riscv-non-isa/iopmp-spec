@@ -33,6 +33,7 @@ int main()
     cfg.vendor = 1;
     cfg.specver = 1;
     cfg.impid = 0;
+    cfg.addrh_en = true;
     cfg.tor_en = true;
 
 #if (SRC_ENFORCEMENT_EN == 0)
@@ -573,11 +574,11 @@ int main()
     reset_iopmp(&iopmp, &cfg);
     bus_error = 0x8000;
     write_register(&iopmp, ERR_CFG_OFFSET, 0x8F0A, 4);
-#if (IOPMP_ADDRH_EN)
-    write_register(&iopmp, ERR_MSIADDR_OFFSET, 0x8000, 4);
-#else
-    write_register(&iopmp, ERR_MSIADDR_OFFSET, (0x8000 >> 2), 4);
-#endif
+    if (iopmp.reg_file.hwcfg0.addrh_en) {
+        write_register(&iopmp, ERR_MSIADDR_OFFSET, 0x8000, 4);
+    } else {
+        write_register(&iopmp, ERR_MSIADDR_OFFSET, (0x8000 >> 2), 4);
+    }
     receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
     configure_entry_n(&iopmp, ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), 90, 4);
     configure_entry_n(&iopmp, ENTRY_CFG, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), (NAPOT | R), 4);
@@ -595,11 +596,11 @@ int main()
     START_TEST("Test MSI");
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, ERR_CFG_OFFSET, 0x8F0A, 4);
-#if (IOPMP_ADDRH_EN)
-    write_register(&iopmp, ERR_MSIADDR_OFFSET, 0x8000, 4);
-#else
-    write_register(&iopmp, ERR_MSIADDR_OFFSET, (0x8000 >> 2), 4);
-#endif
+    if (iopmp.reg_file.hwcfg0.addrh_en) {
+        write_register(&iopmp, ERR_MSIADDR_OFFSET, 0x8000, 4);
+    } else {
+        write_register(&iopmp, ERR_MSIADDR_OFFSET, (0x8000 >> 2), 4);
+    }
     receiver_port(2, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
     configure_entry_n(&iopmp, ENTRY_ADDR, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), 90, 4);
     configure_entry_n(&iopmp, ENTRY_CFG, (iopmp_trans_req.rrid * (IOPMP_MD_ENTRY_NUM + 1)), (NAPOT | R), 4);

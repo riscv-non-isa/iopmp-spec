@@ -69,6 +69,7 @@ typedef struct iopmp_cfg_t {
     uint8_t specver;                    // The specification version
     uint32_t impid;                     // The user-defined implementation ID
     bool enable;                        // IOPMP checks transactions by default
+    bool addrh_en;                      // IOPMP has ENTRY_ADDRH(i) and ERR_REQADDRH
     bool tor_en;                        // IOPMP supports TOR
 } iopmp_cfg_t;
 
