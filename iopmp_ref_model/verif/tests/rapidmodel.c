@@ -677,7 +677,7 @@ int main()
 
     START_TEST("Test Interrupt Suppression is Enabled");
     reset_iopmp(&iopmp);
-    write_register(&iopmp, ERR_OFFSET, 0x2, 4);
+    write_register(&iopmp, ERR_CFG_OFFSET, 0x2, 4);
     configure_srcmd_n(&iopmp, SRCMD_ENH, 2, 0x1, 4);
     configure_srcmd_n(&iopmp, SRCMD_RH, 2, 0x1, 4);
     configure_entry_n(&iopmp, ENTRY_ADDR, ((IOPMP_MD_ENTRY_NUM + 1) * 31), 90, 4);  // (364 >> 2) and keeping lsb 0
@@ -693,7 +693,7 @@ int main()
 
     START_TEST("Test Interrupt Suppression is disabled");
     reset_iopmp(&iopmp);
-    write_register(&iopmp, ERR_OFFSET, 0x2, 4);
+    write_register(&iopmp, ERR_CFG_OFFSET, 0x2, 4);
     configure_srcmd_n(&iopmp, SRCMD_ENH, 2, 0x1, 4);
     configure_srcmd_n(&iopmp, SRCMD_RH, 2, 0x1, 4);
     configure_entry_n(&iopmp, ENTRY_ADDR, ((IOPMP_MD_ENTRY_NUM + 1) * 31), 90, 4);
@@ -710,7 +710,7 @@ int main()
     START_TEST("Test Error Suppression is Enabled");
     // Receiver Port Signals
     reset_iopmp(&iopmp);
-    write_register(&iopmp, ERR_OFFSET, 0x4, 4);
+    write_register(&iopmp, ERR_CFG_OFFSET, 0x4, 4);
     configure_srcmd_n(&iopmp, SRCMD_ENH, 2, 0x1, 4);
     configure_srcmd_n(&iopmp, SRCMD_RH, 2, 0x1, 4);
     configure_entry_n(&iopmp, ENTRY_ADDR, ((IOPMP_MD_ENTRY_NUM + 1) * 31), 90, 4);                // (364 >> 2) and keeping lsb 0
@@ -765,7 +765,7 @@ int main()
     START_TEST("Test Interrupt and Error Suppression is Enabled");
     // Receiver Port Signals
     reset_iopmp(&iopmp);
-    write_register(&iopmp, ERR_OFFSET, 0x6, 4);
+    write_register(&iopmp, ERR_CFG_OFFSET, 0x6, 4);
     configure_srcmd_n(&iopmp, SRCMD_ENH, 2, 0x1, 4);
     configure_srcmd_n(&iopmp, SRCMD_RH, 2, 0x1, 4);
     configure_entry_n(&iopmp, ENTRY_ADDR, ((IOPMP_MD_ENTRY_NUM + 1) * 31), 90, 4);                       // (364 >> 2) and keeping lsb 0
@@ -785,7 +785,7 @@ int main()
     START_TEST("Test Interrupt and Error Suppression is disabled");
     // Receiver Port Signals
     reset_iopmp(&iopmp);
-    write_register(&iopmp, ERR_OFFSET, 0x2, 4);
+    write_register(&iopmp, ERR_CFG_OFFSET, 0x2, 4);
     configure_srcmd_n(&iopmp, SRCMD_ENH, 2, 0x1, 4);
     configure_srcmd_n(&iopmp, SRCMD_RH, 2, 0x1, 4);
     configure_entry_n(&iopmp, ENTRY_ADDR, ((IOPMP_MD_ENTRY_NUM + 1) * 31), 90, 4);         // (364 >> 2) and keeping lsb 0
@@ -825,7 +825,7 @@ int main()
     // Set STALL_BUF_DEPTH zero to test this feature
     START_TEST("Faulting Stalled Transactions Feature");
     reset_iopmp(&iopmp);
-    write_register(&iopmp, ERR_OFFSET, 0x10, 4);
+    write_register(&iopmp, ERR_CFG_OFFSET, 0x10, 4);
     configure_srcmd_n(&iopmp, SRCMD_EN, 5, 0x10, 4);
     configure_srcmd_n(&iopmp, SRCMD_R, 5, 0x10, 4);
     configure_entry_n(&iopmp, ENTRY_ADDR, ((IOPMP_MD_ENTRY_NUM + 1) * 3), 90, 4); // (364 >> 2) and keeping lsb 0
@@ -870,7 +870,7 @@ int main()
     uint64_t read_data;
     reset_iopmp(&iopmp);
     bus_error = 0x8000;
-    write_register(&iopmp, ERR_OFFSET, 0x8F0A, 4);
+    write_register(&iopmp, ERR_CFG_OFFSET, 0x8F0A, 4);
 #if (IOPMP_ADDRH_EN)
     write_register(&iopmp, ERR_MSIADDR_OFFSET, 0x8000, 4);
 #else
@@ -894,7 +894,7 @@ int main()
 
     START_TEST("Test MSI");
     reset_iopmp(&iopmp);
-    write_register(&iopmp, ERR_OFFSET, 0x8F0A, 4);
+    write_register(&iopmp, ERR_CFG_OFFSET, 0x8F0A, 4);
 #if (IOPMP_ADDRH_EN)
     write_register(&iopmp, ERR_MSIADDR_OFFSET, 0x8000, 4);
 #else
