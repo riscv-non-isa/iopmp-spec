@@ -46,6 +46,9 @@
 // Function to reset I/O Memory Protection
 int reset_iopmp(iopmp_dev_t *iopmp)
 {
+    // Zeroize all states
+    memset(iopmp, 0, sizeof(*iopmp));
+
     // Reset all IOPMP registers
     iopmp->reg_file.version.vendor          = 1;     // Set vendorID
     iopmp->reg_file.version.specver         = 1;     // Set IOPMP Specification version
@@ -64,9 +67,6 @@ int reset_iopmp(iopmp_dev_t *iopmp)
 #if (IOPMP_NON_PRIO_EN)
     iopmp->reg_file.hwcfg2.prio_entry       = IOPMP_PRIO_ENTRY;
     iopmp->reg_file.hwcfg2.prio_ent_prog    = IOPMP_PRIO_ENT_PROG;
-#else
-    iopmp->reg_file.hwcfg2.prio_entry       = 0;
-    iopmp->reg_file.hwcfg2.prio_ent_prog    = 0;
 #endif
     iopmp->reg_file.hwcfg2.non_prio_en      = IOPMP_NON_PRIO_EN;
     iopmp->reg_file.hwcfg2.chk_x            = IOPMP_CHK_X;
@@ -75,8 +75,6 @@ int reset_iopmp(iopmp_dev_t *iopmp)
     iopmp->reg_file.hwcfg2.sps_en           = IOPMP_SPS_EN;
     iopmp->reg_file.hwcfg2.stall_en         = IOPMP_STALL_EN;
     iopmp->reg_file.hwcfg2.mfr_en           = IOPMP_MFR_EN;
-#else   // IMP_HWCFG2=0
-    iopmp->reg_file.reserved12              = 0;
 #endif
 
 #if (IMP_HWCFG3)
@@ -88,9 +86,7 @@ int reset_iopmp(iopmp_dev_t *iopmp)
 #ifdef SRCMD_FMT
     iopmp->reg_file.hwcfg3.srcmd_fmt        = SRCMD_FMT;
 #endif
-#if (MDCFG_FMT == 0)
-    iopmp->reg_file.hwcfg3.md_entry_num     = 0;
-#else
+#if (MDCFG_FMT == 1 || MDCFG_FMT == 2)
     iopmp->reg_file.hwcfg3.md_entry_num     = IOPMP_MD_ENTRY_NUM;
 #endif
     iopmp->reg_file.hwcfg3.no_x             = IOPMP_NO_X;
@@ -99,144 +95,18 @@ int reset_iopmp(iopmp_dev_t *iopmp)
 #if (IOPMP_RRID_TRANSL_EN)
     iopmp->reg_file.hwcfg3.rrid_transl_prog = IOPMP_RRID_TRANSL_PROG;
     iopmp->reg_file.hwcfg3.rrid_transl      = IOPMP_RRID_TRANSL;
-#else
-    iopmp->reg_file.hwcfg3.rrid_transl_prog = 0;
-    iopmp->reg_file.hwcfg3.rrid_transl      = 0;
 #endif
-#else   // IMP_HWCFG3=0
-    iopmp->reg_file.reserved13              = 0;
 #endif
 
     iopmp->reg_file.entryoffset.raw         = ENTRY_OFFSET;
 
-#if (IOPMP_STALL_EN)
-    iopmp->reg_file.mdstall.raw             = 0;
-    iopmp->reg_file.mdstallh.raw            = 0;
-#if (IMP_RRIDSCP)
-    iopmp->reg_file.rridscp.raw             = 0;
-#else
-    iopmp->reg_file.reserved10              = 0;
-#endif
-#else
-    for (size_t i = 0; i < sizeof(iopmp->reg_file.reserved7) / sizeof(iopmp->reg_file.reserved7[0]); i++) {
-        iopmp->reg_file.reserved7[i] = 0;
-    }
-#endif
-
 #if (SRCMD_FMT != 1)
-    iopmp->reg_file.mdlck.raw               = 0;
     iopmp->reg_file.mdlck.l                 = !IMP_MDLCK;
-    iopmp->reg_file.mdlckh.raw              = 0;
-#else
-    for (size_t i = 0; i < sizeof(iopmp->reg_file.reserved6) / sizeof(iopmp->reg_file.reserved6[0]); i++) {
-        iopmp->reg_file.reserved6[i] = 0;
-    }
 #endif
 
-#if (MDCFG_FMT == 0)
-    iopmp->reg_file.mdcfglck.raw            = 0;
-#else
-    iopmp->reg_file.reserved8               = 0;
-#endif
-
-    iopmp->reg_file.entrylck.raw            = 0;
-    iopmp->reg_file.err_cfg.raw             = 0;
-    iopmp->reg_file.err_info.raw            = 0;
-    iopmp->reg_file.err_reqaddr.raw         = 0;
-    iopmp->reg_file.err_reqaddrh.raw        = 0;
-    iopmp->reg_file.err_reqid.rrid          = 0;
     iopmp->reg_file.err_reqid.eid           = IMP_ERROR_REQID ? 0 : 0xFFFF;
-#if (IOPMP_MFR_EN)
-    iopmp->reg_file.err_mfr.raw             = 0;
-#else
-    iopmp->reg_file.reserved11              = 0;
-#endif
 
-#if (MSI_EN)
-    iopmp->reg_file.err_msiaddr.raw         = 0;
-    iopmp->reg_file.err_msiaddrh.raw        = 0;
-#else
-    for (size_t i = 0; i < sizeof(iopmp->reg_file.reserved9) / sizeof(iopmp->reg_file.reserved9[0]); i++) {
-        iopmp->reg_file.reserved9[i] = 0;
-    }
-#endif
-
-    // Reset array fields using loops
-    // Reset array fields using loops with size_t for the index
-    for (size_t i = 0; i < sizeof(iopmp->reg_file.reserved0) / sizeof(iopmp->reg_file.reserved0[0]); i++) {
-        iopmp->reg_file.reserved0[i] = 0;
-    }
-
-    for (size_t i = 0; i < sizeof(iopmp->reg_file.reserved1) / sizeof(iopmp->reg_file.reserved1[0]); i++) {
-        iopmp->reg_file.reserved1[i] = 0;
-    }
-
-    for (size_t i = 0; i < sizeof(iopmp->reg_file.reserved2) / sizeof(iopmp->reg_file.reserved2[0]); i++) {
-        iopmp->reg_file.reserved2[i] = 0;
-    }
-
-    for (size_t i = 0; i < sizeof(iopmp->reg_file.err_user) / sizeof(iopmp->reg_file.err_user[0]); i++) {
-        iopmp->reg_file.err_user[i].raw = 0;
-    }
-
-#if (MDCFG_FMT == 0)
-    for (size_t i = 0; i < sizeof(iopmp->reg_file.mdcfg) / sizeof(iopmp->reg_file.mdcfg[0]); i++) {
-        iopmp->reg_file.mdcfg[i].raw = 0;
-    }
-#endif
-
-    for (size_t i = 0; i < sizeof(iopmp->reg_file.reserved4) / sizeof(iopmp->reg_file.reserved4[0]); i++) {
-        iopmp->reg_file.reserved4[i] = 0;
-    }
-
-#if (SRCMD_FMT == 0)
-    for (size_t i = 0; i < sizeof(iopmp->reg_file.srcmd_table) / sizeof(iopmp->reg_file.srcmd_table[0]); i++) {
-        iopmp->reg_file.srcmd_table[i].srcmd_en.raw  = 0;
-        iopmp->reg_file.srcmd_table[i].srcmd_enh.raw = 0;
-        iopmp->reg_file.srcmd_table[i].srcmd_r.raw   = 0;
-        iopmp->reg_file.srcmd_table[i].srcmd_rh.raw  = 0;
-        iopmp->reg_file.srcmd_table[i].srcmd_w.raw   = 0;
-        iopmp->reg_file.srcmd_table[i].srcmd_wh.raw  = 0;
-        iopmp->reg_file.srcmd_table[i].rsvd[0]       = 0;
-        iopmp->reg_file.srcmd_table[i].rsvd[1]       = 0;
-    }
-
-#elif (SRCMD_FMT == 2)
-    for (size_t i = 0; i < sizeof(iopmp->reg_file.srcmd_table) / sizeof(iopmp->reg_file.srcmd_table[0]); i++) {
-        iopmp->reg_file.srcmd_table[i].srcmd_perm.raw  = 0;
-        iopmp->reg_file.srcmd_table[i].srcmd_permh.raw = 0;
-        for (int j = 0; j < 6; j++) {
-            iopmp->reg_file.srcmd_table[i].rsvd[j]     = 0;
-            iopmp->reg_file.srcmd_table[i].rsvd[j]     = 0;
-        }
-    }
-#endif
-
-    for (size_t i = 0; i < sizeof(iopmp->reg_file.reserved5) / sizeof(iopmp->reg_file.reserved5[0]); i++) {
-        iopmp->reg_file.reserved5[i] = 0;
-    }
-
-    for (size_t i = 0; i < sizeof(iopmp->iopmp_entries.entry_table) / sizeof(iopmp->iopmp_entries.entry_table[0]); i++) {
-        iopmp->iopmp_entries.entry_table[i].entry_addr.raw     = 0;
-        iopmp->iopmp_entries.entry_table[i].entry_addrh.raw    = 0;
-        iopmp->iopmp_entries.entry_table[i].entry_cfg.raw      = 0;
-        iopmp->iopmp_entries.entry_table[i].entry_user_cfg.raw = 0;
-    }
-
-#if (IOPMP_MFR_EN)
-    for (int i = 0; i < NUM_SVW; i++) {
-        iopmp->err_svs.sv[i].raw = 0;
-    }
-#endif
-
-    for (int i = 0; i < IOPMP_RRID_NUM; i++) {
-        iopmp->rrid_stall[i] = 0;
-    }
-    iopmp->intrpt_suppress = 0;
-    iopmp->error_suppress  = 0;
-    iopmp->stall_cntr      = 0;
-
-    return 0; // Success
+    return 0;
 }
 
 /**
