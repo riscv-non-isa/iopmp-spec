@@ -6,7 +6,6 @@
 // that a user could change before compilation.
 ***************************************************************************/
 
-#define IOPMP_TOR_EN            1
 #define IOPMP_SPS_EN            1
 #define IOPMP_RRID_TRANSL_EN    1
 #define IOPMP_RRID_TRANSL_PROG  0

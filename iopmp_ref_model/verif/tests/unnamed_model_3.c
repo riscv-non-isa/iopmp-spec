@@ -33,6 +33,7 @@ int main()
     cfg.vendor = 1;
     cfg.specver = 1;
     cfg.impid = 0;
+    cfg.tor_en = true;
 
 #if (SRC_ENFORCEMENT_EN == 0)
     START_TEST("Test OFF - Read Access permissions");
@@ -87,8 +88,8 @@ int main()
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
     END_TEST();
 
-#if (IOPMP_TOR_EN)
-    START_TEST("Test TOR - Partial hit on a priority rule error");
+    START_TEST_IF(iopmp.reg_file.hwcfg0.tor_en,
+                  "Test TOR - Partial hit on a priority rule error",
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_PERM, 2, 0x10, 4); // SRCMD_PERM[2] is associated with MD[3]
     configure_entry_n(&iopmp, ENTRY_ADDR, 1, (368 >> 2), 4);
@@ -99,9 +100,9 @@ int main()
     iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_ERROR, PARTIAL_HIT_ON_PRIORITY);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
+    END_TEST();)
 
-    START_TEST("Test TOR - 4Byte Read Access");
+    START_TEST_IF(iopmp.reg_file.hwcfg0.tor_en, "Test TOR - 4Byte Read Access",
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_PERM, 2, 0x10, 4);                                      // SRCMD_PERM[2] is associated with MD[3]
     write_register(&iopmp, HWCFG0_OFFSET, read_register(&iopmp, HWCFG0_OFFSET, 4) & 0xFF04FFFF, 4); // md_entry_num set to 2
@@ -113,9 +114,9 @@ int main()
     iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_SUCCESS, ENTRY_MATCH);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
+    END_TEST();)
 
-    START_TEST("Test TOR - 4Byte Write Access");
+    START_TEST_IF(iopmp.reg_file.hwcfg0.tor_en, "Test TOR - 4Byte Write Access",
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_PERM, 2, 0xB, 4); // SRCMD_PERM[2] is associated with MD[3]
     configure_entry_n(&iopmp, ENTRY_ADDR, 1, (368 >> 2), 4);
@@ -126,9 +127,10 @@ int main()
     iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_SUCCESS, ENTRY_MATCH);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
+    END_TEST();)
 
-    START_TEST("Test TOR - 4Byte Non-AMO Write Access");
+    START_TEST_IF(iopmp.reg_file.hwcfg0.tor_en,
+                  "Test TOR - 4Byte Non-AMO Write Access",
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_PERM, 2, 0xB, 4); // SRCMD_PERM[2] is associated with MD[3]
     configure_entry_n(&iopmp, ENTRY_ADDR, 1, (368 >> 2), 4);
@@ -139,9 +141,9 @@ int main()
     iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_SUCCESS, ENTRY_MATCH);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
+    END_TEST();)
 
-    START_TEST("Test TOR - 4Byte Write Access");
+    START_TEST_IF(iopmp.reg_file.hwcfg0.tor_en, "Test TOR - 4Byte Write Access",
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_PERM, 2, 0xA, 4); // SRCMD_PERM[2] is associated with MD[3]
     configure_entry_n(&iopmp, ENTRY_ADDR, 1, (368 >> 2), 4);
@@ -152,8 +154,8 @@ int main()
     iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_ERROR, ILLEGAL_WRITE_ACCESS);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
-#endif
+    END_TEST();)
+
     START_TEST("Test NA4 - 4Byte Read Access");
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_PERMH, 30, 0x11, 4);
