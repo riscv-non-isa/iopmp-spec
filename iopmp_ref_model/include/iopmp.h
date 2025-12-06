@@ -63,6 +63,13 @@ typedef struct iopmp_dev_t {
     int stall_cntr;                 // Counts stalled transactions
 } iopmp_dev_t;
 
+// Configurations of IOPMP when reset
+typedef struct iopmp_cfg_t {
+    uint32_t vendor;                    // The JEDEC manufacturer ID
+    uint8_t specver;                    // The specification version
+    uint32_t impid;                     // The user-defined implementation ID
+} iopmp_cfg_t;
+
 uint8_t write_memory(uint64_t *data, uint64_t addr, uint32_t size);
 
 // Function Declarations: Core IOPMP operations
