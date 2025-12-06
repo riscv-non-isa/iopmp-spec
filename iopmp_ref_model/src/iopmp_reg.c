@@ -596,7 +596,7 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
         iopmp->reg_file.entrylck.rsv = 0;
         break;
 
-    case ERR_OFFSET:
+    case ERR_CFG_OFFSET:
         if (!iopmp->reg_file.err_cfg.l) {
             iopmp->reg_file.err_cfg.l                 |= err_cfg_temp.l;
             iopmp->reg_file.err_cfg.ie                 = err_cfg_temp.ie;

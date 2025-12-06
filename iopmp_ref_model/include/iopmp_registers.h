@@ -32,7 +32,7 @@
 #define MDLCKH_OFFSET         0x44
 #define MDCFGLCK_OFFSET       0x48
 #define ENTRYLCK_OFFSET       0x4C
-#define ERR_OFFSET            0x60
+#define ERR_CFG_OFFSET        0x60
 #define ERR_INFO_OFFSET       0x64
 #define ERR_REQADDR_OFFSET    0x68
 #define ERR_REQADDRH_OFFSET   0x6C
