@@ -20,7 +20,6 @@
 #define IOPMP_MD_ENTRY_NUM      3
 #define IOPMP_MD_NUM            63          // Max 63 MD is supported
 #define IOPMP_ADDRH_EN          1
-#define IOPMP_ENABLE            0
 #define IOPMP_ENTRY_NUM         512
 #define IOPMP_PRIO_ENTRY        16          // Depends on IOPMP_NON_PRIO_EN. If IOPMP_NON_PRIO_EN=0 the value should equal to IOPMP_ENTRY_NUM.
 #define IOPMP_PRIO_ENT_PROG     0           // Depends on IOPMP_NON_PRIO_EN.

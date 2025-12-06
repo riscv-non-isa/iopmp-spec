@@ -68,6 +68,7 @@ typedef struct iopmp_cfg_t {
     uint32_t vendor;                    // The JEDEC manufacturer ID
     uint8_t specver;                    // The specification version
     uint32_t impid;                     // The user-defined implementation ID
+    bool enable;                        // IOPMP checks transactions by default
 } iopmp_cfg_t;
 
 uint8_t write_memory(uint64_t *data, uint64_t addr, uint32_t size);
