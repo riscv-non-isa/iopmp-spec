@@ -39,20 +39,21 @@
  * ideal for initialization before a new configuration is loaded.
  *
  * @param iopmp The IOPMP instance.
+ * @param cfg The hardware configurations of IOPMP instance when reset
  *
  * @return it Returns 0 upon successful reset.
  */
 
 // Function to reset I/O Memory Protection
-int reset_iopmp(iopmp_dev_t *iopmp)
+int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
 {
     // Zeroize all states
     memset(iopmp, 0, sizeof(*iopmp));
 
     // Reset all IOPMP registers
-    iopmp->reg_file.version.vendor          = 1;     // Set vendorID
-    iopmp->reg_file.version.specver         = 1;     // Set IOPMP Specification version
-    iopmp->reg_file.implementation.raw      = 0;     // Set implementationID
+    iopmp->reg_file.version.vendor          = cfg->vendor;
+    iopmp->reg_file.version.specver         = cfg->specver;
+    iopmp->reg_file.implementation.raw      = cfg->impid;
 
     // Hardware Configuration
     iopmp->reg_file.hwcfg0.enable           = IOPMP_ENABLE;

@@ -4,15 +4,19 @@
 
 #include "libiopmp.h"
 
+// Create IOPMP instance
+iopmp_dev_t iopmp_dev = {0};
+iopmp_cfg_t cfg = {0};
+
 /* Override libiopmp IO functions */
 uint32_t io_read32(uintptr_t addr)
 {
-    return read_register(addr, 4);
+    return read_register(&iopmp_dev, addr, 4);
 }
 
 void io_write32(uintptr_t addr, uint32_t val)
 {
-    return write_register(addr, val, 4);
+    return write_register(&iopmp_dev, addr, val, 4);
 }
 
 int main(void)
@@ -27,23 +31,26 @@ int main(void)
 
     FAIL_IF(create_memory(1) < 0)
 
-    // Reset
-    reset_iopmp();
+    // Configure and reset IOPMP device
+    cfg.vendor = 1;
+    cfg.specver = 1;
+    cfg.impid = 0;
+    reset_iopmp(&iopmp_dev, &cfg);
 
     // Read the registers
     hwcfg0_t hwcfg0;
-    hwcfg0.raw = read_register(HWCFG0_OFFSET, 4);
+    hwcfg0.raw = read_register(&iopmp_dev, HWCFG0_OFFSET, 4);
     hwcfg1_t hwcfg1;
-    hwcfg1.raw = read_register(HWCFG1_OFFSET, 4);
+    hwcfg1.raw = read_register(&iopmp_dev, HWCFG1_OFFSET, 4);
     hwcfg2_t hwcfg2;
     if (hwcfg0.HWCFG2_en) {
-        hwcfg2.raw = read_register(HWCFG2_OFFSET, 4);
+        hwcfg2.raw = read_register(&iopmp_dev, HWCFG2_OFFSET, 4);
     } else {
         hwcfg2.raw = 0;
     }
     hwcfg3_t hwcfg3;
     if (hwcfg0.HWCFG3_en) {
-        hwcfg3.raw = read_register(HWCFG3_OFFSET, 4);
+        hwcfg3.raw = read_register(&iopmp_dev, HWCFG3_OFFSET, 4);
     } else {
         hwcfg3.raw = 0;
     }
