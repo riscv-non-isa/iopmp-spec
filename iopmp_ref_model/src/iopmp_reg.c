@@ -61,7 +61,7 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     iopmp->reg_file.hwcfg0.HWCFG3_en        = IMP_HWCFG3;
     iopmp->reg_file.hwcfg0.md_num           = IOPMP_MD_NUM;
     iopmp->reg_file.hwcfg0.addrh_en         = IOPMP_ADDRH_EN;
-    iopmp->reg_file.hwcfg0.tor_en           = IOPMP_TOR_EN;
+    iopmp->reg_file.hwcfg0.tor_en           = cfg->tor_en;
     iopmp->reg_file.hwcfg1.rrid_num         = IOPMP_RRID_NUM;
     iopmp->reg_file.hwcfg1.entry_num        = IOPMP_ENTRY_NUM;
 #if (IMP_HWCFG2)

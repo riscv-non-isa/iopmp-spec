@@ -33,6 +33,7 @@ int main()
     cfg.vendor = 1;
     cfg.specver = 1;
     cfg.impid = 0;
+    cfg.tor_en = true;
 
 #if (SRC_ENFORCEMENT_EN == 0)
 
@@ -88,8 +89,8 @@ int main()
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
     END_TEST();
 
-#if (IOPMP_TOR_EN)
-    START_TEST("Test TOR - Partial hit on a priority rule error");
+    START_TEST_IF(iopmp.reg_file.hwcfg0.tor_en,
+                  "Test TOR - Partial hit on a priority rule error",
     reset_iopmp(&iopmp, &cfg);
     receiver_port(2, 364, 0, 3, READ_ACCESS, 1, &iopmp_trans_req);
     // Entry Table CFG
@@ -100,9 +101,9 @@ int main()
     iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_ERROR, PARTIAL_HIT_ON_PRIORITY);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
+    END_TEST();)
 
-    START_TEST("Test TOR - 4Byte Read Access");
+    START_TEST_IF(iopmp.reg_file.hwcfg0.tor_en, "Test TOR - 4Byte Read Access",
     reset_iopmp(&iopmp, &cfg);
     receiver_port(2, 364, 0, 2, READ_ACCESS, 1, &iopmp_trans_req);
     // Entry Table CFG
@@ -113,9 +114,9 @@ int main()
     iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_SUCCESS, ENTRY_MATCH);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
+    END_TEST();)
 
-    START_TEST("Test TOR - 4Byte Write Access");
+    START_TEST_IF(iopmp.reg_file.hwcfg0.tor_en, "Test TOR - 4Byte Write Access",
     reset_iopmp(&iopmp, &cfg);
     receiver_port(2, 364, 0, 2, WRITE_ACCESS, 1, &iopmp_trans_req);
     // Entry Table CFG
@@ -126,9 +127,10 @@ int main()
     iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_SUCCESS, ENTRY_MATCH);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
+    END_TEST();)
 
-    START_TEST("Test TOR - 4Byte Non-AMO Write Access");
+    START_TEST_IF(iopmp.reg_file.hwcfg0.tor_en,
+                  "Test TOR - 4Byte Non-AMO Write Access",
     reset_iopmp(&iopmp, &cfg);
     receiver_port(2, 364, 0, 2, WRITE_ACCESS, 0, &iopmp_trans_req);
     // Entry Table CFG
@@ -139,9 +141,10 @@ int main()
     iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_SUCCESS, ENTRY_MATCH);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
+    END_TEST();)
 
-    START_TEST("Test TOR - 4Byte Only Write Access");
+    START_TEST_IF(iopmp.reg_file.hwcfg0.tor_en,
+                  "Test TOR - 4Byte Only Write Access",
     reset_iopmp(&iopmp, &cfg);
     receiver_port(2, 364, 0, 2, WRITE_ACCESS, 1, &iopmp_trans_req);
     // Entry Table CFG
@@ -152,8 +155,7 @@ int main()
     iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_ERROR, ILLEGAL_WRITE_ACCESS);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
-#endif
+    END_TEST();)
 
     START_TEST("Test NA4 - 4Byte Read Access");
     reset_iopmp(&iopmp, &cfg);
