@@ -64,6 +64,15 @@ extern void set_hwcfg0_enable(iopmp_dev_t *iopmp);
     test_num++;                                         \
     printf("Test %02d : %-61s : ", test_num, TEST_DESC)
 
+// Start the test only when CONDITION is true, otherwise skip the test
+#define START_TEST_IF(CONDITION, TEST_DESC, TEST)       \
+    START_TEST(TEST_DESC);                              \
+    if (CONDITION) {                                    \
+        TEST                                            \
+    } else {                                            \
+        SKIP_TEST();                                    \
+    }
+
 // Fails test If condition is true.
 #define FAIL_IF(CONDITION)                                                        \
     if (CONDITION) {                                                              \
@@ -74,6 +83,10 @@ extern void set_hwcfg0_enable(iopmp_dev_t *iopmp);
 // Must be used at the end of test.
 #define END_TEST() \
     { printf("\x1B[32mPASS\x1B[0m\n"); }
+
+// Must be used at the end of test.
+#define SKIP_TEST() \
+    { printf("\x1B[33mSKIP\x1B[0m\n"); }
 
 // Transaction Check Macro: Verifies transaction response against expected values
 #define CHECK_IOPMP_TRANS(iopmp, RSP_STATUS, ERR_TYPE)                                                                      \
