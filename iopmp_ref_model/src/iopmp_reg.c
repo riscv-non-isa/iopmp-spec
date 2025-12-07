@@ -128,7 +128,7 @@ uint8_t is_access_valid(iopmp_dev_t *iopmp, uint64_t offset, uint8_t num_bytes) 
     //    and if it is outside the range, ensure it falls within the IOPMP rule range.
     // 3. If the offset is aligned with the requested byte size.
     if ((num_bytes != 4 && num_bytes != 8) || (num_bytes > REG_INTF_BUS_WIDTH) ||
-        (offset >= (0x1014 + (iopmp->reg_file.hwcfg1.rrid_num * 32)) && !iopmpRule_range) ||
+        (offset > (SRCMD_WH_OFFSET + ((iopmp->reg_file.hwcfg1.rrid_num - 1) * SRCMD_REG_STRIDE)) && !iopmpRule_range) ||
         ((offset & (num_bytes - 1)) != 0)) {
         return 0; // Access is invalid
     }
