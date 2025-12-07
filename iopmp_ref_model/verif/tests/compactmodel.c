@@ -44,6 +44,7 @@ int main()
     cfg.chk_x = true;
     cfg.peis = true;
     cfg.pees = true;
+    cfg.sps_en = false;
 
 #if (SRC_ENFORCEMENT_EN == 0)
 
