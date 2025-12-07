@@ -39,6 +39,7 @@ int main(void)
     cfg.addrh_en = true;
     cfg.tor_en = true;
     cfg.rrid_num = 64;
+    cfg.entry_num = 512;
     reset_iopmp(&iopmp_dev, &cfg);
 
     // Read the registers

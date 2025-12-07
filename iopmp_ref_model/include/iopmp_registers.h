@@ -57,9 +57,11 @@
 #define SRCMD_WH_OFFSET       0x1014
 
 #define SRCMD_REG_STRIDE      32
+#define ENTRY_REG_STRIDE      16
 
 #define IOPMP_MAX_MD_NUM      63
 #define IOPMP_MAX_RRID_NUM    65535
+#define IOPMP_MAX_ENTRY_NUM   65535
 
 #if (REG_INTF_BUS_WIDTH == 4)
     typedef uint32_t reg_intf_dw;
@@ -706,10 +708,10 @@ typedef union {
 
 typedef union {
     struct __attribute__((__packed__)) {
-        entry_table_t    entry_table[IOPMP_ENTRY_NUM];
+        entry_table_t    entry_table[IOPMP_MAX_ENTRY_NUM];
     };
-    uint32_t        regs4[(IOPMP_ENTRY_NUM * 16) + 4];
-    uint64_t        regs8[((IOPMP_ENTRY_NUM * 16) + 4)/2];
+    uint32_t regs4[(ALIGNUP(IOPMP_MAX_ENTRY_NUM, sizeof(uint32_t)) * ENTRY_REG_STRIDE) / sizeof(uint32_t)];
+    uint64_t regs8[(ALIGNUP(IOPMP_MAX_ENTRY_NUM, sizeof(uint32_t)) * ENTRY_REG_STRIDE) / sizeof(uint64_t)];
 } iopmp_entries_t;
 
 // Number of subsequent violation record windows to accommodate all RRIDs.
