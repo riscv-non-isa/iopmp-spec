@@ -49,6 +49,9 @@ int main()
     cfg.mfr_en = true;
     cfg.no_x = false;
     cfg.no_w = false;
+    cfg.rrid_transl_en = true;
+    cfg.rrid_transl_prog = false;
+    cfg.rrid_transl = 48;
 
 #if (SRC_ENFORCEMENT_EN == 0)
     START_TEST("Test OFF - Read Access permissions");
@@ -605,8 +608,7 @@ int main()
     END_TEST();)
 #endif
 
-#if (IOPMP_RRID_TRANSL_EN)
-    START_TEST("Test Cascading IOPMP Feature");
+    START_TEST_IF(iopmp.reg_file.hwcfg3.rrid_transl_en, "Test Cascading IOPMP Feature",
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_PERMH, 3, 0xC0000000, 4);
     configure_entry_n(&iopmp, ENTRY_ADDR, 1, 90, 4); // (364 >> 2) and keeping lsb 0
@@ -615,11 +617,10 @@ int main()
     receiver_port(31, 360, 0, 3, WRITE_ACCESS, 1, &iopmp_trans_req);
     // requestor Port Signals
     iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
-    FAIL_IF((iopmp_trans_rsp.rrid_transl != IOPMP_RRID_TRANSL));
+    FAIL_IF((iopmp_trans_rsp.rrid_transl != iopmp.reg_file.hwcfg3.rrid_transl));
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_SUCCESS, ENTRY_MATCH);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
-#endif
+    END_TEST();)
 #endif
 
 #if (MSI_EN)

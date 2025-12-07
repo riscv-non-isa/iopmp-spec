@@ -24,9 +24,9 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
     iopmp_trans_rsp->rrid_stalled = 0;
     iopmp_trans_rsp->user         = 0;
     iopmp_trans_rsp->status       = IOPMP_ERROR;
-    #if (IOPMP_RRID_TRANSL_EN)
+    if (iopmp->reg_file.hwcfg3.rrid_transl_en) {
         iopmp_trans_rsp->rrid_transl = iopmp->reg_file.hwcfg3.rrid_transl;
-    #endif
+    }
 
     // Check to block invalid combination
     if (trans_req->perm == INSTR_FETCH && trans_req->is_amo) {

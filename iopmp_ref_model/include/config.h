@@ -6,10 +6,7 @@
 // that a user could change before compilation.
 ***************************************************************************/
 
-#define IOPMP_RRID_TRANSL_EN    1
-#define IOPMP_RRID_TRANSL_PROG  0
 #define IOPMP_MD_ENTRY_NUM      3
-#define IOPMP_RRID_TRANSL       48
 
 #define USER                    0x80        // User-defined value for error suppression success responses.
 #define ERROR_CAPTURE_EN        1           // Indicates if the Error Capture Record feature is implemented.

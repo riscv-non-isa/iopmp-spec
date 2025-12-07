@@ -51,6 +51,9 @@ int main(void)
     cfg.mfr_en = true;
     cfg.no_x = false;
     cfg.no_w = false;
+    cfg.rrid_transl_en = true;
+    cfg.rrid_transl_prog = false;
+    cfg.rrid_transl = 48;
     reset_iopmp(&iopmp_dev, &cfg);
 
     // Read the registers
