@@ -41,6 +41,7 @@ int main()
     cfg.addrh_en = true;
     cfg.tor_en = true;
     cfg.rrid_num = 64;
+    cfg.entry_num = 512;
 
 #if (SRC_ENFORCEMENT_EN == 0)
     START_TEST("Test OFF - Read Access permissions");

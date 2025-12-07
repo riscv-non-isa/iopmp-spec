@@ -61,7 +61,7 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     iopmp->reg_file.hwcfg0.addrh_en         = cfg->addrh_en;
     iopmp->reg_file.hwcfg0.tor_en           = cfg->tor_en;
     iopmp->reg_file.hwcfg1.rrid_num         = cfg->rrid_num;
-    iopmp->reg_file.hwcfg1.entry_num        = IOPMP_ENTRY_NUM;
+    iopmp->reg_file.hwcfg1.entry_num        = cfg->entry_num;
 #if (IOPMP_NON_PRIO_EN)
     iopmp->reg_file.hwcfg2.prio_entry       = IOPMP_PRIO_ENTRY;
     iopmp->reg_file.hwcfg2.prio_ent_prog    = IOPMP_PRIO_ENT_PROG;
@@ -120,7 +120,7 @@ uint8_t is_access_valid(iopmp_dev_t *iopmp, uint64_t offset, uint8_t num_bytes) 
     // Check if the offset falls within the allowed IOPMP rule range
     bool iopmpRule_range;
     iopmpRule_range = (offset >= ENTRY_OFFSET) &
-                      (offset < ((ENTRY_OFFSET + 0xC) + (IOPMP_ENTRY_NUM * ENTRY_REG_STRIDE)));
+                      (offset < ((ENTRY_OFFSET + 0xC) + (iopmp->reg_file.hwcfg1.entry_num * ENTRY_REG_STRIDE)));
 
     // Validate the access by checking:
     // 1. If the requested byte size is either 4 or 8.
@@ -199,7 +199,7 @@ reg_intf_dw read_register(iopmp_dev_t *iopmp, uint64_t offset, uint8_t num_bytes
 #endif
 
     // If the offset is within the valid range for entry registers, return the appropriate value.
-    if ((offset >= ENTRY_OFFSET) && (offset < (ENTRY_OFFSET + 0xC + (IOPMP_ENTRY_NUM * ENTRY_REG_STRIDE) + 4))) {
+    if ((offset >= ENTRY_OFFSET) && (offset < (ENTRY_OFFSET + 0xC + (iopmp->reg_file.hwcfg1.entry_num * ENTRY_REG_STRIDE) + 4))) {
         // Return 4-byte or 8-byte register value based on num_bytes.
         return iopmp->iopmp_entries.regs4[(offset - ENTRY_OFFSET) / num_bytes];
     }
@@ -530,7 +530,7 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
 
 #if (MDCFG_FMT == 0)
     if ((((offset-MDCFG_TABLE_BASE_OFFSET)/4) >= iopmp->reg_file.mdcfglck.f) & IS_IN_RANGE(offset, MDCFG_TABLE_BASE_OFFSET, (MDCFG_TABLE_BASE_OFFSET + (md_num*4)))){
-        if (mdcfg_temp.t < IOPMP_ENTRY_NUM) {
+        if (mdcfg_temp.t < iopmp->reg_file.hwcfg1.entry_num) {
             iopmp->reg_file.mdcfg[(offset-MDCFG_TABLE_BASE_OFFSET)/4].t = mdcfg_temp.t;
         }
         iopmp->reg_file.mdcfg[(offset-MDCFG_TABLE_BASE_OFFSET)/4].rsv = 0;
@@ -651,7 +651,7 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
     }
 #endif
 
-    if (IS_IN_RANGE(offset, ENTRY_TABLE_BASE_OFFSET, ENTRY_TABLE_BASE_OFFSET + (IOPMP_ENTRY_NUM * ENTRY_REG_STRIDE) + 12)) {
+    if (IS_IN_RANGE(offset, ENTRY_TABLE_BASE_OFFSET, ENTRY_TABLE_BASE_OFFSET + (iopmp->reg_file.hwcfg1.entry_num * ENTRY_REG_STRIDE) + 12)) {
         uint32_t entry_reg = ENTRY_REG_INDEX(offset);
         if (ENTRY_TABLE_INDEX(offset) >= iopmp->reg_file.entrylck.f) {
             switch (entry_reg)

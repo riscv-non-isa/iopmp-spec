@@ -36,7 +36,6 @@
 #define MSI_DATA_BYTE 0x4
 
 #define WORD_BITS        32
-#define ENTRY_REG_STRIDE 16
 #define MIN_REG_WIDTH    4
 
 // Helper Macros for Register Calculations
@@ -72,6 +71,7 @@ typedef struct iopmp_cfg_t {
     bool addrh_en;                      // IOPMP has ENTRY_ADDRH(i) and ERR_REQADDRH
     bool tor_en;                        // IOPMP supports TOR
     uint16_t rrid_num;                  // The supported number of RRID in the IOPMP
+    uint16_t entry_num;                 // The supported number of entries in the IOPMP
 } iopmp_cfg_t;
 
 uint8_t write_memory(uint64_t *data, uint64_t addr, uint32_t size);
