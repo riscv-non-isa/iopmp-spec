@@ -51,6 +51,8 @@ int main()
     cfg.sps_en = true;
     cfg.stall_en = true;
     cfg.mfr_en = true;
+    cfg.no_x = false;
+    cfg.no_w = false;
 
 #if (SRC_ENFORCEMENT_EN == 0)
 

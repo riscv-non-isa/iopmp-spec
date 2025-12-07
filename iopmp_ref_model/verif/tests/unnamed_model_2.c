@@ -48,6 +48,8 @@ int main()
     cfg.sps_en = false;
     cfg.stall_en = true;
     cfg.mfr_en = true;
+    cfg.no_x = false;
+    cfg.no_w = false;
 
 #if (SRC_ENFORCEMENT_EN == 0)
     START_TEST("Test OFF - Read Access permissions");

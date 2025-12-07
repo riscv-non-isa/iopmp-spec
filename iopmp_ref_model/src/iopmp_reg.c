@@ -87,8 +87,8 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
 #if (MDCFG_FMT == 1 || MDCFG_FMT == 2)
     iopmp->reg_file.hwcfg3.md_entry_num     = IOPMP_MD_ENTRY_NUM;
 #endif
-    iopmp->reg_file.hwcfg3.no_x             = IOPMP_NO_X;
-    iopmp->reg_file.hwcfg3.no_w             = IOPMP_NO_W;
+    iopmp->reg_file.hwcfg3.no_x             = cfg->no_x;
+    iopmp->reg_file.hwcfg3.no_w             = cfg->no_w;
     iopmp->reg_file.hwcfg3.rrid_transl_en   = IOPMP_RRID_TRANSL_EN;
 #if (IOPMP_RRID_TRANSL_EN)
     iopmp->reg_file.hwcfg3.rrid_transl_prog = IOPMP_RRID_TRANSL_PROG;
