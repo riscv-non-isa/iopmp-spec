@@ -54,6 +54,8 @@
 #define SRCMD_TABLE_BASE_OFFSET 0x1000
 #define ENTRY_TABLE_BASE_OFFSET ENTRY_OFFSET
 
+#define IOPMP_MAX_MD_NUM      63
+
 #if (REG_INTF_BUS_WIDTH == 4)
     typedef uint32_t reg_intf_dw;
 #elif (REG_INTF_BUS_WIDTH == 8)
@@ -688,15 +690,15 @@ typedef union {
         err_user_t       err_user[8];
         uint32_t         reserved4[472];
         #if (MDCFG_FMT == 0)
-        mdcfg_t          mdcfg[IOPMP_MD_NUM];
-        uint32_t         reserved5[(SRCMD_TABLE_BASE_OFFSET - (MDCFG_TABLE_BASE_OFFSET + (IOPMP_MD_NUM * 4))) / 4];
+        mdcfg_t          mdcfg[IOPMP_MAX_MD_NUM];
+        uint32_t         reserved5[(SRCMD_TABLE_BASE_OFFSET - (MDCFG_TABLE_BASE_OFFSET + (IOPMP_MAX_MD_NUM * 4))) / 4];
         #else
         uint32_t         reserved5[(SRCMD_TABLE_BASE_OFFSET - MDCFG_TABLE_BASE_OFFSET) / 4];
         #endif
         #if (SRCMD_FMT == 0)
         srcmd_table_t    srcmd_table[IOPMP_RRID_NUM];
         #elif (SRCMD_FMT == 2)
-        srcmd_table_t    srcmd_table[IOPMP_MD_NUM];
+        srcmd_table_t    srcmd_table[IOPMP_MAX_MD_NUM];
         #endif
     };
     uint32_t        regs4[2048];
