@@ -43,6 +43,7 @@ int main(void)
     cfg.prio_entry = 16;
     cfg.prio_ent_prog = false;
     cfg.non_prio_en = true;
+    cfg.chk_x = true;
     reset_iopmp(&iopmp_dev, &cfg);
 
     // Read the registers
