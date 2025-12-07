@@ -76,6 +76,8 @@ typedef struct iopmp_cfg_t {
     bool prio_ent_prog;                 // HWCFG2.prio_entry is programmable
     bool non_prio_en;                   // IOPMP supports non-priority entries
     bool chk_x;                         // IOPMP implements the check of an instruction fetch
+    bool peis;                          // IOPMP implements interrupt suppression per entry
+    bool pees;                          // IOPMP implements the error suppression per entry
 } iopmp_cfg_t;
 
 uint8_t write_memory(uint64_t *data, uint64_t addr, uint32_t size);

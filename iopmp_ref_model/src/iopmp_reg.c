@@ -68,8 +68,8 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     }
     iopmp->reg_file.hwcfg2.non_prio_en      = cfg->non_prio_en;
     iopmp->reg_file.hwcfg2.chk_x            = cfg->chk_x;
-    iopmp->reg_file.hwcfg2.peis             = IOPMP_PEIS;
-    iopmp->reg_file.hwcfg2.pees             = IOPMP_PEES;
+    iopmp->reg_file.hwcfg2.peis             = cfg->peis;
+    iopmp->reg_file.hwcfg2.pees             = cfg->pees;
     iopmp->reg_file.hwcfg2.sps_en           = IOPMP_SPS_EN;
     iopmp->reg_file.hwcfg2.stall_en         = IOPMP_STALL_EN;
     iopmp->reg_file.hwcfg2.mfr_en           = IOPMP_MFR_EN;

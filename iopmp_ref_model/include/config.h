@@ -12,8 +12,6 @@
 #define IOPMP_NO_X              0
 #define IOPMP_NO_W              0
 #define IOPMP_STALL_EN          1
-#define IOPMP_PEIS              1
-#define IOPMP_PEES              1
 #define IOPMP_MFR_EN            1
 #define IOPMP_MD_ENTRY_NUM      3
 #define IOPMP_RRID_TRANSL       48
