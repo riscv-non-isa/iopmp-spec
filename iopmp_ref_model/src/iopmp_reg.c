@@ -71,7 +71,7 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     iopmp->reg_file.hwcfg2.peis             = cfg->peis;
     iopmp->reg_file.hwcfg2.pees             = cfg->pees;
     iopmp->reg_file.hwcfg2.sps_en           = cfg->sps_en;
-    iopmp->reg_file.hwcfg2.stall_en         = IOPMP_STALL_EN;
+    iopmp->reg_file.hwcfg2.stall_en         = cfg->stall_en;
     iopmp->reg_file.hwcfg2.mfr_en           = IOPMP_MFR_EN;
     /* Set HWCFG2_en if HWCFG2 is not zero */
     iopmp->reg_file.hwcfg0.HWCFG2_en        = (iopmp->reg_file.hwcfg2.raw) != 0 ? true : false;
@@ -209,7 +209,6 @@ reg_intf_dw read_register(iopmp_dev_t *iopmp, uint64_t offset, uint8_t num_bytes
     return iopmp->reg_file.regs4[offset / num_bytes];
 }
 
-#if (IOPMP_STALL_EN)
 /**
  * @brief Updates the stall status for each RRID based on memory domain stall conditions.
  *
@@ -247,7 +246,6 @@ void rrid_stall_update(iopmp_dev_t *iopmp, uint8_t exempt) {
         #endif
     }
 }
-#endif
 
 /**
  * @brief Writes data to a memory-mapped register identified by the specified offset.
@@ -323,7 +321,6 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
 #endif
 
 // IOPMP Stall configuration
-#if (IOPMP_STALL_EN)
     mdstall_t  mdstall_temp  = { .raw = lwr_data4 & ((md_num >= 31) ? UINT32_MAX : GENMASK_32(md_num, 0)) };
     mdstallh_t mdstallh_temp = { .raw = (md_num < 32) ? 0 : upr_data4 & GENMASK_32(md_num - 32, 0) };
     #if (IMP_RRIDSCP)
@@ -332,7 +329,6 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
     #endif
     mdstall_temp.md          = (lwr_data4 >> 1) & ((md_num >= 31) ? UINT32_MAX : GENMASK_32(md_num - 1, 0));
     mdstall_temp.exempt      = GET_BIT(lwr_data4, 0);
-#endif
 
 // IOPMP MFR configuration
 #if (IOPMP_MFR_EN == 1)
@@ -389,16 +385,21 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
         // This register is read only
         return;
 
-#if (IOPMP_STALL_EN)
     case MDSTALL_OFFSET:
-        iopmp->reg_file.mdstall.exempt = mdstall_temp.exempt;
-        iopmp->reg_file.mdstall.md     = mdstall_temp.md;
-        rrid_stall_update(iopmp, iopmp->reg_file.mdstall.exempt);
-        if ((mdstall_temp.raw == 0) && (iopmp->reg_file.mdstall.raw == 0)) { iopmp->stall_cntr = 0; }
+        if (iopmp->reg_file.hwcfg2.stall_en) {
+            iopmp->reg_file.mdstall.exempt = mdstall_temp.exempt;
+            iopmp->reg_file.mdstall.md     = mdstall_temp.md;
+            rrid_stall_update(iopmp, iopmp->reg_file.mdstall.exempt);
+            if ((mdstall_temp.raw == 0) && (iopmp->reg_file.mdstall.raw == 0)) {
+                iopmp->stall_cntr = 0;
+            }
+        }
         if (num_bytes == 4) break;
 
     case MDSTALLH_OFFSET:
-        iopmp->reg_file.mdstallh.mdh = mdstallh_temp.mdh;
+        if (iopmp->reg_file.hwcfg2.stall_en) {
+            iopmp->reg_file.mdstallh.mdh = mdstallh_temp.mdh;
+        }
         break;
 
 #if (IMP_RRIDSCP)
@@ -419,7 +420,6 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
         else if (iopmp->reg_file.rridscp.op == 1) { iopmp->rrid_stall[rridscp_temp.rrid] = 1; }
         else if (iopmp->reg_file.rridscp.op == 2) { iopmp->rrid_stall[rridscp_temp.rrid] = 0; }
         break;
-#endif
 #endif
 
 #if (SRCMD_FMT != 1) & (IMP_MDLCK)
