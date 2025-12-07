@@ -48,6 +48,7 @@ int main(void)
     cfg.pees = true;
     cfg.sps_en= true;
     cfg.stall_en = true;
+    cfg.mfr_en = true;
     reset_iopmp(&iopmp_dev, &cfg);
 
     // Read the registers

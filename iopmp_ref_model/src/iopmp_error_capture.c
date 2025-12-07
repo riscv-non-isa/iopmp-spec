@@ -15,7 +15,6 @@
 
 #include "iopmp.h"
 
-#if (IOPMP_MFR_EN)
 /**
   * @brief Sets the corresponding bit in the error subsequent violations (SV) structure for a given RRID.
   *
@@ -36,7 +35,6 @@ static void setRridSv(iopmp_dev_t *iopmp, uint16_t rrid) {
 static int checkRridSv(iopmp_dev_t *iopmp, uint16_t rrid) {
     return (iopmp->err_svs.sv[rrid/16].svw >> (rrid % 16)) & 0x1;
 }
-#endif
 
 /**
   * @brief Captures and logs error information for a transaction request.
@@ -67,21 +65,22 @@ void errorCapture(iopmp_dev_t *iopmp, perm_type_e trans_type, uint8_t error_type
         iopmp->reg_file.err_reqid.eid  = entry_id;
 
     // If an error was previously logged, handle a subsequent violation
-    }
-#if (IOPMP_MFR_EN)
-    else if (!checkRridSv(iopmp, rrid) && iopmp->reg_file.hwcfg2.mfr_en && (!iopmp->error_suppress | !iopmp->intrpt_suppress)) {
-        // Update violation window
-        setRridSv(iopmp, rrid);
-    }
-
-    // Check for any subsequent violation and set err_info.svc
-    for (int i = 0; i < NUM_SVW; i++) {
-        if (iopmp->err_svs.sv[i].svw) {
-            iopmp->reg_file.err_info.svc = 1;
-            break;
+    } else if (iopmp->reg_file.hwcfg2.mfr_en) {
+        if (!checkRridSv(iopmp, rrid) && (!iopmp->error_suppress | !iopmp->intrpt_suppress)) {
+            // Update violation window
+            setRridSv(iopmp, rrid);
         }
     }
-#endif
+
+    if (iopmp->reg_file.hwcfg2.mfr_en) {
+        // Check for any subsequent violation and set err_info.svc
+        for (int i = 0; i < NUM_SVW; i++) {
+            if (iopmp->err_svs.sv[i].svw) {
+                iopmp->reg_file.err_info.svc = 1;
+                break;
+            }
+        }
+    }
 
     // Generate Interrupt
     if (!err_reqinfo_v)

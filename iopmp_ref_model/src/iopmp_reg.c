@@ -72,7 +72,7 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     iopmp->reg_file.hwcfg2.pees             = cfg->pees;
     iopmp->reg_file.hwcfg2.sps_en           = cfg->sps_en;
     iopmp->reg_file.hwcfg2.stall_en         = cfg->stall_en;
-    iopmp->reg_file.hwcfg2.mfr_en           = IOPMP_MFR_EN;
+    iopmp->reg_file.hwcfg2.mfr_en           = cfg->mfr_en;
     /* Set HWCFG2_en if HWCFG2 is not zero */
     iopmp->reg_file.hwcfg0.HWCFG2_en        = (iopmp->reg_file.hwcfg2.raw) != 0 ? true : false;
 
@@ -153,10 +153,9 @@ reg_intf_dw read_register(iopmp_dev_t *iopmp, uint64_t offset, uint8_t num_bytes
 
     if (!is_access_valid(iopmp, offset, num_bytes)) return 0;
 
-#if (IOPMP_MFR_EN)
     // If the requested offset corresponds to the error MFR (ERR_MFR_OFFSET)
     // handle reading from the error register.
-    if (offset == ERR_MFR_OFFSET) {
+    if (offset == ERR_MFR_OFFSET && iopmp->reg_file.hwcfg2.mfr_en) {
         // ERR_INFO.svc=0 indicates there is no subsequent violation.
         if (iopmp->reg_file.err_info.svc == 0)
             return 0;
@@ -196,7 +195,6 @@ reg_intf_dw read_register(iopmp_dev_t *iopmp, uint64_t offset, uint8_t num_bytes
 
         return iopmp->reg_file.err_mfr.raw;
     }
-#endif
 
     // If the offset is within the valid range for entry registers, return the appropriate value.
     if ((offset >= ENTRY_OFFSET) && (offset < (ENTRY_OFFSET + 0xC + (iopmp->reg_file.hwcfg1.entry_num * ENTRY_REG_STRIDE) + 4))) {
@@ -331,9 +329,7 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
     mdstall_temp.exempt      = GET_BIT(lwr_data4, 0);
 
 // IOPMP MFR configuration
-#if (IOPMP_MFR_EN == 1)
     err_mfr_t err_mfr_temp = { .raw = upr_data4 };
-#endif
 
   if (!is_access_valid(iopmp, offset, num_bytes)) return;
 
@@ -492,11 +488,11 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
         return;
 #endif
 
-#if (IOPMP_MFR_EN)
     case ERR_MFR_OFFSET:
-        iopmp->reg_file.err_mfr.svi = err_mfr_temp.svi;
+        if (iopmp->reg_file.hwcfg2.mfr_en) {
+            iopmp->reg_file.err_mfr.svi = err_mfr_temp.svi;
+        }
         break;
-#endif
 
 #if (MSI_EN)
     case ERR_MSIADDR_OFFSET:

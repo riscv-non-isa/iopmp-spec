@@ -671,11 +671,7 @@ typedef union {
         err_reqaddr_t    err_reqaddr;
         err_reqaddrh_t   err_reqaddrh;
         err_reqid_t      err_reqid;
-        #if (IOPMP_MFR_EN)
         err_mfr_t        err_mfr;
-        #else
-        uint32_t         reserved11;
-        #endif
         #if (MSI_EN)
         err_msiaddr_t    err_msiaddr;
         err_msiaddrh_t   err_msiaddrh;
