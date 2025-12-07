@@ -62,11 +62,11 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     iopmp->reg_file.hwcfg0.tor_en           = cfg->tor_en;
     iopmp->reg_file.hwcfg1.rrid_num         = cfg->rrid_num;
     iopmp->reg_file.hwcfg1.entry_num        = cfg->entry_num;
-#if (IOPMP_NON_PRIO_EN)
-    iopmp->reg_file.hwcfg2.prio_entry       = IOPMP_PRIO_ENTRY;
-    iopmp->reg_file.hwcfg2.prio_ent_prog    = IOPMP_PRIO_ENT_PROG;
-#endif
-    iopmp->reg_file.hwcfg2.non_prio_en      = IOPMP_NON_PRIO_EN;
+    if (cfg->non_prio_en) {
+        iopmp->reg_file.hwcfg2.prio_entry       = cfg->prio_entry;
+        iopmp->reg_file.hwcfg2.prio_ent_prog    = cfg->prio_ent_prog;
+    }
+    iopmp->reg_file.hwcfg2.non_prio_en      = cfg->non_prio_en;
     iopmp->reg_file.hwcfg2.chk_x            = IOPMP_CHK_X;
     iopmp->reg_file.hwcfg2.peis             = IOPMP_PEIS;
     iopmp->reg_file.hwcfg2.pees             = IOPMP_PEES;
@@ -360,12 +360,12 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
 
     case HWCFG2_OFFSET:
         if (iopmp->reg_file.hwcfg0.HWCFG2_en) {
-        #if (IOPMP_NON_PRIO_EN)
-            if (iopmp->reg_file.hwcfg2.prio_ent_prog) {
-                iopmp->reg_file.hwcfg2.prio_entry = hwcfg2_temp.prio_entry;
+            if (iopmp->reg_file.hwcfg2.non_prio_en) {
+                if (iopmp->reg_file.hwcfg2.prio_ent_prog) {
+                    iopmp->reg_file.hwcfg2.prio_entry = hwcfg2_temp.prio_entry;
+                }
+                iopmp->reg_file.hwcfg2.prio_ent_prog &= ~hwcfg2_temp.prio_ent_prog;
             }
-            iopmp->reg_file.hwcfg2.prio_ent_prog &= ~hwcfg2_temp.prio_ent_prog;
-        #endif
         }
         break;
 

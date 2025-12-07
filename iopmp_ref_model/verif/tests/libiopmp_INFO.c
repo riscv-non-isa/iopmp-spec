@@ -40,6 +40,9 @@ int main(void)
     cfg.tor_en = true;
     cfg.rrid_num = 64;
     cfg.entry_num = 512;
+    cfg.prio_entry = 16;
+    cfg.prio_ent_prog = false;
+    cfg.non_prio_en = true;
     reset_iopmp(&iopmp_dev, &cfg);
 
     // Read the registers

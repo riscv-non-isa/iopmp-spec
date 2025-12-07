@@ -42,6 +42,9 @@ int main()
     cfg.tor_en = true;
     cfg.rrid_num = 64;
     cfg.entry_num = 512;
+    cfg.prio_entry = 16;
+    cfg.prio_ent_prog = false;
+    cfg.non_prio_en = true;
 
 #if (SRC_ENFORCEMENT_EN == 0)
     START_TEST("Test OFF - Read Access permissions");
@@ -473,7 +476,8 @@ int main()
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
     END_TEST();
 
-    START_TEST("Test NAPOT - 8 Byte Instruction access for non-priority Entry");
+    START_TEST_IF(iopmp.reg_file.hwcfg2.non_prio_en,
+                  "Test NAPOT - 8 Byte Instruction access for non-priority Entry",
     // Receiver Port Signals
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_EN, 31, 0x10, 4);
@@ -498,7 +502,7 @@ int main()
     iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_SUCCESS, ENTRY_MATCH);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
+    END_TEST();)
 
     START_TEST("Test MDLCK, updating locked srcmd_en field");
     reset_iopmp(&iopmp, &cfg);
