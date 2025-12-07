@@ -38,6 +38,9 @@ int main()
     cfg.tor_en = true;
     cfg.rrid_num = 63;
     cfg.entry_num = 512;
+    cfg.prio_entry = 16;
+    cfg.prio_ent_prog = false;
+    cfg.non_prio_en = true;
 
 #if (SRC_ENFORCEMENT_EN == 0)
 
@@ -368,7 +371,8 @@ int main()
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
     END_TEST();
 
-    START_TEST("Test NAPOT - 8 Byte Instruction access for non-priority Entry");
+    START_TEST_IF(iopmp.reg_file.hwcfg2.non_prio_en,
+                  "Test NAPOT - 8 Byte Instruction access for non-priority Entry",
     // Receiver Port Signals
     reset_iopmp(&iopmp, &cfg);
     receiver_port(32, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
@@ -385,7 +389,7 @@ int main()
     iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_SUCCESS, ENTRY_MATCH);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
+    END_TEST();)
 
     START_TEST("Test Entry_LCK, updating locked ENTRY field");
     // Reset IOPMP
