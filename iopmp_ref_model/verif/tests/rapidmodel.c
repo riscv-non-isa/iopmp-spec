@@ -50,6 +50,7 @@ int main()
     cfg.pees = true;
     cfg.sps_en = true;
     cfg.stall_en = true;
+    cfg.mfr_en = true;
 
 #if (SRC_ENFORCEMENT_EN == 0)
 
@@ -641,8 +642,7 @@ int main()
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_ERROR, NOT_HIT_ANY_RULE);
     END_TEST();
 
-#if (IOPMP_MFR_EN)
-    START_TEST("Test MFR Extension");
+    START_TEST_IF(iopmp.reg_file.hwcfg2.mfr_en, "Test MFR Extension",
     write_register(&iopmp, ENTRYLCK_OFFSET, 0x8, 4); // ENTRY[0]-ENTRY[3] are locked
     write_register(&iopmp, ENTRYLCK_OFFSET, 0x1, 4); // ENTRYLCK is locked
     write_register(&iopmp, ENTRYLCK_OFFSET, 0x2, 4); // ENTRY[0] is locked
@@ -665,8 +665,7 @@ int main()
     FAIL_IF((err_mfr_temp.svs != 1));
     FAIL_IF((err_mfr_temp.svw != 4));
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
-#endif
+    END_TEST();)
 
     START_TEST("Test MDLCK, updating locked srcmd_enh field");
     reset_iopmp(&iopmp, &cfg);
