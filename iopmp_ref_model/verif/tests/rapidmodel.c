@@ -48,6 +48,7 @@ int main()
     cfg.chk_x = true;
     cfg.peis = true;
     cfg.pees = true;
+    cfg.sps_en = true;
 
 #if (SRC_ENFORCEMENT_EN == 0)
 
@@ -142,7 +143,7 @@ int main()
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
     END_TEST();)
 
-    START_TEST_IF(iopmp.reg_file.hwcfg0.tor_en,
+    START_TEST_IF(iopmp.reg_file.hwcfg0.tor_en && iopmp.reg_file.hwcfg2.sps_en,
                   "Test TOR - 4Byte Read Access with SRCMD_R not set",
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_EN, 2, 0x10, 4); // SRCMD_EN[2] is associated with MD[3]
@@ -157,8 +158,7 @@ int main()
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
     END_TEST();)
 
-#if (IOPMP_SPS_EN == 0)
-    START_TEST_IF(iopmp.reg_file.hwcfg0.tor_en,
+    START_TEST_IF(iopmp.reg_file.hwcfg0.tor_en && !iopmp.reg_file.hwcfg2.sps_en,
                   "Test TOR - 4Byte Read Access, SRCMD_R not set, SPS disabled",
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_EN, 2, 0x10, 4); // SRCMD_EN[2] is associated with MD[3]
@@ -173,7 +173,6 @@ int main()
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_SUCCESS, ENTRY_MATCH);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
     END_TEST();)
-#endif
 
     START_TEST_IF(iopmp.reg_file.hwcfg0.tor_en, "Test TOR - 4Byte Write Access",
     reset_iopmp(&iopmp, &cfg);
@@ -253,7 +252,8 @@ int main()
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
     END_TEST();
 
-    START_TEST("Test NA4 - 4Byte No SPS Read Access error");
+    START_TEST_IF(iopmp.reg_file.hwcfg2.sps_en,
+                  "Test NA4 - 4Byte No SPS Read Access error",
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_EN, 32, 0x10, 4);
     configure_srcmd_n(&iopmp, SRCMD_R, 32, 0x00, 4);
@@ -266,7 +266,7 @@ int main()
     iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_ERROR, ILLEGAL_READ_ACCESS);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
+    END_TEST();)
 
     START_TEST("Test NA4 - 4Byte Write Access");
     reset_iopmp(&iopmp, &cfg);
@@ -299,7 +299,8 @@ int main()
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
     END_TEST();
 
-    START_TEST("Test NA4 - 4Byte No SPS Write Access error");
+    START_TEST_IF(iopmp.reg_file.hwcfg2.sps_en,
+                  "Test NA4 - 4Byte No SPS Write Access error",
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_EN, 32, 0x10, 4);
     configure_srcmd_n(&iopmp, SRCMD_W, 32, 0x00, 4);
@@ -312,7 +313,7 @@ int main()
     iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_ERROR, ILLEGAL_WRITE_ACCESS);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
+    END_TEST();)
 
     START_TEST("Test NA4 - 4Byte Execute Access");
     reset_iopmp(&iopmp, &cfg);
@@ -344,7 +345,8 @@ int main()
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
     END_TEST();
 
-    START_TEST("Test NA4 - 4Byte No SPS.R, Execute Access");
+    START_TEST_IF(iopmp.reg_file.hwcfg2.sps_en,
+                  "Test NA4 - 4Byte No SPS.R, Execute Access",
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_EN, 32, 0x10, 4);
     configure_srcmd_n(&iopmp, SRCMD_R, 32, 0x00, 4);
@@ -357,7 +359,7 @@ int main()
     iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_ERROR, ILLEGAL_INSTR_FETCH);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
+    END_TEST();)
 
     START_TEST("Test NA4 - 8Byte Access error");
     reset_iopmp(&iopmp, &cfg);

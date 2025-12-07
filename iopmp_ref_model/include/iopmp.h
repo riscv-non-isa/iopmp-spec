@@ -78,6 +78,7 @@ typedef struct iopmp_cfg_t {
     bool chk_x;                         // IOPMP implements the check of an instruction fetch
     bool peis;                          // IOPMP implements interrupt suppression per entry
     bool pees;                          // IOPMP implements the error suppression per entry
+    bool sps_en;                        // IOPMP supports secondary permission settings
 } iopmp_cfg_t;
 
 uint8_t write_memory(uint64_t *data, uint64_t addr, uint32_t size);
