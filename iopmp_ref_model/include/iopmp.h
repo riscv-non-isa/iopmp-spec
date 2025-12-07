@@ -79,6 +79,7 @@ typedef struct iopmp_cfg_t {
     bool peis;                          // IOPMP implements interrupt suppression per entry
     bool pees;                          // IOPMP implements the error suppression per entry
     bool sps_en;                        // IOPMP supports secondary permission settings
+    bool stall_en;                      // IOPMP implements stall-related features
 } iopmp_cfg_t;
 
 uint8_t write_memory(uint64_t *data, uint64_t addr, uint32_t size);

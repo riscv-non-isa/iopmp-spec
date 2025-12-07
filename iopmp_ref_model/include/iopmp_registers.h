@@ -195,7 +195,6 @@ typedef union {
     uint32_t raw;
 } entryoffset_t;
 
-#if (IOPMP_STALL_EN)
 // MDSTALL is an optional register and used to support
 // atomicity issue while programming the IOPMP, as the IOPMP
 // rule may not be updated in a single transaction.
@@ -244,7 +243,6 @@ typedef union {
     };
     uint32_t raw;
 } rridscp_t;
-#endif
 
 #if (SRCMD_FMT != 1)
 // MDLCK is an optional register with a bitmap field to
@@ -647,16 +645,12 @@ typedef union {
         };
         uint32_t         reserved0[5];
         entryoffset_t    entryoffset;
-        #if (IOPMP_STALL_EN)
         mdstall_t        mdstall;
         mdstallh_t       mdstallh;
         #if (IMP_RRIDSCP)
         rridscp_t        rridscp;
         #else
         uint32_t         reserved10;
-        #endif
-        #else
-        uint32_t         reserved7[3];
         #endif
         uint32_t         reserved1[1];
         #if (SRCMD_FMT != 1)
