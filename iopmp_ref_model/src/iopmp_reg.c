@@ -57,14 +57,11 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
 
     // Hardware Configuration
     iopmp->reg_file.hwcfg0.enable           = cfg->enable;
-    iopmp->reg_file.hwcfg0.HWCFG2_en        = IMP_HWCFG2;
-    iopmp->reg_file.hwcfg0.HWCFG3_en        = IMP_HWCFG3;
     iopmp->reg_file.hwcfg0.md_num           = cfg->md_num;
     iopmp->reg_file.hwcfg0.addrh_en         = cfg->addrh_en;
     iopmp->reg_file.hwcfg0.tor_en           = cfg->tor_en;
     iopmp->reg_file.hwcfg1.rrid_num         = IOPMP_RRID_NUM;
     iopmp->reg_file.hwcfg1.entry_num        = IOPMP_ENTRY_NUM;
-#if (IMP_HWCFG2)
 #if (IOPMP_NON_PRIO_EN)
     iopmp->reg_file.hwcfg2.prio_entry       = IOPMP_PRIO_ENTRY;
     iopmp->reg_file.hwcfg2.prio_ent_prog    = IOPMP_PRIO_ENT_PROG;
@@ -76,9 +73,9 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     iopmp->reg_file.hwcfg2.sps_en           = IOPMP_SPS_EN;
     iopmp->reg_file.hwcfg2.stall_en         = IOPMP_STALL_EN;
     iopmp->reg_file.hwcfg2.mfr_en           = IOPMP_MFR_EN;
-#endif
+    /* Set HWCFG2_en if HWCFG2 is not zero */
+    iopmp->reg_file.hwcfg0.HWCFG2_en        = (iopmp->reg_file.hwcfg2.raw) != 0 ? true : false;
 
-#if (IMP_HWCFG3)
     // Set the MDCFG Format - Based on compiled model
 #ifdef MDCFG_FMT
     iopmp->reg_file.hwcfg3.mdcfg_fmt        = MDCFG_FMT;
@@ -97,7 +94,8 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     iopmp->reg_file.hwcfg3.rrid_transl_prog = IOPMP_RRID_TRANSL_PROG;
     iopmp->reg_file.hwcfg3.rrid_transl      = IOPMP_RRID_TRANSL;
 #endif
-#endif
+    /* Set HWCFG3_en if HWCFG3 is not zero */
+    iopmp->reg_file.hwcfg0.HWCFG3_en        = (iopmp->reg_file.hwcfg3.raw) != 0 ? true : false;
 
     iopmp->reg_file.entryoffset.raw         = ENTRY_OFFSET;
 
@@ -276,12 +274,8 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
 
   // Initialize temporary registers
     hwcfg0_t         hwcfg0_temp         = { .raw = lwr_data4 };
-#if (IMP_HWCFG2)
     hwcfg2_t         hwcfg2_temp         = { .raw = lwr_data4 };
-#endif
-#if (IMP_HWCFG3)
     hwcfg3_t         hwcfg3_temp         = { .raw = lwr_data4 };
-#endif
     entrylck_t       entrylck_temp       = { .raw = upr_data4 };
     err_cfg_t        err_cfg_temp        = { .raw = lwr_data4 };
     entry_addr_t     entry_addr_temp     = { .raw = lwr_data4 };
@@ -363,19 +357,19 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
         // This register is read only
         return;
 
-#if (IMP_HWCFG2)
     case HWCFG2_OFFSET:
+        if (iopmp->reg_file.hwcfg0.HWCFG2_en) {
         #if (IOPMP_NON_PRIO_EN)
             if (iopmp->reg_file.hwcfg2.prio_ent_prog) {
                 iopmp->reg_file.hwcfg2.prio_entry = hwcfg2_temp.prio_entry;
             }
             iopmp->reg_file.hwcfg2.prio_ent_prog &= ~hwcfg2_temp.prio_ent_prog;
         #endif
+        }
         break;
-#endif
 
-#if (IMP_HWCFG3)
     case HWCFG3_OFFSET:
+        if (iopmp->reg_file.hwcfg0.HWCFG3_en) {
         #if (MDCFG_FMT == 2)
             if (!iopmp->reg_file.hwcfg0.enable) {
                 iopmp->reg_file.hwcfg3.md_entry_num = hwcfg3_temp.md_entry_num;
@@ -387,8 +381,8 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
             }
             iopmp->reg_file.hwcfg3.rrid_transl_prog &= ~hwcfg3_temp.rrid_transl_prog;
         #endif
+        }
         break;
-#endif
 
     case ENTRYOFFSET_OFFSET:
         // This register is read only

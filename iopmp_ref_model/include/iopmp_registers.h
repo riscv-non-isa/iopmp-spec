@@ -62,14 +62,6 @@
     typedef uint64_t reg_intf_dw;
 #endif
 
-// Indicate if HWCFG2 is implemented.
-#define IMP_HWCFG2              (IOPMP_NON_PRIO_EN | IOPMP_CHK_X | \
-                                 IOPMP_PEIS | IOPMP_PEES | IOPMP_SPS_EN | \
-                                 IOPMP_STALL_EN | IOPMP_MFR_EN)
-// Indicate if HWCFG3 is implemented.
-#define IMP_HWCFG3              ((MDCFG_FMT > 0) | (SRCMD_FMT > 0) | \
-                                 IOPMP_NO_X | IOPMP_NO_W | IOPMP_RRID_TRANSL_EN)
-
 // VERSION register is a read-only register reporting
 // IOPMP comfiguration information of the instance:
 // 1. vendor ID
