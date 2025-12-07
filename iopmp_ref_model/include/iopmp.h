@@ -81,6 +81,8 @@ typedef struct iopmp_cfg_t {
     bool sps_en;                        // IOPMP supports secondary permission settings
     bool stall_en;                      // IOPMP implements stall-related features
     bool mfr_en;                        // IOPMP implements Multi Faults Record
+    bool no_x;                          // IOPMP denies all instruction fetch transactions
+    bool no_w;                          // IOPMP denies all write accesses transactions
 } iopmp_cfg_t;
 
 uint8_t write_memory(uint64_t *data, uint64_t addr, uint32_t size);
