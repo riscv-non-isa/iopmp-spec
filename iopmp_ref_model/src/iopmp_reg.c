@@ -59,7 +59,7 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     iopmp->reg_file.hwcfg0.enable           = cfg->enable;
     iopmp->reg_file.hwcfg0.HWCFG2_en        = IMP_HWCFG2;
     iopmp->reg_file.hwcfg0.HWCFG3_en        = IMP_HWCFG3;
-    iopmp->reg_file.hwcfg0.md_num           = IOPMP_MD_NUM;
+    iopmp->reg_file.hwcfg0.md_num           = cfg->md_num;
     iopmp->reg_file.hwcfg0.addrh_en         = cfg->addrh_en;
     iopmp->reg_file.hwcfg0.tor_en           = cfg->tor_en;
     iopmp->reg_file.hwcfg1.rrid_num         = IOPMP_RRID_NUM;
@@ -242,7 +242,7 @@ void rrid_stall_update(iopmp_dev_t *iopmp, uint8_t exempt) {
 
         #elif (SRCMD_FMT == 2)
             uint64_t srcmd_md;
-            srcmd_md = (1ULL << IOPMP_MD_NUM) - 1;
+            srcmd_md = (1ULL << iopmp->reg_file.hwcfg0.md_num) - 1;
             // Update rrid_stall based on the accumulated permissions and the stall conditions.
             iopmp->rrid_stall[i] = exempt ^ ((srcmd_md & stall_by_md) != 0);
         #endif
@@ -312,14 +312,16 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
     mdcfg_t    mdcfg_temp    = { .raw = data };
 #endif
 
+    uint32_t md_num = iopmp->reg_file.hwcfg0.md_num;
+
 // SRCMD format handling
 #if (SRCMD_FMT == 0)
-    srcmd_en_t  srcmd_en_temp  = { .raw = lwr_data4 & ((IOPMP_MD_NUM >= 31) ? UINT32_MAX : GENMASK_32(IOPMP_MD_NUM, 0)) };
-    srcmd_enh_t srcmd_enh_temp = { .raw = (IOPMP_MD_NUM < 32) ? 0 : upr_data4 & GENMASK_32(IOPMP_MD_NUM - 32, 0) };
-    srcmd_r_t   srcmd_r_temp   = { .raw = lwr_data4 & ((IOPMP_MD_NUM >= 31) ? UINT32_MAX : GENMASK_32(IOPMP_MD_NUM, 0)) };
-    srcmd_rh_t  srcmd_rh_temp  = { .raw = (IOPMP_MD_NUM < 32) ? 0 : upr_data4 & GENMASK_32(IOPMP_MD_NUM - 32, 0) };
-    srcmd_w_t   srcmd_w_temp   = { .raw = lwr_data4 & ((IOPMP_MD_NUM >= 31) ? UINT32_MAX : GENMASK_32(IOPMP_MD_NUM, 0)) };
-    srcmd_wh_t  srcmd_wh_temp  = { .raw = (IOPMP_MD_NUM < 32) ? 0 : upr_data4 & GENMASK_32(IOPMP_MD_NUM - 32, 0) };
+    srcmd_en_t  srcmd_en_temp  = { .raw = lwr_data4 & ((md_num >= 31) ? UINT32_MAX : GENMASK_32(md_num, 0)) };
+    srcmd_enh_t srcmd_enh_temp = { .raw = (md_num < 32) ? 0 : upr_data4 & GENMASK_32(md_num - 32, 0) };
+    srcmd_r_t   srcmd_r_temp   = { .raw = lwr_data4 & ((md_num >= 31) ? UINT32_MAX : GENMASK_32(md_num, 0)) };
+    srcmd_rh_t  srcmd_rh_temp  = { .raw = (md_num < 32) ? 0 : upr_data4 & GENMASK_32(md_num - 32, 0) };
+    srcmd_w_t   srcmd_w_temp   = { .raw = lwr_data4 & ((md_num >= 31) ? UINT32_MAX : GENMASK_32(md_num, 0)) };
+    srcmd_wh_t  srcmd_wh_temp  = { .raw = (md_num < 32) ? 0 : upr_data4 & GENMASK_32(md_num - 32, 0) };
 #elif (SRCMD_FMT == 2)
     srcmd_perm_t  srcmd_perm_temp  = { .raw = lwr_data4 };
     srcmd_permh_t srcmd_permh_temp = { .raw = upr_data4 };
@@ -327,13 +329,13 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
 
 // IOPMP Stall configuration
 #if (IOPMP_STALL_EN)
-    mdstall_t  mdstall_temp  = { .raw = lwr_data4 & ((IOPMP_MD_NUM >= 31) ? UINT32_MAX : GENMASK_32(IOPMP_MD_NUM, 0)) };
-    mdstallh_t mdstallh_temp = { .raw = (IOPMP_MD_NUM < 32) ? 0 : upr_data4 & GENMASK_32(IOPMP_MD_NUM - 32, 0) };
+    mdstall_t  mdstall_temp  = { .raw = lwr_data4 & ((md_num >= 31) ? UINT32_MAX : GENMASK_32(md_num, 0)) };
+    mdstallh_t mdstallh_temp = { .raw = (md_num < 32) ? 0 : upr_data4 & GENMASK_32(md_num - 32, 0) };
     #if (IMP_RRIDSCP)
         rridscp_t  rridscp_temp  = { .raw = lwr_data4 };
         rridscp_temp.op          = (lwr_data4 >> 30) & MASK_BIT_POS(2);
     #endif
-    mdstall_temp.md          = (lwr_data4 >> 1) & ((IOPMP_MD_NUM >= 31) ? UINT32_MAX : GENMASK_32(IOPMP_MD_NUM - 1, 0));
+    mdstall_temp.md          = (lwr_data4 >> 1) & ((md_num >= 31) ? UINT32_MAX : GENMASK_32(md_num - 1, 0));
     mdstall_temp.exempt      = GET_BIT(lwr_data4, 0);
 #endif
 
@@ -532,7 +534,7 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
   }
 
 #if (MDCFG_FMT == 0)
-    if ((((offset-MDCFG_TABLE_BASE_OFFSET)/4) >= iopmp->reg_file.mdcfglck.f) & IS_IN_RANGE(offset, MDCFG_TABLE_BASE_OFFSET, (MDCFG_TABLE_BASE_OFFSET + (IOPMP_MD_NUM*4)))){
+    if ((((offset-MDCFG_TABLE_BASE_OFFSET)/4) >= iopmp->reg_file.mdcfglck.f) & IS_IN_RANGE(offset, MDCFG_TABLE_BASE_OFFSET, (MDCFG_TABLE_BASE_OFFSET + (md_num*4)))){
         if (mdcfg_temp.t < IOPMP_ENTRY_NUM) {
             iopmp->reg_file.mdcfg[(offset-MDCFG_TABLE_BASE_OFFSET)/4].t = mdcfg_temp.t;
         }
@@ -551,7 +553,7 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
          * - For any m >= 1, if (MDCFG(m).t < MDCFG(m-1).t):
          *                       MDCFG(m).t = MDCFG(m-1).t
          */
-        for (int m = 1; m < IOPMP_MD_NUM; m++) {
+        for (int m = 1; m < iopmp->reg_file.hwcfg0.md_num; m++) {
             if (iopmp->reg_file.mdcfg[m].t < iopmp->reg_file.mdcfg[m - 1].t) {
                 iopmp->reg_file.mdcfg[m].t = iopmp->reg_file.mdcfg[m - 1].t;
             }
@@ -573,7 +575,7 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
         }
 
     #elif (SRCMD_FMT == 2)
-        srcmd_tbl_access = IS_IN_RANGE(offset, SRCMD_TABLE_BASE_OFFSET, SRCMD_TABLE_BASE_OFFSET + (IOPMP_MD_NUM * SRCMD_REG_STRIDE) + 8);
+        srcmd_tbl_access = IS_IN_RANGE(offset, SRCMD_TABLE_BASE_OFFSET, SRCMD_TABLE_BASE_OFFSET + (md_num * SRCMD_REG_STRIDE) + 8);
         if (srcmd_tbl_access) {
             int table_index = SRCMD_TABLE_INDEX(offset);
 

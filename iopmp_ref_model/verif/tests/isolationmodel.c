@@ -32,6 +32,7 @@ int main()
     cfg.vendor = 1;
     cfg.specver = 1;
     cfg.impid = 0;
+    cfg.md_num = 63;
     cfg.addrh_en = true;
     cfg.tor_en = true;
 

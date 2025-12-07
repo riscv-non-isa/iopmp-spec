@@ -101,7 +101,7 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
     // Determine MDCFG table range for entries
     #if (SRCMD_FMT != 1)
         int start_md_num = 0;
-        int end_md_num   = IOPMP_MD_NUM;
+        int end_md_num   = iopmp->reg_file.hwcfg0.md_num;
     #else
         int start_md_num = SRC_ENFORCEMENT_EN ? 0 : trans_req->rrid;
         int end_md_num   = SRC_ENFORCEMENT_EN ? 1 : trans_req->rrid + 1;
