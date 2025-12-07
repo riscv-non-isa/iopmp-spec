@@ -42,6 +42,8 @@ int main()
     cfg.prio_ent_prog = false;
     cfg.non_prio_en = true;
     cfg.chk_x = true;
+    cfg.peis = true;
+    cfg.pees = true;
 
 #if (SRC_ENFORCEMENT_EN == 0)
     START_TEST("Test OFF - Read Access permissions");
@@ -435,7 +437,7 @@ int main()
     END_TEST();
 #endif
 
-    START_TEST("Test Interrupt Suppression is Enabled");
+    START_TEST_IF(iopmp.reg_file.hwcfg2.peis, "Test Interrupt Suppression is Enabled",
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, ERR_CFG_OFFSET, 0x2, 4);
     configure_srcmd_n(&iopmp, SRCMD_PERM, 31, 0x1, 4);
@@ -448,7 +450,7 @@ int main()
     FAIL_IF((intrpt == 1)); // Interrupt is suppressed
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_ERROR, ILLEGAL_INSTR_FETCH);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
+    END_TEST();)
 
     START_TEST("Test Interrupt Suppression is disabled");
     reset_iopmp(&iopmp, &cfg);
@@ -465,7 +467,7 @@ int main()
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
     END_TEST();
 
-    START_TEST("Test Error Suppression is Enabled");
+    START_TEST_IF(iopmp.reg_file.hwcfg2.pees, "Test Error Suppression is Enabled",
     // Receiver Port Signals
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, ERR_CFG_OFFSET, 0x4, 4);
@@ -481,9 +483,10 @@ int main()
     FAIL_IF((iopmp_trans_rsp.user != USER));
     error_record_chk(&iopmp, ILLEGAL_INSTR_FETCH, INSTR_FETCH, 360, 1);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
+    END_TEST();)
 
-    START_TEST("Test Error Suppression is Enabled but rs is zero");
+    START_TEST_IF(iopmp.reg_file.hwcfg2.pees,
+                  "Test Error Suppression is Enabled but rs is zero",
     // Receiver Port Signals
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_PERM, 2, 0x1, 4);
@@ -498,7 +501,7 @@ int main()
     FAIL_IF((iopmp_trans_rsp.user != USER));
     error_record_chk(&iopmp, ILLEGAL_INSTR_FETCH, INSTR_FETCH, 360, 1);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
+    END_TEST();)
 
     START_TEST("Test Error Suppression is disabled");
     // Receiver Port Signals
@@ -517,7 +520,8 @@ int main()
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
     END_TEST();
 
-    START_TEST("Test Interrupt and Error Suppression is Enabled");
+    START_TEST_IF(iopmp.reg_file.hwcfg2.peis && iopmp.reg_file.hwcfg2.pees,
+                  "Test Interrupt and Error Suppression is Enabled",
     // Receiver Port Signals
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, ERR_CFG_OFFSET, 0x6, 4);
@@ -534,7 +538,7 @@ int main()
     FAIL_IF((iopmp_trans_rsp.user != USER));
     error_record_chk(&iopmp, ILLEGAL_INSTR_FETCH, INSTR_FETCH, 360, 0);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
+    END_TEST();)
 
     START_TEST("Test Interrupt and Error Suppression is disabled");
     // Receiver Port Signals
