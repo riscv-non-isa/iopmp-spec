@@ -45,6 +45,7 @@ int main()
     cfg.prio_entry = 16;
     cfg.prio_ent_prog = false;
     cfg.non_prio_en = true;
+    cfg.chk_x = true;
 
 #if (SRC_ENFORCEMENT_EN == 0)
 
