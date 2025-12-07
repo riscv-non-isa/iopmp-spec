@@ -36,7 +36,6 @@
 #define MSI_DATA_BYTE 0x4
 
 #define WORD_BITS        32
-#define SRCMD_REG_STRIDE 32
 #define ENTRY_REG_STRIDE 16
 #define MIN_REG_WIDTH    4
 
@@ -54,13 +53,13 @@
 #define GET_BIT(VAL, BIT_NUM) ((VAL >> BIT_NUM) & 1)
 
 typedef struct iopmp_dev_t {
-    iopmp_regs_t reg_file;          // Register file for IOPMP
-    iopmp_entries_t iopmp_entries;  // IOPMP entry table
-    err_mfrs_t err_svs;             // Error status vector
-    int intrpt_suppress;            // Set when interrupt is suppressed
-    int error_suppress;             // Set when error is suppressed
-    int rrid_stall[IOPMP_RRID_NUM]; // Stall status array for requester IDs
-    int stall_cntr;                 // Counts stalled transactions
+    iopmp_regs_t reg_file;              // Register file for IOPMP
+    iopmp_entries_t iopmp_entries;      // IOPMP entry table
+    err_mfrs_t err_svs;                 // Error status vector
+    int intrpt_suppress;                // Set when interrupt is suppressed
+    int error_suppress;                 // Set when error is suppressed
+    int rrid_stall[IOPMP_MAX_RRID_NUM]; // Stall status array for requester IDs
+    int stall_cntr;                     // Counts stalled transactions
 } iopmp_dev_t;
 
 // Configurations of IOPMP when reset
@@ -72,6 +71,7 @@ typedef struct iopmp_cfg_t {
     uint8_t md_num;                     // The supported number of MD in the IOPMP
     bool addrh_en;                      // IOPMP has ENTRY_ADDRH(i) and ERR_REQADDRH
     bool tor_en;                        // IOPMP supports TOR
+    uint16_t rrid_num;                  // The supported number of RRID in the IOPMP
 } iopmp_cfg_t;
 
 uint8_t write_memory(uint64_t *data, uint64_t addr, uint32_t size);

@@ -36,14 +36,6 @@
 
 #define REG_INTF_BUS_WIDTH      4           // Width (in bytes) of the register interface bus.
 
-#if (SRCMD_FMT == 0)
-    #define IOPMP_RRID_NUM      64
-#elif (SRCMD_FMT == 1)
-    #define IOPMP_RRID_NUM      63          // Maximum RRID number when SRCMD_FMT is 1, as RRID is directly mapped to MDs.
-#else
-    #define IOPMP_RRID_NUM      32          // Maximum RRID number when SRCMD_FMT is 2, as SRCMD_PERM is 32 bits.
-#endif
-
 #if (MDCFG_FMT == 0)
     // Select the behavior for an MDCFG table improper setting.
     // 0: correct the values to make the table have a proper setting

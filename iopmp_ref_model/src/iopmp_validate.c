@@ -59,7 +59,7 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
         return ;
     }
     // Check for valid RRID; if invalid, capture error and return
-    if (trans_req->rrid >= IOPMP_RRID_NUM) {
+    if (trans_req->rrid >= iopmp->reg_file.hwcfg1.rrid_num) {
         // Initially, check for global error suppression
         iopmp->error_suppress = iopmp->reg_file.err_cfg.rs;
         #if (ERROR_CAPTURE_EN)
