@@ -89,11 +89,11 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
 #endif
     iopmp->reg_file.hwcfg3.no_x             = cfg->no_x;
     iopmp->reg_file.hwcfg3.no_w             = cfg->no_w;
-    iopmp->reg_file.hwcfg3.rrid_transl_en   = IOPMP_RRID_TRANSL_EN;
-#if (IOPMP_RRID_TRANSL_EN)
-    iopmp->reg_file.hwcfg3.rrid_transl_prog = IOPMP_RRID_TRANSL_PROG;
-    iopmp->reg_file.hwcfg3.rrid_transl      = IOPMP_RRID_TRANSL;
-#endif
+    iopmp->reg_file.hwcfg3.rrid_transl_en   = cfg->rrid_transl_en;
+    if (cfg->rrid_transl_en) {
+        iopmp->reg_file.hwcfg3.rrid_transl_prog = cfg->rrid_transl_prog;
+        iopmp->reg_file.hwcfg3.rrid_transl      = cfg->rrid_transl;
+    }
     /* Set HWCFG3_en if HWCFG3 is not zero */
     iopmp->reg_file.hwcfg0.HWCFG3_en        = (iopmp->reg_file.hwcfg3.raw) != 0 ? true : false;
 
@@ -368,12 +368,12 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
                 iopmp->reg_file.hwcfg3.md_entry_num = hwcfg3_temp.md_entry_num;
             }
         #endif
-        #if (IOPMP_RRID_TRANSL_EN)
-            if (iopmp->reg_file.hwcfg3.rrid_transl_prog) {
-                iopmp->reg_file.hwcfg3.rrid_transl = hwcfg3_temp.rrid_transl;
+            if (iopmp->reg_file.hwcfg3.rrid_transl_en) {
+                if (iopmp->reg_file.hwcfg3.rrid_transl_prog) {
+                    iopmp->reg_file.hwcfg3.rrid_transl = hwcfg3_temp.rrid_transl;
+                }
+                iopmp->reg_file.hwcfg3.rrid_transl_prog &= ~hwcfg3_temp.rrid_transl_prog;
             }
-            iopmp->reg_file.hwcfg3.rrid_transl_prog &= ~hwcfg3_temp.rrid_transl_prog;
-        #endif
         }
         break;
 

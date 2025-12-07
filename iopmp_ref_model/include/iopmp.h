@@ -83,6 +83,9 @@ typedef struct iopmp_cfg_t {
     bool mfr_en;                        // IOPMP implements Multi Faults Record
     bool no_x;                          // IOPMP denies all instruction fetch transactions
     bool no_w;                          // IOPMP denies all write accesses transactions
+    bool rrid_transl_en;                // IOPMP supports tag a new RRID on the initiator port
+    bool rrid_transl_prog;              // HWCFG3.rrid_transl field is programmable
+    uint16_t rrid_transl;               // The RRID tagged to outgoing transactions
 } iopmp_cfg_t;
 
 uint8_t write_memory(uint64_t *data, uint64_t addr, uint32_t size);
