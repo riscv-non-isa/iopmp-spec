@@ -54,13 +54,18 @@
 #define SRCMD_TABLE_BASE_OFFSET 0x1000
 #define ENTRY_TABLE_BASE_OFFSET ENTRY_OFFSET
 
+#define SRCMD_REG_STRIDE      32
+
 #define IOPMP_MAX_MD_NUM      63
+#define IOPMP_MAX_RRID_NUM    65535
 
 #if (REG_INTF_BUS_WIDTH == 4)
     typedef uint32_t reg_intf_dw;
 #elif (REG_INTF_BUS_WIDTH == 8)
     typedef uint64_t reg_intf_dw;
 #endif
+
+#define ALIGNUP(x, a)   (((x) + ((a) - 1)) & ~((a) - 1))
 
 // VERSION register is a read-only register reporting
 // IOPMP comfiguration information of the instance:
@@ -688,13 +693,13 @@ typedef union {
         uint32_t         reserved5[(SRCMD_TABLE_BASE_OFFSET - MDCFG_TABLE_BASE_OFFSET) / 4];
         #endif
         #if (SRCMD_FMT == 0)
-        srcmd_table_t    srcmd_table[IOPMP_RRID_NUM];
+        srcmd_table_t    srcmd_table[IOPMP_MAX_RRID_NUM];
         #elif (SRCMD_FMT == 2)
         srcmd_table_t    srcmd_table[IOPMP_MAX_MD_NUM];
         #endif
     };
-    uint32_t        regs4[2048];
-    uint64_t        regs8[2048/2];
+    uint32_t regs4[(SRCMD_TABLE_BASE_OFFSET + (ALIGNUP(IOPMP_MAX_RRID_NUM, sizeof(uint32_t)) * SRCMD_REG_STRIDE)) / sizeof(uint32_t)];
+    uint64_t regs8[(SRCMD_TABLE_BASE_OFFSET + (ALIGNUP(IOPMP_MAX_RRID_NUM, sizeof(uint32_t)) * SRCMD_REG_STRIDE)) / sizeof(uint64_t)];
 } iopmp_regs_t;
 
 typedef union {
@@ -705,9 +710,8 @@ typedef union {
     uint64_t        regs8[((IOPMP_ENTRY_NUM * 16) + 4)/2];
 } iopmp_entries_t;
 
-#define ALIGNUP(x, a)   (((x) + ((a) - 1)) & ~((a) - 1))
 // Number of subsequent violation record windows to accommodate all RRIDs.
-#define NUM_SVW         (ALIGNUP(IOPMP_RRID_NUM, 16) / 16)
+#define NUM_SVW         (ALIGNUP(IOPMP_MAX_RRID_NUM, 16) / 16)
 
 typedef struct {
     err_mfr_t sv[NUM_SVW];

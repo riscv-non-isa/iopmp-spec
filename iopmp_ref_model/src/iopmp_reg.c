@@ -60,7 +60,7 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     iopmp->reg_file.hwcfg0.md_num           = cfg->md_num;
     iopmp->reg_file.hwcfg0.addrh_en         = cfg->addrh_en;
     iopmp->reg_file.hwcfg0.tor_en           = cfg->tor_en;
-    iopmp->reg_file.hwcfg1.rrid_num         = IOPMP_RRID_NUM;
+    iopmp->reg_file.hwcfg1.rrid_num         = cfg->rrid_num;
     iopmp->reg_file.hwcfg1.entry_num        = IOPMP_ENTRY_NUM;
 #if (IOPMP_NON_PRIO_EN)
     iopmp->reg_file.hwcfg2.prio_entry       = IOPMP_PRIO_ENTRY;
@@ -111,11 +111,12 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
 /**
   * @brief Checks if the access to a given offset and number of bytes is valid.
   *
+  * @param iopmp The IOPMP instance.
   * @param offset     The offset within the memory map to check for access.
   * @param num_bytes  The number of bytes requested for the access.
   * @return uint8_t   Returns 1 if access is valid, 0 if invalid.
  **/
-uint8_t is_access_valid(uint64_t offset, uint8_t num_bytes) {
+uint8_t is_access_valid(iopmp_dev_t *iopmp, uint64_t offset, uint8_t num_bytes) {
     // Check if the offset falls within the allowed IOPMP rule range
     bool iopmpRule_range;
     iopmpRule_range = (offset >= ENTRY_OFFSET) &
@@ -127,7 +128,7 @@ uint8_t is_access_valid(uint64_t offset, uint8_t num_bytes) {
     //    and if it is outside the range, ensure it falls within the IOPMP rule range.
     // 3. If the offset is aligned with the requested byte size.
     if ((num_bytes != 4 && num_bytes != 8) || (num_bytes > REG_INTF_BUS_WIDTH) ||
-        (offset >= (0x1014 + (IOPMP_RRID_NUM * 32)) && !iopmpRule_range) ||
+        (offset >= (0x1014 + (iopmp->reg_file.hwcfg1.rrid_num * 32)) && !iopmpRule_range) ||
         ((offset & (num_bytes - 1)) != 0)) {
         return 0; // Access is invalid
     }
@@ -150,7 +151,7 @@ uint8_t is_access_valid(uint64_t offset, uint8_t num_bytes) {
  */
 reg_intf_dw read_register(iopmp_dev_t *iopmp, uint64_t offset, uint8_t num_bytes) {
 
-    if (!is_access_valid(offset, num_bytes)) return 0;
+    if (!is_access_valid(iopmp, offset, num_bytes)) return 0;
 
 #if (IOPMP_MFR_EN)
     // If the requested offset corresponds to the error MFR (ERR_MFR_OFFSET)
@@ -222,7 +223,7 @@ void rrid_stall_update(iopmp_dev_t *iopmp, uint8_t exempt) {
     stall_by_md = ((uint64_t)iopmp->reg_file.mdstallh.mdh << 31) | iopmp->reg_file.mdstall.md;
 
     // Iterate through all RRIDs to update the stall status.
-    for (int i = 0; i < IOPMP_RRID_NUM; i++) {
+    for (int i = 0; i < iopmp->reg_file.hwcfg1.rrid_num; i++) {
 
         #if (SRCMD_FMT == 0)
             uint64_t srcmd_md;
@@ -338,7 +339,7 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
     err_mfr_t err_mfr_temp = { .raw = upr_data4 };
 #endif
 
-  if (!is_access_valid(offset, num_bytes)) return;
+  if (!is_access_valid(iopmp, offset, num_bytes)) return;
 
   switch (offset) {
     case VERSION_OFFSET:
@@ -404,7 +405,7 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
     case RRISCP_OFFSET:
         iopmp->reg_file.rridscp.rsv  = 0;
         iopmp->reg_file.rridscp.op   = rridscp_temp.op;
-        if (rridscp_temp.rrid < IOPMP_RRID_NUM) {
+        if (rridscp_temp.rrid < iopmp->reg_file.hwcfg1.rrid_num) {
             iopmp->reg_file.rridscp.rrid = rridscp_temp.rrid;
         }
         else if (iopmp->reg_file.rridscp.op == 0) {
@@ -563,7 +564,7 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
 
     // Pre-compute access range and lock status based on format type
     #if (SRCMD_FMT == 0)
-        srcmd_tbl_access = IS_IN_RANGE(offset, SRCMD_TABLE_BASE_OFFSET, SRCMD_TABLE_BASE_OFFSET + (IOPMP_RRID_NUM * SRCMD_REG_STRIDE) + 28);
+        srcmd_tbl_access = IS_IN_RANGE(offset, SRCMD_TABLE_BASE_OFFSET, SRCMD_TABLE_BASE_OFFSET + (iopmp->reg_file.hwcfg1.rrid_num * SRCMD_REG_STRIDE) + 28);
         if (srcmd_tbl_access) {
             is_srcmd_locked = iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_en.l;
         }

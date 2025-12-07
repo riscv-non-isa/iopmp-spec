@@ -36,6 +36,7 @@ int main()
     cfg.md_num = 63;
     cfg.addrh_en = true;
     cfg.tor_en = true;
+    cfg.rrid_num = 63;
 
 #if (SRC_ENFORCEMENT_EN == 0)
 
