@@ -267,7 +267,6 @@ typedef union {
 
 #endif
 
-#if (MDCFG_FMT == 0)
 // MDCFGLCK is the lock register to MDCFG table.
 typedef union {
     struct {
@@ -278,8 +277,6 @@ typedef union {
     };
     uint32_t raw;
 } mdcfglck_t;
-
-#endif
 
 // ENTRYLCK is the lock register to Entry table.
 typedef union {
@@ -420,8 +417,6 @@ typedef union {
     uint32_t raw;
 } err_user_t;
 
-#if (MDCFG_FMT == 0)
-
 // MDCFG table is a lookup to specify the number of IOPMP entries
 // that is associated with each MD. number of MDCFG registers is equal
 // to HWCFG0.md_num, all MDCFG registers are readable and writable
@@ -429,13 +424,10 @@ typedef union {
     struct {
         uint32_t t   : 16;                  // Indicate the top range of memory domain m.
                                             // An IOPMP entry with index j belongs to MD m
-
         uint32_t rsv : 16;                  // REserved for future use
     };
     uint32_t raw;
 } mdcfg_t;
-
-#endif
 
 #if (SRCMD_FMT == 0)
 // SRCMD_EN register (0, .... , HWCFG1.rrid_num-1) is a specific register
@@ -654,11 +646,7 @@ typedef union {
         #else
         uint32_t         reserved6[2];
         #endif
-        #if (MDCFG_FMT == 0)
         mdcfglck_t       mdcfglck;
-        #else
-        uint32_t         reserved8;
-        #endif
         entrylck_t       entrylck;
         uint32_t         reserved2[4];
         err_cfg_t        err_cfg;
@@ -671,12 +659,8 @@ typedef union {
         err_msiaddrh_t   err_msiaddrh;
         err_user_t       err_user[8];
         uint32_t         reserved4[472];
-        #if (MDCFG_FMT == 0)
         mdcfg_t          mdcfg[IOPMP_MAX_MD_NUM];
         uint32_t         reserved5[(SRCMD_TABLE_BASE_OFFSET - (MDCFG_TABLE_BASE_OFFSET + (IOPMP_MAX_MD_NUM * 4))) / 4];
-        #else
-        uint32_t         reserved5[(SRCMD_TABLE_BASE_OFFSET - MDCFG_TABLE_BASE_OFFSET) / 4];
-        #endif
         #if (SRCMD_FMT == 0)
         srcmd_table_t    srcmd_table[IOPMP_MAX_RRID_NUM];
         #elif (SRCMD_FMT == 2)

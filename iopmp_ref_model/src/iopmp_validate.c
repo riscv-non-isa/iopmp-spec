@@ -110,13 +110,13 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
             if (!IS_MD_ASSOCIATED(cur_md, srcmd_en.md, srcmd_enh.mdh)) continue;
         #endif
 
-        #if (MDCFG_FMT == 0)
+        if (iopmp->reg_file.hwcfg3.mdcfg_fmt == 0) {
             lwr_entry = (cur_md == 0) ? 0 : iopmp->reg_file.mdcfg[cur_md - 1].t;
             upr_entry = iopmp->reg_file.mdcfg[cur_md].t;
-        #else
+        } else {
             lwr_entry = cur_md * (iopmp->reg_file.hwcfg3.md_entry_num + 1);
             upr_entry = ((cur_md + 1) * (iopmp->reg_file.hwcfg3.md_entry_num + 1));
-        #endif
+        }
 
         for (int cur_entry = lwr_entry; cur_entry < upr_entry; cur_entry++) {
             uint64_t prev_addr     = (cur_entry == 0) ? 0 : CONCAT32(iopmp->iopmp_entries.entry_table[cur_entry - 1].entry_addrh.addrh, iopmp->iopmp_entries.entry_table[cur_entry - 1].entry_addr.addr);
