@@ -55,6 +55,7 @@ int main(void)
     cfg.rrid_transl_en = true;
     cfg.rrid_transl_prog = false;
     cfg.rrid_transl = 48;
+    cfg.entryoffset = 0x2000;
     reset_iopmp(&iopmp_dev, &cfg);
 
     // Read the registers
@@ -287,7 +288,7 @@ int main(void)
 
     START_TEST("Get base address of IOPMP entry array");
     addr = iopmp_get_base_addr_entry_array(&iopmp);
-    FAIL_IF(addr != (uintptr_t)ENTRY_OFFSET);
+    FAIL_IF(addr != (uintptr_t)iopmp_dev.reg_file.entryoffset.offset);
     END_TEST();
 
     return 0;

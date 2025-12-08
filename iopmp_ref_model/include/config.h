@@ -15,8 +15,6 @@
 #define SRC_ENFORCEMENT_EN      0           // Indicates if source enforcement is enabled.
 #define IMP_RRIDSCP             1           // Indicates if the RRIDSCP register is implemented.
 
-#define ENTRY_OFFSET            0x2000      // Offset for the entry table.
-
 #define REG_INTF_BUS_WIDTH      4           // Width (in bytes) of the register interface bus.
 
 #if (MDCFG_FMT == 0)
