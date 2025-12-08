@@ -59,6 +59,7 @@ int main()
     cfg.imp_error_capture = true;
     cfg.imp_err_reqid_eid = true;
     cfg.imp_rridscp = true;
+    cfg.imp_msi = true;
 
 #if (SRC_ENFORCEMENT_EN == 0)
     START_TEST("Test OFF - Read Access permissions");
@@ -732,8 +733,7 @@ int main()
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
     END_TEST();)
 
-#if (MSI_EN)
-    START_TEST("Test MSI Write error");
+    START_TEST_IF(iopmp.imp_msi, "Test MSI Write error",
     uint64_t read_data;
     reset_iopmp(&iopmp, &cfg);
     bus_error = 0x8000;
@@ -757,9 +757,10 @@ int main()
     FAIL_IF(intrpt == 1);
     FAIL_IF(read_data == 0x8F); // Interrupt is not suppressed
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
+    END_TEST();)
 
-    START_TEST("Test MSI");
+    START_TEST_IF(iopmp.imp_msi, "Test MSI",
+    uint64_t read_data;
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, ERR_CFG_OFFSET, 0x8F0A, 4);
     if (iopmp.reg_file.hwcfg0.addrh_en) {
@@ -780,8 +781,7 @@ int main()
     FAIL_IF(read_data != 0x8F); // Interrupt is not suppressed
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_ERROR, ILLEGAL_INSTR_FETCH);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
-#endif
+    END_TEST();)
 #endif
 
     free(memory);

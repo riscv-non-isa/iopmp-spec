@@ -23,7 +23,7 @@
  */
 void generate_interrupt(iopmp_dev_t *iopmp, uint8_t *intrpt) {
     // Extract configuration values for clarity
-    const uint8_t msi_enabled = iopmp->reg_file.err_cfg.msi_en;
+    const uint8_t msi_enabled = iopmp->imp_msi && iopmp->reg_file.err_cfg.msi_en;
     const uint8_t interrupt_enabled = iopmp->reg_file.err_cfg.ie;
     *intrpt = 0;
     // Check if interrupts are not enabled
@@ -31,7 +31,7 @@ void generate_interrupt(iopmp_dev_t *iopmp, uint8_t *intrpt) {
         // Check if interrupts are not suppressed
         if (!iopmp->intrpt_suppress) {
             *intrpt = !msi_enabled;
-            #if (MSI_EN)
+            if (iopmp->imp_msi) {
                 if (msi_enabled && !iopmp->reg_file.err_info.msi_werr) {
                     // Construct MSI address and data for enabled MSI.
                     // {MSI_ADDRH[64:34], MSI_ADDR[33:2], 2'b00}
@@ -50,7 +50,7 @@ void generate_interrupt(iopmp_dev_t *iopmp, uint8_t *intrpt) {
                         iopmp->reg_file.err_info.msi_werr = 1;
                     }
                 }
-            #endif
+            }
         }
     }
 }
