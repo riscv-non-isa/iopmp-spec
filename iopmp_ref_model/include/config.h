@@ -12,8 +12,6 @@
 
 #define REG_INTF_BUS_WIDTH      4           // Width (in bytes) of the register interface bus.
 
-#if (MDCFG_FMT == 0)
-    // Select the behavior for an MDCFG table improper setting.
-    // 0: correct the values to make the table have a proper setting
-    #define MDCFG_TABLE_IMPROPER_SETTING_BEHAVIOR   0
-#endif
+// Select the behavior for an MDCFG table improper setting.
+// 0: correct the values to make the table have a proper setting
+#define MDCFG_TABLE_IMPROPER_SETTING_BEHAVIOR   0

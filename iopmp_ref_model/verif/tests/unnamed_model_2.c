@@ -48,6 +48,7 @@ int main()
     cfg.sps_en = false;
     cfg.stall_en = true;
     cfg.mfr_en = true;
+    cfg.mdcfg_fmt = 0;
     cfg.md_entry_num = 0;
     cfg.no_x = false;
     cfg.no_w = false;

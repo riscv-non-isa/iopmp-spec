@@ -76,17 +76,14 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     /* Set HWCFG2_en if HWCFG2 is not zero */
     iopmp->reg_file.hwcfg0.HWCFG2_en        = (iopmp->reg_file.hwcfg2.raw) != 0 ? true : false;
 
-    // Set the MDCFG Format - Based on compiled model
-#ifdef MDCFG_FMT
-    iopmp->reg_file.hwcfg3.mdcfg_fmt        = MDCFG_FMT;
-#endif
+    iopmp->reg_file.hwcfg3.mdcfg_fmt        = cfg->mdcfg_fmt;
     // Set the SRCMD Format - Based on compiled model
 #ifdef SRCMD_FMT
     iopmp->reg_file.hwcfg3.srcmd_fmt        = SRCMD_FMT;
 #endif
-#if (MDCFG_FMT == 1 || MDCFG_FMT == 2)
-    iopmp->reg_file.hwcfg3.md_entry_num     = cfg->md_entry_num;
-#endif
+    if (cfg->mdcfg_fmt == 1 || cfg->mdcfg_fmt == 2) {
+        iopmp->reg_file.hwcfg3.md_entry_num     = cfg->md_entry_num;
+    }
     iopmp->reg_file.hwcfg3.no_x             = cfg->no_x;
     iopmp->reg_file.hwcfg3.no_w             = cfg->no_w;
     iopmp->reg_file.hwcfg3.rrid_transl_en   = cfg->rrid_transl_en;
@@ -307,10 +304,8 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
 #endif
 
 // MDCFG format check
-#if (MDCFG_FMT == 0)
     mdcfglck_t mdcfglck_temp = { .raw = lwr_data4 };
     mdcfg_t    mdcfg_temp    = { .raw = data };
-#endif
 
     uint32_t md_num = iopmp->reg_file.hwcfg0.md_num;
 
@@ -370,11 +365,11 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
 
     case HWCFG3_OFFSET:
         if (iopmp->reg_file.hwcfg0.HWCFG3_en) {
-        #if (MDCFG_FMT == 2)
-            if (!iopmp->reg_file.hwcfg0.enable) {
-                iopmp->reg_file.hwcfg3.md_entry_num = hwcfg3_temp.md_entry_num;
+            if (iopmp->reg_file.hwcfg3.mdcfg_fmt == 2) {
+                if (!iopmp->reg_file.hwcfg0.enable) {
+                    iopmp->reg_file.hwcfg3.md_entry_num = hwcfg3_temp.md_entry_num;
+                }
             }
-        #endif
             if (iopmp->reg_file.hwcfg3.rrid_transl_en) {
                 if (iopmp->reg_file.hwcfg3.rrid_transl_prog) {
                     iopmp->reg_file.hwcfg3.rrid_transl = hwcfg3_temp.rrid_transl;
@@ -440,17 +435,17 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
         break;
 #endif
 
-#if (MDCFG_FMT == 0)
     case MDCFGLCK_OFFSET:
-        if (!iopmp->reg_file.mdcfglck.l) {
-            iopmp->reg_file.mdcfglck.l |= mdcfglck_temp.l;
-            if (mdcfglck_temp.f > iopmp->reg_file.mdcfglck.f) {
-                iopmp->reg_file.mdcfglck.f = mdcfglck_temp.f;
+        if (iopmp->reg_file.hwcfg3.mdcfg_fmt == 0) {
+            if (!iopmp->reg_file.mdcfglck.l) {
+                iopmp->reg_file.mdcfglck.l |= mdcfglck_temp.l;
+                if (mdcfglck_temp.f > iopmp->reg_file.mdcfglck.f) {
+                    iopmp->reg_file.mdcfglck.f = mdcfglck_temp.f;
+                }
+                iopmp->reg_file.mdcfglck.rsv = 0;
             }
-            iopmp->reg_file.mdcfglck.rsv = 0;
         }
         break;
-#endif
 
     case ENTRYLCK_OFFSET:
         if (!iopmp->reg_file.entrylck.l) {
@@ -532,10 +527,10 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
 
     default:
         break;
-  }
+    }
 
-#if (MDCFG_FMT == 0)
-    if ((((offset-MDCFG_TABLE_BASE_OFFSET)/4) >= iopmp->reg_file.mdcfglck.f) & IS_IN_RANGE(offset, MDCFG_TABLE_BASE_OFFSET, (MDCFG_TABLE_BASE_OFFSET + (md_num*4)))){
+    if ((iopmp->reg_file.hwcfg3.mdcfg_fmt == 0) &&
+        (((offset-MDCFG_TABLE_BASE_OFFSET)/4) >= iopmp->reg_file.mdcfglck.f) & IS_IN_RANGE(offset, MDCFG_TABLE_BASE_OFFSET, (MDCFG_TABLE_BASE_OFFSET + (md_num*4)))) {
         if (mdcfg_temp.t < iopmp->reg_file.hwcfg1.entry_num) {
             iopmp->reg_file.mdcfg[(offset-MDCFG_TABLE_BASE_OFFSET)/4].t = mdcfg_temp.t;
         }
@@ -561,7 +556,6 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
         }
 #endif
     }
-#endif
 
 // Code block for handling SRCMD table accesses based on format type
 #if (SRCMD_FMT != 1)
