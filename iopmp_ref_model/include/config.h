@@ -10,7 +10,6 @@
 #define MSI_EN                  1           // Indicates if Message-Signal Interrupts are supported.
 #define STALL_BUF_DEPTH         32          // Depth of the stall transaction buffer.
 #define SRC_ENFORCEMENT_EN      0           // Indicates if source enforcement is enabled.
-#define IMP_RRIDSCP             1           // Indicates if the RRIDSCP register is implemented.
 
 #define REG_INTF_BUS_WIDTH      4           // Width (in bytes) of the register interface bus.
 

@@ -646,11 +646,7 @@ typedef union {
         entryoffset_t    entryoffset;
         mdstall_t        mdstall;
         mdstallh_t       mdstallh;
-        #if (IMP_RRIDSCP)
         rridscp_t        rridscp;
-        #else
-        uint32_t         reserved10;
-        #endif
         uint32_t         reserved1[1];
         #if (SRCMD_FMT != 1)
         mdlck_t          mdlck;

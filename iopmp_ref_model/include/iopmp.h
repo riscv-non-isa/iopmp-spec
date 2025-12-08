@@ -62,6 +62,7 @@ typedef struct iopmp_dev_t {
     bool imp_mdlck;                     // IOPMP implements the Memory Domain Lock (MDLCK) feature
     bool imp_error_capture;             // IOPMP implements the error capture record
     bool imp_err_reqid_eid;             // IOPMP implements ERR_REQID.eid
+    bool imp_rridscp;                   // IOPMP implements RRIDSCP-related features
 } iopmp_dev_t;
 
 // Configurations of IOPMP when reset
@@ -94,6 +95,7 @@ typedef struct iopmp_cfg_t {
     bool imp_mdlck;                     // IOPMP implements the Memory Domain Lock (MDLCK) feature
     bool imp_error_capture;             // IOPMP implements the error capture record
     bool imp_err_reqid_eid;             // IOPMP implements ERR_REQID.eid
+    bool imp_rridscp;                   // IOPMP implements RRIDSCP-related features
 } iopmp_cfg_t;
 
 uint8_t write_memory(uint64_t *data, uint64_t addr, uint32_t size);

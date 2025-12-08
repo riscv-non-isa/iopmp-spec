@@ -115,6 +115,7 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     iopmp->imp_mdlck                        = cfg->imp_mdlck;
     iopmp->imp_error_capture                = cfg->imp_error_capture;
     iopmp->imp_err_reqid_eid                = cfg->imp_err_reqid_eid;
+    iopmp->imp_rridscp                      = cfg->imp_rridscp;
 
     return 0;
 }
@@ -330,10 +331,8 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
 // IOPMP Stall configuration
     mdstall_t  mdstall_temp  = { .raw = lwr_data4 & ((md_num >= 31) ? UINT32_MAX : GENMASK_32(md_num, 0)) };
     mdstallh_t mdstallh_temp = { .raw = (md_num < 32) ? 0 : upr_data4 & GENMASK_32(md_num - 32, 0) };
-    #if (IMP_RRIDSCP)
-        rridscp_t  rridscp_temp  = { .raw = lwr_data4 };
-        rridscp_temp.op          = (lwr_data4 >> 30) & MASK_BIT_POS(2);
-    #endif
+    rridscp_t  rridscp_temp  = { .raw = lwr_data4 };
+    rridscp_temp.op          = (lwr_data4 >> 30) & MASK_BIT_POS(2);
     mdstall_temp.md          = (lwr_data4 >> 1) & ((md_num >= 31) ? UINT32_MAX : GENMASK_32(md_num - 1, 0));
     mdstall_temp.exempt      = GET_BIT(lwr_data4, 0);
 
@@ -407,25 +406,24 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
         }
         break;
 
-#if (IMP_RRIDSCP)
     case RRISCP_OFFSET:
-        iopmp->reg_file.rridscp.rsv  = 0;
-        iopmp->reg_file.rridscp.op   = rridscp_temp.op;
-        if (rridscp_temp.rrid < iopmp->reg_file.hwcfg1.rrid_num) {
-            iopmp->reg_file.rridscp.rrid = rridscp_temp.rrid;
-        }
-        else if (iopmp->reg_file.rridscp.op == 0) {
-            iopmp->reg_file.rridscp.stat = 3;
-            break;
-        }
+        if (iopmp->imp_rridscp) {
+            iopmp->reg_file.rridscp.rsv  = 0;
+            iopmp->reg_file.rridscp.op   = rridscp_temp.op;
+            if (rridscp_temp.rrid < iopmp->reg_file.hwcfg1.rrid_num) {
+                iopmp->reg_file.rridscp.rrid = rridscp_temp.rrid;
+            } else if (iopmp->reg_file.rridscp.op == 0) {
+                iopmp->reg_file.rridscp.stat = 3;
+                break;
+            }
 
-        if (iopmp->reg_file.rridscp.op == 0) {
-            iopmp->reg_file.rridscp.stat = 2 - iopmp->rrid_stall[iopmp->reg_file.rridscp.rrid];
+            if (iopmp->reg_file.rridscp.op == 0) {
+                iopmp->reg_file.rridscp.stat = 2 - iopmp->rrid_stall[iopmp->reg_file.rridscp.rrid];
+            }
+            else if (iopmp->reg_file.rridscp.op == 1) { iopmp->rrid_stall[rridscp_temp.rrid] = 1; }
+            else if (iopmp->reg_file.rridscp.op == 2) { iopmp->rrid_stall[rridscp_temp.rrid] = 0; }
         }
-        else if (iopmp->reg_file.rridscp.op == 1) { iopmp->rrid_stall[rridscp_temp.rrid] = 1; }
-        else if (iopmp->reg_file.rridscp.op == 2) { iopmp->rrid_stall[rridscp_temp.rrid] = 0; }
         break;
-#endif
 
 #if (SRCMD_FMT != 1)
     case MDLCK_OFFSET:

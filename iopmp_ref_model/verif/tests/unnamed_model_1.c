@@ -57,6 +57,7 @@ int main()
     cfg.imp_mdlck = true;
     cfg.imp_error_capture = true;
     cfg.imp_err_reqid_eid = true;
+    cfg.imp_rridscp = true;
 
 #if (SRC_ENFORCEMENT_EN == 0)
 
@@ -657,8 +658,8 @@ int main()
     END_TEST();
 #endif
 
-#if ((STALL_BUF_DEPTH != 0) && (IMP_RRIDSCP))
-    START_TEST_IF(iopmp.reg_file.hwcfg2.stall_en, "Stall MD Feature",
+#if (STALL_BUF_DEPTH != 0)
+    START_TEST_IF(iopmp.reg_file.hwcfg2.stall_en && iopmp.imp_rridscp, "Stall MD Feature",
     // reset_iopmp(&iopmp, &cfg);
     receiver_port(5, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
     configure_entry_n(&iopmp, ENTRY_ADDR, (iopmp_trans_req.rrid * (iopmp.reg_file.hwcfg3.md_entry_num + 1)), 90, 4); // (364 >> 2) and keeping lsb 0
@@ -675,9 +676,9 @@ int main()
     FAIL_IF((iopmp_trans_rsp.rrid != 5));
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
     END_TEST();)
-#elif (IMP_RRIDSCP)
+#else
     // Set STALL_BUF_DEPTH zero to test this feature
-    START_TEST_IF(iopmp.reg_file.hwcfg2.stall_en,
+    START_TEST_IF(iopmp.reg_file.hwcfg2.stall_en && iopmp.imp_rridscp,
                   "Faulting Stalled Transactions Feature",
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, ERR_CFG_OFFSET, 0x10, 4);
