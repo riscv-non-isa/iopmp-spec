@@ -59,6 +59,7 @@ int main(void)
     cfg.imp_mdlck = true;
     cfg.imp_error_capture = true;
     cfg.imp_err_reqid_eid = true;
+    cfg.imp_rridscp = true;
     reset_iopmp(&iopmp_dev, &cfg);
 
     // Read the registers
