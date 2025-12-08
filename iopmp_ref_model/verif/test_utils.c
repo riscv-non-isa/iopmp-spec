@@ -110,7 +110,7 @@ void configure_mdcfg_n(iopmp_dev_t *iopmp, uint8_t md_idx, reg_intf_dw data, uin
   * @param num_bytes It could be 4-Byte write or 8-Byte Write.
  **/
 void configure_entry_n(iopmp_dev_t *iopmp, uint8_t entry_reg, uint64_t entry_idx, reg_intf_dw data, uint8_t num_bytes){
-    write_register(iopmp, ENTRY_TABLE_BASE_OFFSET + entry_reg + (entry_idx * 16), data, num_bytes);    // (364 >> 2) and keeping lsb 0
+    write_register(iopmp, iopmp->reg_file.entryoffset.offset + entry_reg + (entry_idx * 16), data, num_bytes);    // (364 >> 2) and keeping lsb 0
 }
 
 /**

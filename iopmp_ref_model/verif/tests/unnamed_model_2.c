@@ -54,6 +54,7 @@ int main()
     cfg.rrid_transl_en = true;
     cfg.rrid_transl_prog = false;
     cfg.rrid_transl = 48;
+    cfg.entryoffset = 0x2000;
 
 #if (SRC_ENFORCEMENT_EN == 0)
     START_TEST("Test OFF - Read Access permissions");

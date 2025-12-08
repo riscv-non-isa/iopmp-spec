@@ -39,10 +39,10 @@
 #define MIN_REG_WIDTH    4
 
 // Helper Macros for Register Calculations
-#define SRCMD_TABLE_INDEX(offset) (((offset) - SRCMD_TABLE_BASE_OFFSET) / SRCMD_REG_STRIDE)
-#define ENTRY_TABLE_INDEX(offset) (((offset) - ENTRY_TABLE_BASE_OFFSET) / ENTRY_REG_STRIDE)
-#define SRCMD_REG_INDEX(offset)   ((((offset) - SRCMD_TABLE_BASE_OFFSET) % SRCMD_REG_STRIDE) / MIN_REG_WIDTH)
-#define ENTRY_REG_INDEX(offset)   ((((offset) - ENTRY_TABLE_BASE_OFFSET) % ENTRY_REG_STRIDE) / MIN_REG_WIDTH)
+#define SRCMD_TABLE_INDEX(offset)           (((offset) - SRCMD_TABLE_BASE_OFFSET) / SRCMD_REG_STRIDE)
+#define ENTRY_TABLE_INDEX(iopmp, offset)    (((offset) - (iopmp->reg_file.entryoffset.offset)) / ENTRY_REG_STRIDE)
+#define SRCMD_REG_INDEX(offset)             ((((offset) - SRCMD_TABLE_BASE_OFFSET) % SRCMD_REG_STRIDE) / MIN_REG_WIDTH)
+#define ENTRY_REG_INDEX(iopmp, offset)      ((((offset) - (iopmp->reg_file.entryoffset.offset)) % ENTRY_REG_STRIDE) / MIN_REG_WIDTH)
 #define IS_IN_RANGE(offset, start, end) (((offset) >= (start)) && ((offset) <= (end)))
 #define CONCAT32(upr_bits, lwr_bits) (((uint64_t)upr_bits << WORD_BITS) | lwr_bits)
 #define IS_MD_ASSOCIATED(md_num, srcmd_en_md, srcmd_enh_mdh) \
@@ -87,6 +87,7 @@ typedef struct iopmp_cfg_t {
     bool rrid_transl_en;                // IOPMP supports tag a new RRID on the initiator port
     bool rrid_transl_prog;              // HWCFG3.rrid_transl field is programmable
     uint16_t rrid_transl;               // The RRID tagged to outgoing transactions
+    uint64_t entryoffset;               // The offset address of the IOPMP array from the base of an IOPMP instance
 } iopmp_cfg_t;
 
 uint8_t write_memory(uint64_t *data, uint64_t addr, uint32_t size);
