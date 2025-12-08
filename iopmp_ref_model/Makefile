@@ -49,17 +49,17 @@ COMMON_SOURCES := $(SRC_DIR)/iopmp_reg.c \
 
 # Models and configurations
 ifneq ($(libiopmp),1)
-MODELS := full_model:fullmodel.c:0:0 \
-          rapid_k_model:rapidmodel.c:0:1 \
-          dynamic_k_model:dynamicmodel.c:0:2 \
-          isolation_model:isolationmodel.c:1:0 \
-          compact_k_model:compactmodel.c:1:1 \
-          unnamed_model_1:unnamed_model_1.c:1:2 \
-          unnamed_model_2:unnamed_model_2.c:2:0 \
-          unnamed_model_3:unnamed_model_3.c:2:1 \
-          unnamed_model_4:unnamed_model_4.c:2:2
+MODELS := full_model:fullmodel.c \
+          rapid_k_model:rapidmodel.c \
+          dynamic_k_model:dynamicmodel.c \
+          isolation_model:isolationmodel.c \
+          compact_k_model:compactmodel.c \
+          unnamed_model_1:unnamed_model_1.c \
+          unnamed_model_2:unnamed_model_2.c \
+          unnamed_model_3:unnamed_model_3.c \
+          unnamed_model_4:unnamed_model_4.c
 else
-MODELS := libiopmp_INFO:libiopmp_INFO.c:0:0
+MODELS := libiopmp_INFO:libiopmp_INFO.c
 endif
 
 # Targets
@@ -76,32 +76,33 @@ $(LIB_DIR):
 
 # Build all models into libraries and executables
 build: $(BIN_DIR) $(LIB_DIR) $(LIBIOPMP_PREREQ)
+	@echo "Building library..."; \
+	obj_files=""; \
+	for src in $(COMMON_SOURCES); do \
+		obj_file=$$(basename $$src .c).o; \
+		$(CC) $(CFLAGS) -c $$src -o $$obj_file; \
+		obj_files="$$obj_files $$obj_file"; \
+	done; \
+	if [ -n "$(sharedLib)" ]; then \
+		$(CC) $$obj_files -shared -o $(LIB_DIR)/iopmp_model.so; \
+	else \
+		ar rcs $(LIB_DIR)/iopmp_model.a $$obj_files > /dev/null 2>&1; \
+		ranlib $(LIB_DIR)/iopmp_model.a; \
+	fi; \
+	echo "Library built successfully."; \
+	rm -f $$obj_files;
 	@if [ -z "$(model)" ]; then \
 		echo "Building all models..."; \
 		for entry in $(MODELS); do \
 			model=$$(echo $$entry | cut -d':' -f1); \
 			source=$$(echo $$entry | cut -d':' -f2); \
-			srcmd_fmt=$$(echo $$entry | cut -d':' -f3); \
-			mdcfg_fmt=$$(echo $$entry | cut -d':' -f4); \
-			echo "Building library and executable for $$model..."; \
-			obj_files=""; \
-			for src in $(COMMON_SOURCES) $(TEST_DIR)/$$source; do \
-				obj_file=$$(basename $$src .c).o; \
-				$(CC) $(CFLAGS) -DSRCMD_FMT=$$srcmd_fmt -DMDCFG_FMT=$$mdcfg_fmt -c $$src -o $$obj_file; \
-				obj_files="$$obj_files $$obj_file"; \
-			done; \
+			echo "Building executable for $$model..."; \
 			if [ -n "$(sharedLib)" ]; then \
-				$(CC) $$obj_files -shared -o $(LIB_DIR)/$$model.so; \
-				$(CC) $(CFLAGS) -DSRCMD_FMT=$$srcmd_fmt -DMDCFG_FMT=$$mdcfg_fmt \
-					$(TEST_DIR)/$$source -L$(LIB_DIR) -l:$$model.so -o $(BIN_DIR)/$$model $(LDFLAGS); \
+				$(CC) $(CFLAGS) $(TEST_DIR)/$$source -L$(LIB_DIR) -l:iopmp_model.so -o $(BIN_DIR)/$$model $(LDFLAGS); \
 			else \
-				ar rcs $(LIB_DIR)/$$model.a $$obj_files > /dev/null 2>&1; \
-				ranlib $(LIB_DIR)/$$model.a; \
-				$(CC) $(CFLAGS) -DSRCMD_FMT=$$srcmd_fmt -DMDCFG_FMT=$$mdcfg_fmt \
-					$(TEST_DIR)/$$source -L$(LIB_DIR) -l:$$model.a -o $(BIN_DIR)/$$model $(LDFLAGS); \
+				$(CC) $(CFLAGS) $(TEST_DIR)/$$source -L$(LIB_DIR) -l:iopmp_model.a -o $(BIN_DIR)/$$model $(LDFLAGS); \
 			fi; \
-			echo "Library and executable for $$model built successfully."; \
-			rm -f $$obj_files; \
+			echo "Executable for $$model built successfully."; \
 		done; \
 	else \
 		entry=$$(echo "$(MODELS)" | tr ' ' '\n' | grep -E "^$(model):"); \
@@ -110,27 +111,13 @@ build: $(BIN_DIR) $(LIB_DIR) $(LIBIOPMP_PREREQ)
 			exit 1; \
 		fi; \
 		source=$$(echo $$entry | cut -d':' -f2); \
-		srcmd_fmt=$$(echo $$entry | cut -d':' -f3); \
-		mdcfg_fmt=$$(echo $$entry | cut -d':' -f4); \
-		echo "Building library and executable for $(model)..."; \
-		obj_files=""; \
-		for src in $(COMMON_SOURCES) $(TEST_DIR)/$$source; do \
-			obj_file=$$(basename $$src .c).o; \
-			$(CC) $(CFLAGS) -DSRCMD_FMT=$$srcmd_fmt -DMDCFG_FMT=$$mdcfg_fmt -c $$src -o $$obj_file; \
-			obj_files="$$obj_files $$obj_file"; \
-		done; \
+		echo "Building executable for $(model)..."; \
 		if [ -n "$(sharedLib)" ]; then \
-			$(CC) $$obj_files -shared -o $(LIB_DIR)/$$model.so; \
-			$(CC) $(CFLAGS) -DSRCMD_FMT=$$srcmd_fmt -DMDCFG_FMT=$$mdcfg_fmt \
-				$(TEST_DIR)/$$source -L$(LIB_DIR) -l:$$model.so -o $(BIN_DIR)/$$model $(LDFLAGS); \
+			$(CC) $(CFLAGS) $(TEST_DIR)/$$source -L$(LIB_DIR) -l:iopmp_model.so -o $(BIN_DIR)/$$model $(LDFLAGS); \
 		else \
-			ar rcs $(LIB_DIR)/$$model.a $$obj_files > /dev/null 2>&1; \
-			ranlib $(LIB_DIR)/$$model.a; \
-			$(CC) $(CFLAGS) -DSRCMD_FMT=$$srcmd_fmt -DMDCFG_FMT=$$mdcfg_fmt \
-				$(TEST_DIR)/$$source -L$(LIB_DIR) -l:$$model.a -o $(BIN_DIR)/$$model $(LDFLAGS); \
+			$(CC) $(CFLAGS) $(TEST_DIR)/$$source -L$(LIB_DIR) -l:iopmp_model.a -o $(BIN_DIR)/$$model $(LDFLAGS); \
 		fi; \
-		echo "Library and executable for $(model) built successfully."; \
-		rm -f $$obj_files; \
+		echo "Executable for $(model) built successfully."; \
 	fi
 
 # Run all compiled binaries
