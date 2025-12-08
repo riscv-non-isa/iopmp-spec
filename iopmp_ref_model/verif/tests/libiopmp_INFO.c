@@ -56,6 +56,7 @@ int main(void)
     cfg.rrid_transl_prog = false;
     cfg.rrid_transl = 48;
     cfg.entryoffset = 0x2000;
+    cfg.imp_error_capture = true;
     reset_iopmp(&iopmp_dev, &cfg);
 
     // Read the registers

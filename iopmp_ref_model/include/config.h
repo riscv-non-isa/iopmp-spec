@@ -7,7 +7,6 @@
 ***************************************************************************/
 
 #define USER                    0x80        // User-defined value for error suppression success responses.
-#define ERROR_CAPTURE_EN        1           // Indicates if the Error Capture Record feature is implemented.
 #define IMP_ERROR_REQID         1           // Indicates if the ERR_REQID register is implemented.
 #define IMP_MDLCK               1           // Indicates if the Memory Domain Lock (MDLCK) feature is implemented.
 #define MSI_EN                  1           // Indicates if Message-Signal Interrupts are supported.

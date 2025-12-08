@@ -47,12 +47,9 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
     int nonPrioErrorSup    = 0;
     int nonPrioIntrSup     = 0;
     int firstIllegalAccess = 1;
+    iopmpMatchStatus_t nonPrioRuleStatus = NOT_HIT_ANY_RULE;
+    int nonPrioRuleNum = 0;
 
-    #if (ERROR_CAPTURE_EN)
-        iopmpMatchStatus_t nonPrioRuleStatus;
-        int nontPrioRuleNum = 0;
-        nonPrioRuleStatus = NOT_HIT_ANY_RULE;
-    #endif
     // IOPMP always allow the transaction when enable = 0
     if (!iopmp->reg_file.hwcfg0.enable) {
         iopmp_trans_rsp->status = IOPMP_SUCCESS;
@@ -62,9 +59,9 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
     if (trans_req->rrid >= iopmp->reg_file.hwcfg1.rrid_num) {
         // Initially, check for global error suppression
         iopmp->error_suppress = iopmp->reg_file.err_cfg.rs;
-        #if (ERROR_CAPTURE_EN)
+        if (iopmp->imp_error_capture) {
             errorCapture(iopmp, trans_req->perm, UNKNOWN_RRID, trans_req->rrid, 0, trans_req->addr, intrpt);
-        #endif
+        }
         // In case of error suppression, success response is returned, with user defined value on initiator port
         // NOTE: You can change the `user` value
         if (iopmp->error_suppress) { iopmp_trans_rsp->status = IOPMP_SUCCESS; iopmp_trans_rsp->user = USER; }
@@ -79,9 +76,9 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
         }
         else if (iopmp->reg_file.err_cfg.stall_violation_en) {
             iopmp->error_suppress = iopmp->reg_file.err_cfg.rs;
-            #if (ERROR_CAPTURE_EN)
+            if (iopmp->imp_error_capture) {
                 errorCapture(iopmp, trans_req->perm, STALLED_TRANSACTION, trans_req->rrid, 0, trans_req->addr, intrpt);
-            #endif
+            }
             if (iopmp->error_suppress) { iopmp_trans_rsp->status = IOPMP_SUCCESS; iopmp_trans_rsp->user = USER; }
             return ;
         }
@@ -141,20 +138,20 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
                 return ;  // Return on successful match
             } else if (iopmpMatchStatus != ENTRY_NOTMATCH) {
                 if (!is_priority_entry) {
-                    #if (ERROR_CAPTURE_EN)
+                    if (iopmp->imp_error_capture) {
                         nonPrioErrorSup |= iopmp->error_suppress;
                         nonPrioIntrSup  |= iopmp->intrpt_suppress;
                         if (firstIllegalAccess) {
-                            nonPrioRuleStatus  = iopmpMatchStatus;
-                            nontPrioRuleNum    = cur_entry;
+                            nonPrioRuleStatus = iopmpMatchStatus;
+                            nonPrioRuleNum    = cur_entry;
                             firstIllegalAccess = 0;
                         }
-                    #endif
+                    }
                     continue;
                 }
-                #if (ERROR_CAPTURE_EN)
+                if (iopmp->imp_error_capture) {
                     errorCapture(iopmp, trans_req->perm, iopmpMatchStatus, trans_req->rrid, cur_entry, trans_req->addr, intrpt);
-                #endif
+                }
                 // In case of error suppression, success response is returned, with user defined value on initiator port
                 // NOTE: You can change the `user` value
                 if (iopmp->error_suppress) { iopmp_trans_rsp->status = IOPMP_SUCCESS; iopmp_trans_rsp->user = USER; }
@@ -167,9 +164,9 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
     if (nonPrioRuleStatus == NOT_HIT_ANY_RULE) { iopmp->error_suppress = iopmp->reg_file.err_cfg.rs; }
     else { iopmp->error_suppress = nonPrioErrorSup; iopmp->intrpt_suppress = nonPrioIntrSup; }
 
-    #if (ERROR_CAPTURE_EN)
-        errorCapture(iopmp, trans_req->perm, nonPrioRuleStatus, trans_req->rrid, nontPrioRuleNum, trans_req->addr, intrpt);
-    #endif
+    if (iopmp->imp_error_capture) {
+        errorCapture(iopmp, trans_req->perm, nonPrioRuleStatus, trans_req->rrid, nonPrioRuleNum, trans_req->addr, intrpt);
+    }
     // Return response with default status if no match/error occurs
     // In case of error suppression, success response is returned, with user defined value on initiator port
     // NOTE: You can change the `user` value

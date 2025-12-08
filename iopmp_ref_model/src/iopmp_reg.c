@@ -105,6 +105,8 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
 
     iopmp->reg_file.err_reqid.eid           = IMP_ERROR_REQID ? 0 : 0xFFFF;
 
+    iopmp->imp_error_capture                = cfg->imp_error_capture;
+
     return 0;
 }
 
@@ -281,9 +283,7 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
     entry_user_cfg_t entry_user_cfg_temp = { .raw = upr_data4 };
 
 // Conditional block for error capture
-#if (ERROR_CAPTURE_EN)
     err_info_t err_info_temp = { .raw = upr_data4 };
-#endif
 
 // Conditional block for msi addr
 #if (MSI_EN)
@@ -469,19 +469,21 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
         }
         break;
 
-#if (ERROR_CAPTURE_EN)
     case ERR_INFO_OFFSET:
-        iopmp->reg_file.err_info.v        &= ~err_info_temp.v;
-        iopmp->reg_file.err_info.msi_werr &= ~err_info_temp.msi_werr;
-        iopmp->reg_file.err_info.rsv       = 0;
+        if (iopmp->imp_error_capture) {
+            iopmp->reg_file.err_info.v        &= ~err_info_temp.v;
+            iopmp->reg_file.err_info.msi_werr &= ~err_info_temp.msi_werr;
+            iopmp->reg_file.err_info.rsv       = 0;
+        }
         break;
 
     case ERR_REQADDR_OFFSET:
+        /* Read-only */
         return;
 
     case ERR_REQADDRH_OFFSET:
+        /* Read-only */
         return;
-#endif
 
 #if (IMP_ERROR_REQID)
     case ERR_REQID_OFFSET:
