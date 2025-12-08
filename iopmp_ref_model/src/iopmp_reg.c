@@ -100,11 +100,14 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     iopmp->reg_file.entryoffset.offset      = cfg->entryoffset;
 
 #if (SRCMD_FMT != 1)
-    iopmp->reg_file.mdlck.l                 = !IMP_MDLCK;
+    // MDLCK.md is optional, if not implemented, MDLCK.md should be wired to 0
+    // and MDLCK.l should be wired to 1.
+    iopmp->reg_file.mdlck.l                 = cfg->imp_mdlck ? false : true;
 #endif
 
     iopmp->reg_file.err_reqid.eid           = IMP_ERROR_REQID ? 0 : 0xFFFF;
 
+    iopmp->imp_mdlck                        = cfg->imp_mdlck;
     iopmp->imp_error_capture                = cfg->imp_error_capture;
 
     return 0;
@@ -418,16 +421,17 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
         break;
 #endif
 
-#if (SRCMD_FMT != 1) & (IMP_MDLCK)
+#if (SRCMD_FMT != 1)
     case MDLCK_OFFSET:
-        if (!iopmp->reg_file.mdlck.l) {
+        if (iopmp->imp_mdlck && !iopmp->reg_file.mdlck.l) {
             iopmp->reg_file.mdlck.l  |= mdlck_temp.l;
             iopmp->reg_file.mdlck.md |= mdlck_temp.md;
         }
         if (num_bytes) break;
 
     case MDLCKH_OFFSET:
-        if (!iopmp->reg_file.mdlck.l) {
+        if (iopmp->imp_mdlck && (iopmp->reg_file.hwcfg0.md_num > 31) &&
+            !iopmp->reg_file.mdlck.l) {
             iopmp->reg_file.mdlckh.mdh |= mdlckh_temp.mdh;
         }
         break;

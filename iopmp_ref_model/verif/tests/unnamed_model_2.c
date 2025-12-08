@@ -55,6 +55,7 @@ int main()
     cfg.rrid_transl_prog = false;
     cfg.rrid_transl = 48;
     cfg.entryoffset = 0x2000;
+    cfg.imp_mdlck = true;
     cfg.imp_error_capture = true;
 
 #if (SRC_ENFORCEMENT_EN == 0)
@@ -466,7 +467,7 @@ int main()
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
     END_TEST();
 
-    START_TEST("Test MDLCK register lock bit");
+    START_TEST_IF(iopmp.imp_mdlck, "Test MDLCK register lock bit",
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, MDLCK_OFFSET, 0x8, 4);  // MD[2] is locked
     write_register(&iopmp, MDLCK_OFFSET, 0x1, 4);  // Locking MDLCK register
@@ -481,7 +482,7 @@ int main()
     iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_SUCCESS, ENTRY_MATCH);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
+    END_TEST();)
 
     START_TEST("Test MDCFG_LCK register lock bit");
     reset_iopmp(&iopmp, &cfg);

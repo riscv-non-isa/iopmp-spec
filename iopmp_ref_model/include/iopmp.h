@@ -59,6 +59,7 @@ typedef struct iopmp_dev_t {
     int error_suppress;                 // Set when error is suppressed
     int rrid_stall[IOPMP_MAX_RRID_NUM]; // Stall status array for requester IDs
     int stall_cntr;                     // Counts stalled transactions
+    bool imp_mdlck;                     // IOPMP implements the Memory Domain Lock (MDLCK) feature
     bool imp_error_capture;             // IOPMP implements the error capture record
 } iopmp_dev_t;
 
@@ -89,6 +90,7 @@ typedef struct iopmp_cfg_t {
     bool rrid_transl_prog;              // HWCFG3.rrid_transl field is programmable
     uint16_t rrid_transl;               // The RRID tagged to outgoing transactions
     uint64_t entryoffset;               // The offset address of the IOPMP array from the base of an IOPMP instance
+    bool imp_mdlck;                     // IOPMP implements the Memory Domain Lock (MDLCK) feature
     bool imp_error_capture;             // IOPMP implements the error capture record
 } iopmp_cfg_t;
 

@@ -58,6 +58,7 @@ int main()
     cfg.rrid_transl_prog = false;
     cfg.rrid_transl = 48;
     cfg.entryoffset = 0x2000;
+    cfg.imp_mdlck = true;
     cfg.imp_error_capture = true;
 
 #if (SRC_ENFORCEMENT_EN == 0)
@@ -520,7 +521,7 @@ int main()
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
     END_TEST();)
 
-    START_TEST("Test MDLCK, updating locked srcmd_en field");
+    START_TEST_IF(iopmp.imp_mdlck, "Test MDLCK, updating locked srcmd_en field",
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, MDLCK_OFFSET, 0x10, 4);
     configure_srcmd_n(&iopmp, SRCMD_EN, 2, 0x10, 4);
@@ -534,9 +535,9 @@ int main()
     iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_ERROR, NOT_HIT_ANY_RULE);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
+    END_TEST();)
 
-    START_TEST("Test MDLCK, updating unlocked srcmd_en field");
+    START_TEST_IF(iopmp.imp_mdlck, "Test MDLCK, updating unlocked srcmd_en field",
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, MDLCK_OFFSET, 0x8, 4);
     configure_srcmd_n(&iopmp, SRCMD_EN, 2, 0x10, 4);
@@ -550,7 +551,7 @@ int main()
     iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_SUCCESS, ENTRY_MATCH);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
+    END_TEST();)
 
     START_TEST("Test Entry_LCK, updating locked ENTRY field");
     reset_iopmp(&iopmp, &cfg);
@@ -615,7 +616,7 @@ int main()
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
     END_TEST();
 
-    START_TEST("Test MDLCK register lock bit");
+    START_TEST_IF(iopmp.imp_mdlck, "Test MDLCK register lock bit",
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, MDLCK_OFFSET, 0x8, 4);  // MD[2] is locked
     write_register(&iopmp, MDLCK_OFFSET, 0x1, 4);  // Locking MDLCK register
@@ -631,7 +632,7 @@ int main()
     iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_SUCCESS, ENTRY_MATCH);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
+    END_TEST();)
 
     START_TEST("Test Entry_LCK register lock bit");
     reset_iopmp(&iopmp, &cfg);
@@ -675,7 +676,7 @@ int main()
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
     END_TEST();)
 
-    START_TEST("Test MDLCK, updating locked srcmd_enh field");
+    START_TEST_IF(iopmp.imp_mdlck, "Test MDLCK, updating locked srcmd_enh field",
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, MDLCKH_OFFSET, 0x1, 4);
     configure_srcmd_n(&iopmp, SRCMD_ENH, 2, 0x1, 4);
@@ -688,9 +689,9 @@ int main()
     iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_ERROR, NOT_HIT_ANY_RULE);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
+    END_TEST();)
 
-    START_TEST("Test MDLCK, updating unlocked srcmd_enh field");
+    START_TEST_IF(iopmp.imp_mdlck, "Test MDLCK, updating unlocked srcmd_enh field",
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, MDLCKH_OFFSET, 0x2, 4);
     configure_srcmd_n(&iopmp, SRCMD_ENH, 2, 0x1, 4);
@@ -703,7 +704,7 @@ int main()
     iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_SUCCESS, ENTRY_MATCH);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    END_TEST();
+    END_TEST();)
 
     START_TEST_IF(iopmp.reg_file.hwcfg2.peis, "Test Interrupt Suppression is Enabled",
     reset_iopmp(&iopmp, &cfg);
