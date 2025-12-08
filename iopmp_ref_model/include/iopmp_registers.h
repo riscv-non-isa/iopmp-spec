@@ -243,7 +243,6 @@ typedef union {
     uint32_t raw;
 } rridscp_t;
 
-#if (SRCMD_FMT != 1)
 // MDLCK is an optional register with a bitmap field to
 // indicate which MDs are locked in SRCMD table.
 typedef union {
@@ -264,8 +263,6 @@ typedef union {
     };
     uint32_t raw;
 } mdlckh_t;
-
-#endif
 
 // MDCFGLCK is the lock register to MDCFG table.
 typedef union {
@@ -429,7 +426,6 @@ typedef union {
     uint32_t raw;
 } mdcfg_t;
 
-#if (SRCMD_FMT == 0)
 // SRCMD_EN register (0, .... , HWCFG1.rrid_num-1) is a specific register
 // for each source (RRID) and indicates which MDs this source maps to
 typedef union {
@@ -497,10 +493,6 @@ typedef union {
     uint32_t raw;
 } srcmd_wh_t;
 
-#endif
-
-#if (SRCMD_FMT == 2)
-
 typedef union {
     struct {
         uint32_t perm  : 32;
@@ -515,27 +507,23 @@ typedef union {
     uint32_t raw;
 } srcmd_permh_t;
 
-#endif
-
-#if (SRCMD_FMT != 1)
 // SRCMD Table contains HWCFG1.rrid_num-1 groups of registers
-typedef struct {
-#if (SRCMD_FMT == 0)
-    srcmd_en_t  srcmd_en;
-    srcmd_enh_t srcmd_enh;
-    srcmd_r_t   srcmd_r;
-    srcmd_rh_t  srcmd_rh;
-    srcmd_w_t   srcmd_w;
-    srcmd_wh_t  srcmd_wh;
-    uint32_t    rsvd[2];
-#elif (SRCMD_FMT == 2)
-    srcmd_perm_t  srcmd_perm;
-    srcmd_permh_t srcmd_permh;
-    uint32_t      rsvd[6];
-#endif
+typedef union {
+    struct {
+        srcmd_en_t  srcmd_en;
+        srcmd_enh_t srcmd_enh;
+        srcmd_r_t   srcmd_r;
+        srcmd_rh_t  srcmd_rh;
+        srcmd_w_t   srcmd_w;
+        srcmd_wh_t  srcmd_wh;
+        uint32_t    rsvd0[2];
+    };
+    struct {
+        srcmd_perm_t  srcmd_perm;
+        srcmd_permh_t srcmd_permh;
+        uint32_t      rsvd1[6];
+    };
 } srcmd_table_t;
-
-#endif
 
 // ENTRY_ADDR registers (0, ..... HWCFG1.entry_num-1) holds physical address
 // of protected memory region
@@ -640,12 +628,8 @@ typedef union {
         mdstallh_t       mdstallh;
         rridscp_t        rridscp;
         uint32_t         reserved1[1];
-        #if (SRCMD_FMT != 1)
         mdlck_t          mdlck;
         mdlckh_t         mdlckh;
-        #else
-        uint32_t         reserved6[2];
-        #endif
         mdcfglck_t       mdcfglck;
         entrylck_t       entrylck;
         uint32_t         reserved2[4];
@@ -661,11 +645,7 @@ typedef union {
         uint32_t         reserved4[472];
         mdcfg_t          mdcfg[IOPMP_MAX_MD_NUM];
         uint32_t         reserved5[(SRCMD_TABLE_BASE_OFFSET - (MDCFG_TABLE_BASE_OFFSET + (IOPMP_MAX_MD_NUM * 4))) / 4];
-        #if (SRCMD_FMT == 0)
         srcmd_table_t    srcmd_table[IOPMP_MAX_RRID_NUM];
-        #elif (SRCMD_FMT == 2)
-        srcmd_table_t    srcmd_table[IOPMP_MAX_MD_NUM];
-        #endif
     };
     uint32_t regs4[(SRCMD_TABLE_BASE_OFFSET + (ALIGNUP(IOPMP_MAX_RRID_NUM, sizeof(uint32_t)) * SRCMD_REG_STRIDE)) / sizeof(uint32_t)];
     uint64_t regs8[(SRCMD_TABLE_BASE_OFFSET + (ALIGNUP(IOPMP_MAX_RRID_NUM, sizeof(uint32_t)) * SRCMD_REG_STRIDE)) / sizeof(uint64_t)];
