@@ -116,6 +116,7 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     iopmp->imp_error_capture                = cfg->imp_error_capture;
     iopmp->imp_err_reqid_eid                = cfg->imp_err_reqid_eid;
     iopmp->imp_rridscp                      = cfg->imp_rridscp;
+    iopmp->imp_msi                          = cfg->imp_msi;
 
     return 0;
 }
@@ -296,10 +297,8 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
     err_info_t err_info_temp = { .raw = upr_data4 };
 
 // Conditional block for msi addr
-#if (MSI_EN)
     err_msiaddr_t    err_msiaddr_temp    = { .raw = lwr_data4 };
     err_msiaddrh_t   err_msiaddrh_temp   = { .raw = upr_data4 };
-#endif
 
 // Conditional block for SRCMD format
 #if (SRCMD_FMT != 1)
@@ -469,9 +468,11 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
             iopmp->reg_file.err_cfg.l                 |= err_cfg_temp.l;
             iopmp->reg_file.err_cfg.ie                 = err_cfg_temp.ie;
             iopmp->reg_file.err_cfg.rs                 = err_cfg_temp.rs;
-            iopmp->reg_file.err_cfg.msi_en             = err_cfg_temp.msi_en & MSI_EN;
+            if (iopmp->imp_msi) {
+                iopmp->reg_file.err_cfg.msi_en         = err_cfg_temp.msi_en;
+                iopmp->reg_file.err_cfg.msidata        = err_cfg_temp.msidata;
+            }
             iopmp->reg_file.err_cfg.stall_violation_en = err_cfg_temp.stall_violation_en;
-            iopmp->reg_file.err_cfg.msidata            = err_cfg_temp.msidata;
             iopmp->reg_file.err_cfg.rsv1               = 0;
             iopmp->reg_file.err_cfg.rsv2               = 0;
         }
@@ -503,21 +504,21 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
         }
         break;
 
-#if (MSI_EN)
     case ERR_MSIADDR_OFFSET:
-        iopmp->reg_file.err_msiaddr.raw = (!iopmp->reg_file.err_cfg.l) ?
-                                          err_msiaddr_temp.raw :
-                                          iopmp->reg_file.err_msiaddr.raw;
+        if (iopmp->imp_msi) {
+            iopmp->reg_file.err_msiaddr.raw = (!iopmp->reg_file.err_cfg.l) ?
+                                              err_msiaddr_temp.raw :
+                                              iopmp->reg_file.err_msiaddr.raw;
+        }
         break;
 
     case ERR_MSIADDRH_OFFSET:
-        if (iopmp->reg_file.hwcfg0.addrh_en) {
+        if (iopmp->imp_msi && iopmp->reg_file.hwcfg0.addrh_en) {
             iopmp->reg_file.err_msiaddrh.raw = (!iopmp->reg_file.err_cfg.l) ?
                                                err_msiaddrh_temp.raw :
                                                iopmp->reg_file.err_msiaddrh.raw;
         }
         break;
-#endif
 
     case ERR_USER0_OFFSET:
     case ERR_USER1_OFFSET:

@@ -667,12 +667,8 @@ typedef union {
         err_reqaddrh_t   err_reqaddrh;
         err_reqid_t      err_reqid;
         err_mfr_t        err_mfr;
-        #if (MSI_EN)
         err_msiaddr_t    err_msiaddr;
         err_msiaddrh_t   err_msiaddrh;
-        #else
-        uint32_t         reserved9[2];
-        #endif
         err_user_t       err_user[8];
         uint32_t         reserved4[472];
         #if (MDCFG_FMT == 0)

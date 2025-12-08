@@ -7,7 +7,6 @@
 ***************************************************************************/
 
 #define USER                    0x80        // User-defined value for error suppression success responses.
-#define MSI_EN                  1           // Indicates if Message-Signal Interrupts are supported.
 #define STALL_BUF_DEPTH         32          // Depth of the stall transaction buffer.
 #define SRC_ENFORCEMENT_EN      0           // Indicates if source enforcement is enabled.
 
