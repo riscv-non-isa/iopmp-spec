@@ -56,6 +56,7 @@ int main()
     cfg.entryoffset = 0x2000;
     cfg.imp_mdlck = true;
     cfg.imp_error_capture = true;
+    cfg.imp_err_reqid_eid = true;
 
 #if (SRC_ENFORCEMENT_EN == 0)
     START_TEST("Test OFF - Read Access permissions");

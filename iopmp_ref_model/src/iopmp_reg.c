@@ -105,10 +105,16 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     iopmp->reg_file.mdlck.l                 = cfg->imp_mdlck ? false : true;
 #endif
 
-    iopmp->reg_file.err_reqid.eid           = IMP_ERROR_REQID ? 0 : 0xFFFF;
+    // One can implement the error capture record, but doesn't implement the
+    // error entry index record (ERR_REQID.eid). In this case, eid should be
+    // wired to 0xffff.
+    if (!cfg->imp_err_reqid_eid) {
+        iopmp->reg_file.err_reqid.eid       = 0xFFFF;
+    }
 
     iopmp->imp_mdlck                        = cfg->imp_mdlck;
     iopmp->imp_error_capture                = cfg->imp_error_capture;
+    iopmp->imp_err_reqid_eid                = cfg->imp_err_reqid_eid;
 
     return 0;
 }
@@ -489,10 +495,9 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
         /* Read-only */
         return;
 
-#if (IMP_ERROR_REQID)
     case ERR_REQID_OFFSET:
+        /* Read-only */
         return;
-#endif
 
     case ERR_MFR_OFFSET:
         if (iopmp->reg_file.hwcfg2.mfr_en) {
