@@ -61,6 +61,7 @@ typedef struct iopmp_dev_t {
     int stall_cntr;                     // Counts stalled transactions
     bool imp_mdlck;                     // IOPMP implements the Memory Domain Lock (MDLCK) feature
     bool imp_error_capture;             // IOPMP implements the error capture record
+    bool imp_err_reqid_eid;             // IOPMP implements ERR_REQID.eid
 } iopmp_dev_t;
 
 // Configurations of IOPMP when reset
@@ -92,6 +93,7 @@ typedef struct iopmp_cfg_t {
     uint64_t entryoffset;               // The offset address of the IOPMP array from the base of an IOPMP instance
     bool imp_mdlck;                     // IOPMP implements the Memory Domain Lock (MDLCK) feature
     bool imp_error_capture;             // IOPMP implements the error capture record
+    bool imp_err_reqid_eid;             // IOPMP implements ERR_REQID.eid
 } iopmp_cfg_t;
 
 uint8_t write_memory(uint64_t *data, uint64_t addr, uint32_t size);

@@ -62,8 +62,12 @@ void errorCapture(iopmp_dev_t *iopmp, perm_type_e trans_type, uint8_t error_type
 
         // Record Request ID and Entry ID details
         iopmp->reg_file.err_reqid.rrid = rrid;
-        iopmp->reg_file.err_reqid.eid  = entry_id;
-
+        if (iopmp->imp_err_reqid_eid) {
+            // One can implement the error capture record, but doesn't implement
+            // the error entry index record (ERR_REQID.eid).
+            // If IOPMP doesn't implement ERR_REQID.eid it won't be updated.
+            iopmp->reg_file.err_reqid.eid = entry_id;
+        }
     // If an error was previously logged, handle a subsequent violation
     } else if (iopmp->reg_file.hwcfg2.mfr_en) {
         if (!checkRridSv(iopmp, rrid) && (!iopmp->error_suppress | !iopmp->intrpt_suppress)) {
