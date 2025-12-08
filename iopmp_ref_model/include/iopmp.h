@@ -81,6 +81,7 @@ typedef struct iopmp_cfg_t {
     bool sps_en;                        // IOPMP supports secondary permission settings
     bool stall_en;                      // IOPMP implements stall-related features
     bool mfr_en;                        // IOPMP implements Multi Faults Record
+    uint8_t md_entry_num;               // For MDCFG format 1 and 2. Each memory domain has exactly (md_entry_num + 1) entries
     bool no_x;                          // IOPMP denies all instruction fetch transactions
     bool no_w;                          // IOPMP denies all write accesses transactions
     bool rrid_transl_en;                // IOPMP supports tag a new RRID on the initiator port
