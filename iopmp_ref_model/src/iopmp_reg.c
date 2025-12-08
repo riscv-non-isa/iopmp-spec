@@ -85,7 +85,7 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     iopmp->reg_file.hwcfg3.srcmd_fmt        = SRCMD_FMT;
 #endif
 #if (MDCFG_FMT == 1 || MDCFG_FMT == 2)
-    iopmp->reg_file.hwcfg3.md_entry_num     = IOPMP_MD_ENTRY_NUM;
+    iopmp->reg_file.hwcfg3.md_entry_num     = cfg->md_entry_num;
 #endif
     iopmp->reg_file.hwcfg3.no_x             = cfg->no_x;
     iopmp->reg_file.hwcfg3.no_w             = cfg->no_w;
