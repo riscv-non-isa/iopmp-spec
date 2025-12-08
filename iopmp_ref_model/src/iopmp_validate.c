@@ -38,10 +38,8 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
     iopmp->error_suppress  = 0;
     int lwr_entry, upr_entry;
 
-    #if (SRCMD_FMT == 0)
-        srcmd_en_t  srcmd_en;
-        srcmd_enh_t srcmd_enh;
-    #endif
+    srcmd_en_t  srcmd_en;
+    srcmd_enh_t srcmd_enh;
 
     iopmpMatchStatus_t iopmpMatchStatus;
     int nonPrioErrorSup    = 0;
@@ -85,7 +83,7 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
     }
 
     // Read SRCMD table based on `rrid`
-    #if (SRCMD_FMT == 0)
+    if (iopmp->reg_file.hwcfg3.srcmd_fmt == 0) {
         #if (SRC_ENFORCEMENT_EN == 1)
             srcmd_en  = iopmp->reg_file.srcmd_table[0].srcmd_en;
             srcmd_enh = iopmp->reg_file.srcmd_table[0].srcmd_enh;
@@ -93,22 +91,25 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
             srcmd_en  = iopmp->reg_file.srcmd_table[trans_req->rrid].srcmd_en;
             srcmd_enh = iopmp->reg_file.srcmd_table[trans_req->rrid].srcmd_enh;
         #endif
-    #endif
+    }
 
+    int start_md_num;
+    int end_md_num;
     // Determine MDCFG table range for entries
-    #if (SRCMD_FMT != 1)
-        int start_md_num = 0;
-        int end_md_num   = iopmp->reg_file.hwcfg0.md_num;
-    #else
-        int start_md_num = SRC_ENFORCEMENT_EN ? 0 : trans_req->rrid;
-        int end_md_num   = SRC_ENFORCEMENT_EN ? 1 : trans_req->rrid + 1;
-    #endif
+    if (iopmp->reg_file.hwcfg3.srcmd_fmt == 0 ||
+        iopmp->reg_file.hwcfg3.srcmd_fmt == 2) {
+        start_md_num = 0;
+        end_md_num   = iopmp->reg_file.hwcfg0.md_num;
+    } else if (iopmp->reg_file.hwcfg3.srcmd_fmt == 1) {
+        start_md_num = SRC_ENFORCEMENT_EN ? 0 : trans_req->rrid;
+        end_md_num   = SRC_ENFORCEMENT_EN ? 1 : trans_req->rrid + 1;
+    }
 
     // Traverse each MD entry and perform address/permission checks
     for (int cur_md = start_md_num; cur_md < end_md_num; ++cur_md) {
-        #if (SRCMD_FMT == 0)
+        if (iopmp->reg_file.hwcfg3.srcmd_fmt == 0) {
             if (!IS_MD_ASSOCIATED(cur_md, srcmd_en.md, srcmd_enh.mdh)) continue;
-        #endif
+        }
 
         if (iopmp->reg_file.hwcfg3.mdcfg_fmt == 0) {
             lwr_entry = (cur_md == 0) ? 0 : iopmp->reg_file.mdcfg[cur_md - 1].t;

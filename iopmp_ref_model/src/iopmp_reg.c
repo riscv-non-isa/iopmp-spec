@@ -77,10 +77,7 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     iopmp->reg_file.hwcfg0.HWCFG2_en        = (iopmp->reg_file.hwcfg2.raw) != 0 ? true : false;
 
     iopmp->reg_file.hwcfg3.mdcfg_fmt        = cfg->mdcfg_fmt;
-    // Set the SRCMD Format - Based on compiled model
-#ifdef SRCMD_FMT
-    iopmp->reg_file.hwcfg3.srcmd_fmt        = SRCMD_FMT;
-#endif
+    iopmp->reg_file.hwcfg3.srcmd_fmt        = cfg->srcmd_fmt;
     if (cfg->mdcfg_fmt == 1 || cfg->mdcfg_fmt == 2) {
         iopmp->reg_file.hwcfg3.md_entry_num     = cfg->md_entry_num;
     }
@@ -96,11 +93,9 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
 
     iopmp->reg_file.entryoffset.offset      = cfg->entryoffset;
 
-#if (SRCMD_FMT != 1)
     // MDLCK.md is optional, if not implemented, MDLCK.md should be wired to 0
     // and MDLCK.l should be wired to 1.
     iopmp->reg_file.mdlck.l                 = cfg->imp_mdlck ? false : true;
-#endif
 
     // One can implement the error capture record, but doesn't implement the
     // error entry index record (ERR_REQID.eid). In this case, eid should be
@@ -231,27 +226,31 @@ void rrid_stall_update(iopmp_dev_t *iopmp, uint8_t exempt) {
 
     // Iterate through all RRIDs to update the stall status.
     for (int i = 0; i < iopmp->reg_file.hwcfg1.rrid_num; i++) {
-
-        #if (SRCMD_FMT == 0)
+        switch (iopmp->reg_file.hwcfg3.srcmd_fmt) {
+        case 0: {
             uint64_t srcmd_md;
             // Format 0: Combine srcmd_enh and srcmd_en fields to evaluate stall conditions.
             // This forms a 64-bit value representing memory domain stall conditions.
             srcmd_md = ((uint64_t)iopmp->reg_file.srcmd_table[i].srcmd_enh.mdh << 31) | iopmp->reg_file.srcmd_table[i].srcmd_en.md;
-
             // Update the rrid_stall array based on the combined stall conditions, considering the exempt flag.
             iopmp->rrid_stall[i] = exempt ^ ((srcmd_md & stall_by_md) != 0);
-
-        #elif (SRCMD_FMT == 1)
+            break;
+        }
+        case 1:
             // Format 1: Directly use the bit at position `i` in the `stall_by_md` mask for the RRID stall condition.
             // Because in format 1. RRID i is directly mapped with MD i.
             iopmp->rrid_stall[i] = exempt ^ (((stall_by_md >> i) & 1) != 0);
-
-        #elif (SRCMD_FMT == 2)
+            break;
+        case 2: {
             uint64_t srcmd_md;
             srcmd_md = (1ULL << iopmp->reg_file.hwcfg0.md_num) - 1;
             // Update rrid_stall based on the accumulated permissions and the stall conditions.
             iopmp->rrid_stall[i] = exempt ^ ((srcmd_md & stall_by_md) != 0);
-        #endif
+            break;
+        }
+        default:
+            break;
+        }
     }
 }
 
@@ -298,10 +297,8 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
     err_msiaddrh_t   err_msiaddrh_temp   = { .raw = upr_data4 };
 
 // Conditional block for SRCMD format
-#if (SRCMD_FMT != 1)
     mdlck_t  mdlck_temp  = { .raw = lwr_data4 };
     mdlckh_t mdlckh_temp = { .raw = upr_data4 };
-#endif
 
 // MDCFG format check
     mdcfglck_t mdcfglck_temp = { .raw = lwr_data4 };
@@ -310,17 +307,14 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
     uint32_t md_num = iopmp->reg_file.hwcfg0.md_num;
 
 // SRCMD format handling
-#if (SRCMD_FMT == 0)
     srcmd_en_t  srcmd_en_temp  = { .raw = lwr_data4 & ((md_num >= 31) ? UINT32_MAX : GENMASK_32(md_num, 0)) };
     srcmd_enh_t srcmd_enh_temp = { .raw = (md_num < 32) ? 0 : upr_data4 & GENMASK_32(md_num - 32, 0) };
     srcmd_r_t   srcmd_r_temp   = { .raw = lwr_data4 & ((md_num >= 31) ? UINT32_MAX : GENMASK_32(md_num, 0)) };
     srcmd_rh_t  srcmd_rh_temp  = { .raw = (md_num < 32) ? 0 : upr_data4 & GENMASK_32(md_num - 32, 0) };
     srcmd_w_t   srcmd_w_temp   = { .raw = lwr_data4 & ((md_num >= 31) ? UINT32_MAX : GENMASK_32(md_num, 0)) };
     srcmd_wh_t  srcmd_wh_temp  = { .raw = (md_num < 32) ? 0 : upr_data4 & GENMASK_32(md_num - 32, 0) };
-#elif (SRCMD_FMT == 2)
     srcmd_perm_t  srcmd_perm_temp  = { .raw = lwr_data4 };
     srcmd_permh_t srcmd_permh_temp = { .raw = upr_data4 };
-#endif
 
 // IOPMP Stall configuration
     mdstall_t  mdstall_temp  = { .raw = lwr_data4 & ((md_num >= 31) ? UINT32_MAX : GENMASK_32(md_num, 0)) };
@@ -419,7 +413,6 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
         }
         break;
 
-#if (SRCMD_FMT != 1)
     case MDLCK_OFFSET:
         if (iopmp->imp_mdlck && !iopmp->reg_file.mdlck.l) {
             iopmp->reg_file.mdlck.l  |= mdlck_temp.l;
@@ -433,7 +426,6 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
             iopmp->reg_file.mdlckh.mdh |= mdlckh_temp.mdh;
         }
         break;
-#endif
 
     case MDCFGLCK_OFFSET:
         if (iopmp->reg_file.hwcfg3.mdcfg_fmt == 0) {
@@ -557,19 +549,75 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
 #endif
     }
 
-// Code block for handling SRCMD table accesses based on format type
-#if (SRCMD_FMT != 1)
-    int srcmd_tbl_access;
-    int is_srcmd_locked = 0;  // Initialize as unlocked
+    // Code block for handling SRCMD table accesses for SRCMD Table Format 0
+    if (iopmp->reg_file.hwcfg3.srcmd_fmt == 0) {
+        bool srcmd_tbl_access = false;
+        bool is_srcmd_locked = false;   // Initialize as unlocked
 
-    // Pre-compute access range and lock status based on format type
-    #if (SRCMD_FMT == 0)
         srcmd_tbl_access = IS_IN_RANGE(offset, SRCMD_TABLE_BASE_OFFSET, SRCMD_TABLE_BASE_OFFSET + (iopmp->reg_file.hwcfg1.rrid_num * SRCMD_REG_STRIDE) + 28);
         if (srcmd_tbl_access) {
             is_srcmd_locked = iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_en.l;
         }
 
-    #elif (SRCMD_FMT == 2)
+        // Proceed only if within access range and not locked
+        if (srcmd_tbl_access && !is_srcmd_locked) {
+            uint32_t srcmd_reg = SRCMD_REG_INDEX(offset);
+
+            switch (srcmd_reg) {
+            // SRCMD_EN Register
+            case 0:
+                iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_en.l |= srcmd_en_temp.l;
+                iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_en.md =
+                    (srcmd_en_temp.md & ~iopmp->reg_file.mdlck.md) |
+                    (iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_en.md & iopmp->reg_file.mdlck.md);
+                if (num_bytes == 4) break;
+
+            // SRCMD_ENH Register
+            case 1:
+                iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_enh.mdh =
+                    ((srcmd_enh_temp.mdh & ~iopmp->reg_file.mdlckh.mdh) |
+                     (iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_enh.mdh & iopmp->reg_file.mdlckh.mdh));
+                break;
+
+            // SRCMD_R Register
+            case 2:
+                iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_r.rsv = 0;
+                iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_r.md =
+                    (srcmd_r_temp.md & ~iopmp->reg_file.mdlck.md) |
+                    (iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_r.md & iopmp->reg_file.mdlck.md);
+                if (num_bytes == 4) break;
+
+            // SRCMD_RH Register
+            case 3:
+                iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_rh.mdh =
+                    ((srcmd_rh_temp.mdh & ~iopmp->reg_file.mdlckh.mdh) |
+                     (iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_rh.mdh & iopmp->reg_file.mdlckh.mdh));
+                break;
+
+            // SRCMD_W Register
+            case 4:
+                iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_w.rsv = 0;
+                iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_w.md =
+                    (srcmd_w_temp.md & ~iopmp->reg_file.mdlck.md) |
+                    (iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_w.md & iopmp->reg_file.mdlck.md);
+                if (num_bytes == 4) break;
+
+            // SRCMD_WH Register
+            case 5:
+                iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_wh.mdh =
+                    ((srcmd_wh_temp.mdh & ~iopmp->reg_file.mdlckh.mdh) |
+                     (iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_wh.mdh & iopmp->reg_file.mdlckh.mdh));
+                break;
+
+            default:
+                break;
+            }
+        }
+    // Code block for handling SRCMD table accesses for SRCMD Table Format 2
+    } else if (iopmp->reg_file.hwcfg3.srcmd_fmt == 2) {
+        bool srcmd_tbl_access = false;
+        bool is_srcmd_locked = false;   // Initialize as unlocked
+
         srcmd_tbl_access = IS_IN_RANGE(offset, SRCMD_TABLE_BASE_OFFSET, SRCMD_TABLE_BASE_OFFSET + (md_num * SRCMD_REG_STRIDE) + 8);
         if (srcmd_tbl_access) {
             int table_index = SRCMD_TABLE_INDEX(offset);
@@ -580,76 +628,27 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
                 is_srcmd_locked = (iopmp->reg_file.mdlckh.mdh >> (table_index - 31)) & 1;
             }
         }
-    #endif
 
-    // Proceed only if within access range and not locked
-    if (srcmd_tbl_access && !is_srcmd_locked) {
-        uint32_t srcmd_reg = SRCMD_REG_INDEX(offset);
+        // Proceed only if within access range and not locked
+        if (srcmd_tbl_access && !is_srcmd_locked) {
+            uint32_t srcmd_reg = SRCMD_REG_INDEX(offset);
 
-        switch (srcmd_reg) {
-            #if (SRCMD_FMT == 0)
-                // SRCMD_EN Register
-                case 0:
-                    iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_en.l |= srcmd_en_temp.l;
-                    iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_en.md =
-                        (srcmd_en_temp.md & ~iopmp->reg_file.mdlck.md) |
-                        (iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_en.md & iopmp->reg_file.mdlck.md);
-                    if (num_bytes == 4) break;
+            switch (srcmd_reg) {
+            // SRCMD_PERM Register
+            case 0:
+                iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_perm.perm = srcmd_perm_temp.perm;
+                if (num_bytes == 4) break;
 
-                // SRCMD_ENH Register
-                case 1:
-                    iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_enh.mdh =
-                        ((srcmd_enh_temp.mdh & ~iopmp->reg_file.mdlckh.mdh) |
-                         (iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_enh.mdh & iopmp->reg_file.mdlckh.mdh));
-                    break;
-
-                // SRCMD_R Register
-                case 2:
-                    iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_r.rsv = 0;
-                    iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_r.md =
-                        (srcmd_r_temp.md & ~iopmp->reg_file.mdlck.md) |
-                        (iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_r.md & iopmp->reg_file.mdlck.md);
-                    if (num_bytes == 4) break;
-
-                // SRCMD_RH Register
-                case 3:
-                    iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_rh.mdh =
-                        ((srcmd_rh_temp.mdh & ~iopmp->reg_file.mdlckh.mdh) |
-                         (iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_rh.mdh & iopmp->reg_file.mdlckh.mdh));
-                    break;
-
-                // SRCMD_W Register
-                case 4:
-                    iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_w.rsv = 0;
-                    iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_w.md =
-                        (srcmd_w_temp.md & ~iopmp->reg_file.mdlck.md) |
-                        (iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_w.md & iopmp->reg_file.mdlck.md);
-                    if (num_bytes == 4) break;
-
-                // SRCMD_WH Register
-                case 5:
-                    iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_wh.mdh =
-                        ((srcmd_wh_temp.mdh & ~iopmp->reg_file.mdlckh.mdh) |
-                         (iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_wh.mdh & iopmp->reg_file.mdlckh.mdh));
-                    break;
-
-            #elif (SRCMD_FMT == 2)
-                // SRCMD_PERM Register
-                case 0:
-                    iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_perm.perm = srcmd_perm_temp.perm;
-                    if (num_bytes == 4) break;
-
-                // SRCMD_PERMH Register
-                case 1:
-                    iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_permh.permh = srcmd_permh_temp.permh;
-                    break;
-            #endif
+            // SRCMD_PERMH Register
+            case 1:
+                iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_permh.permh = srcmd_permh_temp.permh;
+                break;
 
             default:
                 break;
+            }
         }
     }
-#endif
 
     if (IS_IN_RANGE(offset, iopmp->reg_file.entryoffset.offset, iopmp->reg_file.entryoffset.offset + (iopmp->reg_file.hwcfg1.entry_num * ENTRY_REG_STRIDE) + 12)) {
         uint32_t entry_reg = ENTRY_REG_INDEX(iopmp, offset);

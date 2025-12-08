@@ -101,79 +101,79 @@ static int iopmpMatchAddr(iopmp_trans_req_t trans_req, uint64_t lo, uint64_t hi,
   * @return ENTRY_MATCH if permission is granted, specific ILLEGAL_* code if denied
  **/
 static iopmpMatchStatus_t iopmpCheckPerms(iopmp_dev_t *iopmp, uint16_t rrid, perm_type_e req_perm, entry_cfg_t iopmpcfg, uint8_t md, bool is_amo) {
-
-    #if (SRCMD_FMT == 0)
-        uint64_t srcmd_r, srcmd_w;
-        uint8_t  srcmd_r_bit, srcmd_w_bit;
-        srcmd_r     = CONCAT32(iopmp->reg_file.srcmd_table[rrid].srcmd_rh.raw, iopmp->reg_file.srcmd_table[rrid].srcmd_r.raw);
-        srcmd_w     = CONCAT32(iopmp->reg_file.srcmd_table[rrid].srcmd_wh.raw, iopmp->reg_file.srcmd_table[rrid].srcmd_w.raw);
-        srcmd_r_bit = GET_BIT(srcmd_r, (md + 1));
-        srcmd_w_bit = GET_BIT(srcmd_w, (md + 1));
-    #elif (SRCMD_FMT == 2)
-        uint64_t srcmd_perm;
-        uint8_t  srcmd_perm_r, srcmd_perm_w;
-        srcmd_perm   = CONCAT32(iopmp->reg_file.srcmd_table[md].srcmd_permh.raw, iopmp->reg_file.srcmd_table[md].srcmd_perm.raw);
-        srcmd_perm_r = GET_BIT(srcmd_perm, (rrid * 2));
-        srcmd_perm_w = GET_BIT(srcmd_perm, ((rrid * 2) + 1));
-    #endif
-
-    // Extract hardware configuration flags
-#if (SRCMD_FMT == 0)
-    bool sps_en = iopmp->reg_file.hwcfg2.sps_en; // Software privilege separation enable
-#endif
-    bool chk_x  = iopmp->reg_file.hwcfg2.chk_x;  // Execute permission check enable
-
     // Common permission checks
     bool read_allowed    = false;
     bool write_allowed   = false;
     bool execute_allowed = false;
 
-    #if (SRCMD_FMT == 0)
+    switch (iopmp->reg_file.hwcfg3.srcmd_fmt) {
+    case 0: {
+        uint64_t srcmd_r, srcmd_w;
+        uint8_t  srcmd_r_bit, srcmd_w_bit;
+        bool sps_en = iopmp->reg_file.hwcfg2.sps_en; // Software privilege separation enable
+        srcmd_r     = CONCAT32(iopmp->reg_file.srcmd_table[rrid].srcmd_rh.raw, iopmp->reg_file.srcmd_table[rrid].srcmd_r.raw);
+        srcmd_w     = CONCAT32(iopmp->reg_file.srcmd_table[rrid].srcmd_wh.raw, iopmp->reg_file.srcmd_table[rrid].srcmd_w.raw);
+        srcmd_r_bit = GET_BIT(srcmd_r, (md + 1));
+        srcmd_w_bit = GET_BIT(srcmd_w, (md + 1));
+
         read_allowed    = sps_en ? (iopmpcfg.r & srcmd_r_bit) : iopmpcfg.r;
         write_allowed   = sps_en ? (iopmpcfg.w & srcmd_w_bit & ((iopmpcfg.r & srcmd_r_bit) | !is_amo)) : (iopmpcfg.w & (iopmpcfg.r | !is_amo));
         execute_allowed = sps_en ? (iopmpcfg.x & srcmd_r_bit) : iopmpcfg.x;
-    #elif (SRCMD_FMT == 1)
+        break;
+    }
+    case 1:
         read_allowed    = iopmpcfg.r;
         write_allowed   = (iopmpcfg.w & (iopmpcfg.r | !is_amo));
         execute_allowed = iopmpcfg.x;
-    #elif (SRCMD_FMT == 2)
+        break;
+    case 2: {
+        uint64_t srcmd_perm;
+        uint8_t  srcmd_perm_r, srcmd_perm_w;
+        srcmd_perm   = CONCAT32(iopmp->reg_file.srcmd_table[md].srcmd_permh.raw, iopmp->reg_file.srcmd_table[md].srcmd_perm.raw);
+        srcmd_perm_r = GET_BIT(srcmd_perm, (rrid * 2));
+        srcmd_perm_w = GET_BIT(srcmd_perm, ((rrid * 2) + 1));
+
         read_allowed    = iopmpcfg.r || srcmd_perm_r;
         write_allowed   = ((iopmpcfg.w || srcmd_perm_w) & ((iopmpcfg.r || srcmd_perm_r) | !is_amo));
         execute_allowed = (iopmpcfg.x || srcmd_perm_r);
-    #endif
+        break;
+    }
+    default:
+        break;
+    }
 
     // Handle requested permission type
     switch (req_perm) {
-        case READ_ACCESS:
-            if (!read_allowed) {
-                iopmp->intrpt_suppress = iopmpcfg.sire;
-                iopmp->error_suppress  = iopmpcfg.sere | iopmp->reg_file.err_cfg.rs;
-            }
-            return read_allowed ? ENTRY_MATCH : ILLEGAL_READ_ACCESS;
+    case READ_ACCESS:
+        if (!read_allowed) {
+            iopmp->intrpt_suppress = iopmpcfg.sire;
+            iopmp->error_suppress  = iopmpcfg.sere | iopmp->reg_file.err_cfg.rs;
+        }
+        return read_allowed ? ENTRY_MATCH : ILLEGAL_READ_ACCESS;
 
-        case WRITE_ACCESS:
-            if (!write_allowed) {
-                iopmp->intrpt_suppress = iopmpcfg.siwe;
-                iopmp->error_suppress  = iopmpcfg.sewe | iopmp->reg_file.err_cfg.rs;
-            }
-            return write_allowed ? ENTRY_MATCH : ILLEGAL_WRITE_ACCESS;
+    case WRITE_ACCESS:
+        if (!write_allowed) {
+            iopmp->intrpt_suppress = iopmpcfg.siwe;
+            iopmp->error_suppress  = iopmpcfg.sewe | iopmp->reg_file.err_cfg.rs;
+        }
+        return write_allowed ? ENTRY_MATCH : ILLEGAL_WRITE_ACCESS;
 
-        case INSTR_FETCH:
-            if (chk_x) {
-                if (!execute_allowed) {
-                    iopmp->intrpt_suppress = iopmpcfg.sixe;
-                    iopmp->error_suppress  = iopmpcfg.sexe | iopmp->reg_file.err_cfg.rs;
-                }
-                return execute_allowed ? ENTRY_MATCH : ILLEGAL_INSTR_FETCH;
-            } else if (read_allowed) {
-                return ENTRY_MATCH;  // Grant Execute permission via Read fallback
+    case INSTR_FETCH:
+        if (iopmp->reg_file.hwcfg2.chk_x) {
+            if (!execute_allowed) {
+                iopmp->intrpt_suppress = iopmpcfg.sixe;
+                iopmp->error_suppress  = iopmpcfg.sexe | iopmp->reg_file.err_cfg.rs;
             }
-            iopmp->intrpt_suppress = iopmpcfg.sixe;
-            iopmp->error_suppress  = iopmpcfg.sexe | iopmp->reg_file.err_cfg.rs;
-            return ILLEGAL_INSTR_FETCH;
+            return execute_allowed ? ENTRY_MATCH : ILLEGAL_INSTR_FETCH;
+        } else if (read_allowed) {
+            return ENTRY_MATCH;  // Grant Execute permission via Read fallback
+        }
+        iopmp->intrpt_suppress = iopmpcfg.sixe;
+        iopmp->error_suppress  = iopmpcfg.sexe | iopmp->reg_file.err_cfg.rs;
+        return ILLEGAL_INSTR_FETCH;
 
-        default:
-            return ILLEGAL_READ_ACCESS;  // Default case for invalid permission request
+    default:
+        return ILLEGAL_READ_ACCESS;  // Default case for invalid permission request
     }
 }
 
