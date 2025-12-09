@@ -364,33 +364,27 @@ int main()
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
     END_TEST();
 
-    // START_TEST_IF(iopmp.reg_file.hwcfg2.non_prio_en,
-    //               "Test NAPOT - 8 Byte Instruction access for non-priority Entry",
-    // // Receiver Port Signals
-    // reset_iopmp(&iopmp, &cfg);
-    // configure_mdcfg_n(&iopmp, 3, 17, 4);
-    // configure_entry_n(&iopmp, ENTRY_ADDR, 1, 74, 4);    // (300 >> 2) and keeping lsb 0
-    // configure_entry_n(&iopmp, ENTRY_CFG, 1, 0x1C, 4);
+    START_TEST_IF(iopmp.reg_file.hwcfg2.non_prio_en,
+                  "Test NAPOT - 8 Byte Instruction access for non-priority Entry",
+    // Receiver Port Signals
+    reset_iopmp(&iopmp, &cfg);
+    configure_mdcfg_n(&iopmp, 3, 17, 4);
+    configure_entry_n(&iopmp, ENTRY_ADDR, 1, 74, 4);    // (300 >> 2) and keeping lsb 0
+    configure_entry_n(&iopmp, ENTRY_CFG, 1, (NAPOT | X), 4);
     set_hwcfg0_enable(&iopmp);
-    // configure_mdcfg_n(&iopmp, 4, 25, 4);
-    // configure_entry_n(&iopmp, ENTRY_ADDR, 18, 90, 4);    // (364 >> 2) and keeping lsb 0
-    // configure_entry_n(&iopmp, ENTRY_CFG, 18, 0x18, 4);
+    configure_mdcfg_n(&iopmp, 32, 25, 4);
+    configure_entry_n(&iopmp, ENTRY_ADDR, 18, 90, 4);    // (364 >> 2) and keeping lsb 0
+    configure_entry_n(&iopmp, ENTRY_CFG, 18, (NAPOT), 4);
     set_hwcfg0_enable(&iopmp);
-
-    // configure_entry_n(&iopmp, ENTRY_ADDR, 20, 90, 4);    // (364 >> 2) and keeping lsb 0
-    // configure_entry_n(&iopmp, ENTRY_CFG, 20, 0x1C, 4);
+    configure_entry_n(&iopmp, ENTRY_ADDR, 20, 90, 4);    // (364 >> 2) and keeping lsb 0
+    configure_entry_n(&iopmp, ENTRY_CFG, 20, (NAPOT | X), 4);
     set_hwcfg0_enable(&iopmp);
-    // iopmp_trans_req.rrid     = 32;
-    // iopmp_trans_req.addr     = 360;
-    // iopmp_trans_req.length   = 0;
-    // iopmp_trans_req.size     = 3;
-    // iopmp_trans_req.perm     = INSTR_FETCH;
-
-    // // requestor Port Signals
-    // iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
-    // CHECK_IOPMP_TRANS(&iopmp, IOPMP_SUCCESS, ENTRY_MATCH);
-    // write_register(&iopmp, ERR_INFO_OFFSET,   0, 4);
-    // END_TEST();)
+    receiver_port(32, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
+    // requestor Port Signals
+    iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
+    CHECK_IOPMP_TRANS(&iopmp, IOPMP_SUCCESS, ENTRY_MATCH);
+    write_register(&iopmp, ERR_INFO_OFFSET,   0, 4);
+    END_TEST();)
 
     START_TEST("Test MDCFG_LCK, updating locked MDCFG field");
     reset_iopmp(&iopmp, &cfg);
