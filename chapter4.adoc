@@ -219,8 +219,8 @@ h|Field                            |Bits   |R/W   |Default |Description
 - 0x04 = partial hit on a priority rule
 - 0x05 = not hit any rule
 - 0x06 = unknown RRID
-- 0x07 = reserved
-- 0x08 ~ 0x0F = reserved for future
+- 0x07 ~ 0x0D = reserved
+- 0x0E ~ 0x0F = user-defined error
 
 |{set:cellbgcolor:#FFFFFF} `rsv`  |31:8   |ZERO   |0      |Must be zero on write, reserved for future
 |===
@@ -336,7 +336,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF} `rsv`|31:5       |ZERO   |0          |Must be zero on write, reserved for future
 |===
 
-Bits `r` and `w` grant read and write permission, respectively. Not each bit should be programmable. Some or all of them could be wired. Besides, an implementation can optionally impose constraints on their combinations.
+Bits `r`, `w`, and `x`, grant read, write, or instruction fetch permission, respectively. Not each bit should be programmable. Some or all of them could be wired. Besides, an implementation can optionally impose constraints on their combinations.
 
 `ENTRY_USER_CFG` implementation defined registers that allows users to define their own additional IOPMP check rules beside the rules.
 

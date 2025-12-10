@@ -12,9 +12,8 @@ The per-entry suppression extension addresses this problem. It allows software t
 The per-entry suppression extension only extends the error reactions, which are triggered when an entry is matched but does not grant transaction permission to operate.
 
 ==== Interrupt Suppression
-`HWCFG2.peis` indicates whether the IOPMP supports per-entry interrupt suppression. If `HWCFG2.peis` is 1, every entry _i_ has two interrupt suppression bits, `sire`, `siwe`, in register `ENTRY_CFG(_i_)`. The bits suppress interrupt triggering due to illegal read access and illegal writes access/AMO respectively.
-
-If an IOPMP can check instruction fetch permission (<<X_PERM>>) and support per-entry interrupt suppression (`HWCFG2.chk_x` = 1 and `HWCFG2.peis` = 1), every entry _i_ has one additional interrupt suppression bit, `sixe`, in register `ENTRY_CFG(_i_)`. It suppresses interrupt triggering due to illegal instruction fetch.
+`HWCFG2.peis` indicates whether the IOPMP supports per-entry interrupt suppression. If `HWCFG2.peis` is 1, every entry _i_ has three interrupt suppression bits, `sire`, `siwe`, `sixe`, in register `ENTRY_CFG(_i_)`.
+The bits suppress interrupt triggering due to illegal read access, illegal writes access/AMO and illegal instruction fetch respectively.
 
 When an illegal transaction occurs with error type "illegal read access" (0x01), "illegal write access/AMO" (0x02), or "illegal instruction fetch" (0x03), an interrupt is triggered if the global interrupt is enabled (`ERR_CFG.ie`) and not suppressed by `sire`, `siwe`, or `sixe`. Considering Entry _i_ matches an illegal transaction, the condition for the interrupt for each type of illegal access can be described as follows: 
 
@@ -28,9 +27,8 @@ When an illegal transaction occurs with error type "illegal read access" (0x01),
 Where `!` represents logical NOT, and `&&` represents logical AND.
 
 ==== Bus Error Suppression
-`HWCFG2.pees` indicates whether the IOPMP supports per-entry bus error suppression. If `HWCFG2.pees` is 1, every entry _i_ has two interrupt suppression bits, `sere`, `sewe`, in register `ENTRY_CFG(_i_)`. The bits suppress bus error due to illegal read access and illegal writes access/AMO respectively.
-
-If an IOPMP can check instruction fetch permission (<<X_PERM>>) and support per-entry bus error suppression (`HWCFG2.chk_x` = 1 and `HWCFG2.pees` = 1), every entry _i_ has one additional bus error suppression bit, `sexe`, in register `ENTRY_CFG(_i_)`. It suppresses bus error due to illegal instruction fetch.
+`HWCFG2.pees` indicates whether the IOPMP supports per-entry bus error suppression. If `HWCFG2.pees` is 1, every entry _i_ has three interrupt suppression bits, `sere`, `sewe`, `sexe`, in register `ENTRY_CFG(_i_)`.
+The bits suppress bus error due to illegal read access, illegal writes access/AMO and illegal instruction fetch respectively.
 
 When an illegal transaction occurs with error type "illegal read access" (0x01), "illegal write access/AMO" (0x02), or "illegal instruction fetch (0x03)", an IOPMP responds bus error if the bus error is not suppressed by `ERR_CFG.rs` and corresponding per-entry suppression bit. `rs` globally suppresses returning a bus error on illegal access. When global suppression is disabled, individual per-entry suppression is possible using `sere`, `sewe`, and `sexe` in `ENTRY_CFG(_i_)` for illegal read access, illegal write access/AMO, and illegal instruction fetch, respectively. Considering Entry _i_ matches an illegal transaction, the condition for a bus error response for each access type can be described as follows:
 
