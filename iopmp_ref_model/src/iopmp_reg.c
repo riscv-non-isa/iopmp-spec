@@ -41,12 +41,49 @@
  * @param iopmp The IOPMP instance.
  * @param cfg The hardware configurations of IOPMP instance when reset
  *
- * @return it Returns 0 upon successful reset.
+ * @return it Returns 0 upon successful reset, returns -1 if \p cfg is invalid
  */
 
 // Function to reset I/O Memory Protection
 int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
 {
+    // The number of MD/RRID/Entries in the instance must not be zero
+    if ((cfg->md_num == 0) || (cfg->rrid_num == 0) || (cfg->entry_num == 0))
+        return -1;
+    // Support up to 63 memory domains
+    if (cfg->md_num > 63)
+        return -1;
+    // Only MDCFG table format 0~2 and SRCMD table format 0~2 are supported
+    if ((cfg->mdcfg_fmt > 2) || (cfg->srcmd_fmt > 2))
+        return -1;
+    // Only baseline SRCMD table format supports SPS extension
+    if (cfg->sps_en && (cfg->srcmd_fmt != 0))
+        return -1;
+    // Multi-Faults Record (MFR) extension depends on error capture feature
+    if (cfg->mfr_en && !cfg->imp_error_capture)
+        return -1;
+    // ERR_REQID depends on error capture feature
+    if (cfg->imp_err_reqid_eid && !cfg->imp_error_capture)
+        return -1;
+    // The no_x feature depends on chk_x feature
+    if (cfg->no_x && !cfg->chk_x)
+        return -1;
+    // When MDCFG table format is 0, the md_entry_num must be zero
+    if ((cfg->mdcfg_fmt == 0) && (cfg->md_entry_num != 0))
+        return -1;
+    // SRCMD Table in the Exclusive Format, rrid_num must equal to md_num
+    if ((cfg->srcmd_fmt == 1) && (cfg->rrid_num != cfg->md_num))
+        return -1;
+    // SRCMD Table in the MD-indexed Format only supports up to 32 RRIDs
+    if ((cfg->srcmd_fmt == 2) && (cfg->rrid_num > 32))
+        return -1;
+    // RRIDSCP register depends on stall feature
+    if (cfg->imp_rridscp && !cfg->stall_en)
+        return -1;
+    // ENTRYOFFSET must beyond SRCMD table
+    if (cfg->entryoffset < (SRCMD_TABLE_BASE_OFFSET + cfg->rrid_num * SRCMD_REG_STRIDE))
+        return -1;
+
     // Zeroize all states
     memset(iopmp, 0, sizeof(*iopmp));
 
