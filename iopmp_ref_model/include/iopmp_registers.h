@@ -27,7 +27,7 @@
 #define ENTRYOFFSET_OFFSET    0x2C
 #define MDSTALL_OFFSET        0x30
 #define MDSTALLH_OFFSET       0x34
-#define RRISCP_OFFSET         0x38
+#define RRIDSCP_OFFSET        0x38
 #define MDLCK_OFFSET          0x40
 #define MDLCKH_OFFSET         0x44
 #define MDCFGLCK_OFFSET       0x48

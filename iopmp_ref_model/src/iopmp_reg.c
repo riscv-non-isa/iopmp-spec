@@ -394,7 +394,7 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
         }
         break;
 
-    case RRISCP_OFFSET:
+    case RRIDSCP_OFFSET:
         if (iopmp->imp_rridscp) {
             iopmp->reg_file.rridscp.rsv  = 0;
             iopmp->reg_file.rridscp.op   = rridscp_temp.op;
