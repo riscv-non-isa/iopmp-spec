@@ -614,14 +614,8 @@ typedef union {
         implementation_t implementation;
         hwcfg0_t         hwcfg0;
         hwcfg1_t         hwcfg1;
-        union {
-            hwcfg2_t     hwcfg2;
-            uint32_t     reserved12;
-        };
-        union {
-            hwcfg3_t     hwcfg3;
-            uint32_t     reserved13;
-        };
+        hwcfg2_t         hwcfg2;
+        hwcfg3_t         hwcfg3;
         uint32_t         reserved0[5];
         entryoffset_t    entryoffset;
         mdstall_t        mdstall;
