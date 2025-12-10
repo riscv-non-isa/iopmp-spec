@@ -668,12 +668,12 @@ int main()
     configure_entry_n(&iopmp, ENTRY_CFG, (iopmp_trans_req.rrid * (iopmp.reg_file.hwcfg3.md_entry_num + 1)), (NAPOT | X), 4);
     set_hwcfg0_enable(&iopmp);
     write_register(&iopmp, MDSTALL_OFFSET, 0x40, 4);
-    write_register(&iopmp, RRISCP_OFFSET, 5, 4);
+    write_register(&iopmp, RRIDSCP_OFFSET, 5, 4);
     // requestor Port Signals
     iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
     FAIL_IF((iopmp_trans_rsp.rrid_stalled != 1));
     rridscp_t rridscp_temp;
-    rridscp_temp.raw = read_register(&iopmp, RRISCP_OFFSET, 4);
+    rridscp_temp.raw = read_register(&iopmp, RRIDSCP_OFFSET, 4);
     FAIL_IF((rridscp_temp.stat != 1));
     FAIL_IF((iopmp_trans_rsp.rrid != 5));
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
@@ -689,12 +689,12 @@ int main()
     configure_entry_n(&iopmp, ENTRY_CFG, (iopmp_trans_req.rrid * (iopmp.reg_file.hwcfg3.md_entry_num + 1)), (NAPOT | X), 4);
     set_hwcfg0_enable(&iopmp);
     write_register(&iopmp, MDSTALL_OFFSET, 0x40, 4);
-    write_register(&iopmp, RRISCP_OFFSET, 5, 4);
+    write_register(&iopmp, RRIDSCP_OFFSET, 5, 4);
     // requestor Port Signals
     iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
     FAIL_IF((iopmp_trans_rsp.rrid_stalled == 1));
     rridscp_t rridscp_temp;
-    rridscp_temp.raw = read_register(&iopmp, RRISCP_OFFSET, 4);
+    rridscp_temp.raw = read_register(&iopmp, RRIDSCP_OFFSET, 4);
     FAIL_IF((rridscp_temp.stat != 1));
     FAIL_IF((iopmp_trans_rsp.rrid != 5));
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_ERROR, STALLED_TRANSACTION);
