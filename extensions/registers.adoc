@@ -27,7 +27,7 @@ This chapter also introduces an additional error type (`ERR_INFO.etype`).
    |0x0034    |`MDSTALLH`  2+|All
    |0x0038    |`RRIDSCP`   2+|All
 .3+|0x0060 .3+|`ERR_CFG`   |`msi_en`         |3:3      |<<MSI>>
-                           |`stall_fault_en` |4:4      |<<Program_IOPMPs>>
+                           |`stall_violation_en` |4:4      |<<Program_IOPMPs>>
                            |`msidata`        |18:8     |<<MSI>>
 .3+|0x0064 .3+|`ERR_INFO`  |`msi_werr`       |3:3      |<<MSI>>
                            |`etype`          |7:4      |<<Program_IOPMPs>>
