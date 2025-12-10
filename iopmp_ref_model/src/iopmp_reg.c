@@ -562,51 +562,52 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
         // Proceed only if within access range and not locked
         if (srcmd_tbl_access && !is_srcmd_locked) {
             uint32_t srcmd_reg = SRCMD_REG_INDEX(offset);
+            uint32_t srcmd_idx = SRCMD_TABLE_INDEX(offset);
 
             switch (srcmd_reg) {
             // SRCMD_EN Register
             case 0:
-                iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_en.l |= srcmd_en_temp.l;
-                iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_en.md =
+                iopmp->reg_file.srcmd_table[srcmd_idx].srcmd_en.l |= srcmd_en_temp.l;
+                iopmp->reg_file.srcmd_table[srcmd_idx].srcmd_en.md =
                     (srcmd_en_temp.md & ~iopmp->reg_file.mdlck.md) |
-                    (iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_en.md & iopmp->reg_file.mdlck.md);
+                    (iopmp->reg_file.srcmd_table[srcmd_idx].srcmd_en.md & iopmp->reg_file.mdlck.md);
                 if (num_bytes == 4) break;
 
             // SRCMD_ENH Register
             case 1:
-                iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_enh.mdh =
+                iopmp->reg_file.srcmd_table[srcmd_idx].srcmd_enh.mdh =
                     ((srcmd_enh_temp.mdh & ~iopmp->reg_file.mdlckh.mdh) |
-                     (iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_enh.mdh & iopmp->reg_file.mdlckh.mdh));
+                     (iopmp->reg_file.srcmd_table[srcmd_idx].srcmd_enh.mdh & iopmp->reg_file.mdlckh.mdh));
                 break;
 
             // SRCMD_R Register
             case 2:
-                iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_r.rsv = 0;
-                iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_r.md =
+                iopmp->reg_file.srcmd_table[srcmd_idx].srcmd_r.rsv = 0;
+                iopmp->reg_file.srcmd_table[srcmd_idx].srcmd_r.md =
                     (srcmd_r_temp.md & ~iopmp->reg_file.mdlck.md) |
-                    (iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_r.md & iopmp->reg_file.mdlck.md);
+                    (iopmp->reg_file.srcmd_table[srcmd_idx].srcmd_r.md & iopmp->reg_file.mdlck.md);
                 if (num_bytes == 4) break;
 
             // SRCMD_RH Register
             case 3:
-                iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_rh.mdh =
+                iopmp->reg_file.srcmd_table[srcmd_idx].srcmd_rh.mdh =
                     ((srcmd_rh_temp.mdh & ~iopmp->reg_file.mdlckh.mdh) |
-                     (iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_rh.mdh & iopmp->reg_file.mdlckh.mdh));
+                     (iopmp->reg_file.srcmd_table[srcmd_idx].srcmd_rh.mdh & iopmp->reg_file.mdlckh.mdh));
                 break;
 
             // SRCMD_W Register
             case 4:
-                iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_w.rsv = 0;
-                iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_w.md =
+                iopmp->reg_file.srcmd_table[srcmd_idx].srcmd_w.rsv = 0;
+                iopmp->reg_file.srcmd_table[srcmd_idx].srcmd_w.md =
                     (srcmd_w_temp.md & ~iopmp->reg_file.mdlck.md) |
-                    (iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_w.md & iopmp->reg_file.mdlck.md);
+                    (iopmp->reg_file.srcmd_table[srcmd_idx].srcmd_w.md & iopmp->reg_file.mdlck.md);
                 if (num_bytes == 4) break;
 
             // SRCMD_WH Register
             case 5:
-                iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_wh.mdh =
+                iopmp->reg_file.srcmd_table[srcmd_idx].srcmd_wh.mdh =
                     ((srcmd_wh_temp.mdh & ~iopmp->reg_file.mdlckh.mdh) |
-                     (iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_wh.mdh & iopmp->reg_file.mdlckh.mdh));
+                     (iopmp->reg_file.srcmd_table[srcmd_idx].srcmd_wh.mdh & iopmp->reg_file.mdlckh.mdh));
                 break;
 
             default:
@@ -632,16 +633,17 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
         // Proceed only if within access range and not locked
         if (srcmd_tbl_access && !is_srcmd_locked) {
             uint32_t srcmd_reg = SRCMD_REG_INDEX(offset);
+            uint32_t srcmd_idx = SRCMD_TABLE_INDEX(offset);
 
             switch (srcmd_reg) {
             // SRCMD_PERM Register
             case 0:
-                iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_perm.perm = srcmd_perm_temp.perm;
+                iopmp->reg_file.srcmd_table[srcmd_idx].srcmd_perm.perm = srcmd_perm_temp.perm;
                 if (num_bytes == 4) break;
 
             // SRCMD_PERMH Register
             case 1:
-                iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_permh.permh = srcmd_permh_temp.permh;
+                iopmp->reg_file.srcmd_table[srcmd_idx].srcmd_permh.permh = srcmd_permh_temp.permh;
                 break;
 
             default:
@@ -652,54 +654,56 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
 
     if (IS_IN_RANGE(offset, iopmp->reg_file.entryoffset.offset, iopmp->reg_file.entryoffset.offset + (iopmp->reg_file.hwcfg1.entry_num * ENTRY_REG_STRIDE) + 12)) {
         uint32_t entry_reg = ENTRY_REG_INDEX(iopmp, offset);
-        if (ENTRY_TABLE_INDEX(iopmp, offset) >= iopmp->reg_file.entrylck.f) {
+        uint32_t entry_idx = ENTRY_TABLE_INDEX(iopmp, offset);
+
+        if (entry_idx >= iopmp->reg_file.entrylck.f) {
             switch (entry_reg)
             {
                 // Entry Addr Register
                 case 0:
-                    iopmp->iopmp_entries.entry_table[ENTRY_TABLE_INDEX(iopmp, offset)].entry_addr.addr = entry_addr_temp.addr;
+                    iopmp->iopmp_entries.entry_table[entry_idx].entry_addr.addr = entry_addr_temp.addr;
                     if ((num_bytes == 4) || !iopmp->reg_file.hwcfg0.addrh_en) break;
 
                 // Entry Addrh Register
                 case 1:
                     if (iopmp->reg_file.hwcfg0.addrh_en) {
-                        iopmp->iopmp_entries.entry_table[ENTRY_TABLE_INDEX(iopmp, offset)].entry_addrh.addrh = entry_addrh_temp.addrh;
+                        iopmp->iopmp_entries.entry_table[entry_idx].entry_addrh.addrh = entry_addrh_temp.addrh;
                     }
                     break;
 
                 // Entry Cfg Register
                 case 2:
-                    iopmp->iopmp_entries.entry_table[ENTRY_TABLE_INDEX(iopmp, offset)].entry_cfg.r = entry_cfg_temp.r;
-                    iopmp->iopmp_entries.entry_table[ENTRY_TABLE_INDEX(iopmp, offset)].entry_cfg.w = entry_cfg_temp.w;
-                    iopmp->iopmp_entries.entry_table[ENTRY_TABLE_INDEX(iopmp, offset)].entry_cfg.x = entry_cfg_temp.x;
+                    iopmp->iopmp_entries.entry_table[entry_idx].entry_cfg.r = entry_cfg_temp.r;
+                    iopmp->iopmp_entries.entry_table[entry_idx].entry_cfg.w = entry_cfg_temp.w;
+                    iopmp->iopmp_entries.entry_table[entry_idx].entry_cfg.x = entry_cfg_temp.x;
                     if (entry_cfg_temp.a == IOPMP_TOR) {
                         // ENTRY_CFG.A is WARL, check for TOR Enable before, writing.
                         if (iopmp->reg_file.hwcfg0.tor_en) {
-                            iopmp->iopmp_entries.entry_table[ENTRY_TABLE_INDEX(iopmp, offset)].entry_cfg.a = entry_cfg_temp.a;
+                            iopmp->iopmp_entries.entry_table[entry_idx].entry_cfg.a = entry_cfg_temp.a;
                         }
                     }
                     else {
-                        iopmp->iopmp_entries.entry_table[ENTRY_TABLE_INDEX(iopmp, offset)].entry_cfg.a = entry_cfg_temp.a;
+                        iopmp->iopmp_entries.entry_table[entry_idx].entry_cfg.a = entry_cfg_temp.a;
                     }
 
                     // Interrupt suppression bits are writeable, only if interrupt suppression is supported
                     if (iopmp->reg_file.hwcfg2.peis){
-                        iopmp->iopmp_entries.entry_table[ENTRY_TABLE_INDEX(iopmp, offset)].entry_cfg.sire = entry_cfg_temp.sire;
-                        iopmp->iopmp_entries.entry_table[ENTRY_TABLE_INDEX(iopmp, offset)].entry_cfg.siwe = entry_cfg_temp.siwe;
-                        iopmp->iopmp_entries.entry_table[ENTRY_TABLE_INDEX(iopmp, offset)].entry_cfg.sixe = entry_cfg_temp.sixe;
+                        iopmp->iopmp_entries.entry_table[entry_idx].entry_cfg.sire = entry_cfg_temp.sire;
+                        iopmp->iopmp_entries.entry_table[entry_idx].entry_cfg.siwe = entry_cfg_temp.siwe;
+                        iopmp->iopmp_entries.entry_table[entry_idx].entry_cfg.sixe = entry_cfg_temp.sixe;
                     }
 
                     // Error suppression bits are writeable, only if error suppression is supported
                     if (iopmp->reg_file.hwcfg2.pees) {
-                        iopmp->iopmp_entries.entry_table[ENTRY_TABLE_INDEX(iopmp, offset)].entry_cfg.sere = entry_cfg_temp.sere;
-                        iopmp->iopmp_entries.entry_table[ENTRY_TABLE_INDEX(iopmp, offset)].entry_cfg.sewe = entry_cfg_temp.sewe;
-                        iopmp->iopmp_entries.entry_table[ENTRY_TABLE_INDEX(iopmp, offset)].entry_cfg.sexe = entry_cfg_temp.sexe;
+                        iopmp->iopmp_entries.entry_table[entry_idx].entry_cfg.sere = entry_cfg_temp.sere;
+                        iopmp->iopmp_entries.entry_table[entry_idx].entry_cfg.sewe = entry_cfg_temp.sewe;
+                        iopmp->iopmp_entries.entry_table[entry_idx].entry_cfg.sexe = entry_cfg_temp.sexe;
                     }
-                    iopmp->iopmp_entries.entry_table[ENTRY_TABLE_INDEX(iopmp, offset)].entry_cfg.rsv = 0;
+                    iopmp->iopmp_entries.entry_table[entry_idx].entry_cfg.rsv = 0;
                     break;
 
                 case 3:
-                    iopmp->iopmp_entries.entry_table[ENTRY_TABLE_INDEX(iopmp, offset)].entry_user_cfg.im = entry_user_cfg_temp.im;
+                    iopmp->iopmp_entries.entry_table[entry_idx].entry_user_cfg.im = entry_user_cfg_temp.im;
                     break;
                 default:
                     break;
