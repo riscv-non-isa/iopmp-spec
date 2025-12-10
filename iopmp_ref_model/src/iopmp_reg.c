@@ -135,6 +135,38 @@ static bool is_access_mdcfg_table(iopmp_dev_t *iopmp, uint64_t offset)
 }
 
 /**
+ * @brief Checks if the access to a given offset is within SRCMD table.
+ *
+ * @param iopmp The IOPMP instance.
+ * @param offset The offset to be checked for access.
+ *
+ * @return true if the access is within SRCMD table, false if not.
+ */
+static bool is_access_srcmd_table(iopmp_dev_t *iopmp, uint64_t offset)
+{
+    uint64_t start = SRCMD_TABLE_BASE_OFFSET;
+    uint64_t end   = SRCMD_TABLE_BASE_OFFSET;
+
+    switch (iopmp->reg_file.hwcfg3.srcmd_fmt) {
+    case 0:
+    case 1:
+        end = SRCMD_TABLE_BASE_OFFSET +
+              ((iopmp->reg_file.hwcfg1.rrid_num - 1) * SRCMD_REG_STRIDE) +
+              (SRCMD_REG_STRIDE - 4);
+        break;
+    case 2:
+        end = SRCMD_TABLE_BASE_OFFSET +
+              ((iopmp->reg_file.hwcfg0.md_num - 1) * SRCMD_REG_STRIDE) +
+              (SRCMD_REG_STRIDE - 4);
+        break;
+    default:
+        return false;
+    }
+
+    return IS_IN_RANGE(offset, start, end);
+}
+
+/**
   * @brief Checks if the access to a given offset and number of bytes is valid.
   *
   * @param iopmp The IOPMP instance.
@@ -579,7 +611,7 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
         bool srcmd_tbl_access = false;
         bool is_srcmd_locked = false;   // Initialize as unlocked
 
-        srcmd_tbl_access = IS_IN_RANGE(offset, SRCMD_TABLE_BASE_OFFSET, SRCMD_TABLE_BASE_OFFSET + (iopmp->reg_file.hwcfg1.rrid_num * SRCMD_REG_STRIDE) + 28);
+        srcmd_tbl_access = is_access_srcmd_table(iopmp, offset);
         if (srcmd_tbl_access) {
             is_srcmd_locked = iopmp->reg_file.srcmd_table[SRCMD_TABLE_INDEX(offset)].srcmd_en.l;
         }
@@ -644,7 +676,7 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
         bool srcmd_tbl_access = false;
         bool is_srcmd_locked = false;   // Initialize as unlocked
 
-        srcmd_tbl_access = IS_IN_RANGE(offset, SRCMD_TABLE_BASE_OFFSET, SRCMD_TABLE_BASE_OFFSET + (md_num * SRCMD_REG_STRIDE) + 8);
+        srcmd_tbl_access = is_access_srcmd_table(iopmp, offset);
         if (srcmd_tbl_access) {
             int table_index = SRCMD_TABLE_INDEX(offset);
 
