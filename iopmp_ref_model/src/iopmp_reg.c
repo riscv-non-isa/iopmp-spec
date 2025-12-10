@@ -167,6 +167,24 @@ static bool is_access_srcmd_table(iopmp_dev_t *iopmp, uint64_t offset)
 }
 
 /**
+ * @brief Checks if the access to a given offset is within entry array.
+ *
+ * @param iopmp The IOPMP instance.
+ * @param offset The offset to be checked for access.
+ *
+ * @return true if the access is within entry array, false if not.
+ */
+static bool is_access_entry_array(iopmp_dev_t *iopmp, uint64_t offset)
+{
+    uint64_t start = iopmp->reg_file.entryoffset.offset;
+    uint64_t end   = iopmp->reg_file.entryoffset.offset +
+                     ((iopmp->reg_file.hwcfg1.entry_num - 1) * ENTRY_REG_STRIDE) +
+                     (ENTRY_REG_STRIDE - 4);    // Last ENTRY_USER_CFG
+
+    return IS_IN_RANGE(offset, start, end);
+}
+
+/**
   * @brief Checks if the access to a given offset and number of bytes is valid.
   *
   * @param iopmp The IOPMP instance.
@@ -255,7 +273,7 @@ reg_intf_dw read_register(iopmp_dev_t *iopmp, uint64_t offset, uint8_t num_bytes
     }
 
     // If the offset is within the valid range for entry registers, return the appropriate value.
-    if ((offset >= iopmp->reg_file.entryoffset.offset) && (offset < (iopmp->reg_file.entryoffset.offset + 0xC + (iopmp->reg_file.hwcfg1.entry_num * ENTRY_REG_STRIDE) + 4))) {
+    if (is_access_entry_array(iopmp, offset)) {
         // Return 4-byte or 8-byte register value based on num_bytes.
         return iopmp->iopmp_entries.regs4[(offset - iopmp->reg_file.entryoffset.offset) / num_bytes];
     }
@@ -709,7 +727,7 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
         }
     }
 
-    if (IS_IN_RANGE(offset, iopmp->reg_file.entryoffset.offset, iopmp->reg_file.entryoffset.offset + (iopmp->reg_file.hwcfg1.entry_num * ENTRY_REG_STRIDE) + 12)) {
+    if (is_access_entry_array(iopmp, offset)) {
         uint32_t entry_reg = ENTRY_REG_INDEX(iopmp, offset);
         uint32_t entry_idx = ENTRY_TABLE_INDEX(iopmp, offset);
 
