@@ -114,6 +114,27 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
 }
 
 /**
+ * @brief Checks if the access to a given offset is within MDCFG table.
+ *
+ * @param iopmp The IOPMP instance.
+ * @param offset The offset to be checked for access.
+ *
+ * @return true if the access is within MDCFG table, false if not.
+ */
+static bool is_access_mdcfg_table(iopmp_dev_t *iopmp, uint64_t offset)
+{
+    // Only baseline MDCFG table format implements MDCFG table
+    if (iopmp->reg_file.hwcfg3.mdcfg_fmt != 0)
+        return false;
+
+    uint64_t start = MDCFG_TABLE_BASE_OFFSET;
+    uint64_t end   = MDCFG_TABLE_BASE_OFFSET +
+                     ((iopmp->reg_file.hwcfg0.md_num - 1) * 4);
+
+    return IS_IN_RANGE(offset, start, end);
+}
+
+/**
   * @brief Checks if the access to a given offset and number of bytes is valid.
   *
   * @param iopmp The IOPMP instance.
@@ -521,32 +542,36 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
         break;
     }
 
-    if ((iopmp->reg_file.hwcfg3.mdcfg_fmt == 0) &&
-        (((offset-MDCFG_TABLE_BASE_OFFSET)/4) >= iopmp->reg_file.mdcfglck.f) & IS_IN_RANGE(offset, MDCFG_TABLE_BASE_OFFSET, (MDCFG_TABLE_BASE_OFFSET + (md_num*4)))) {
-        if (mdcfg_temp.t < iopmp->reg_file.hwcfg1.entry_num) {
-            iopmp->reg_file.mdcfg[(offset-MDCFG_TABLE_BASE_OFFSET)/4].t = mdcfg_temp.t;
-        }
-        iopmp->reg_file.mdcfg[(offset-MDCFG_TABLE_BASE_OFFSET)/4].rsv = 0;
+    if (is_access_mdcfg_table(iopmp, offset)) {
+        uint32_t mdcfg_idx = MDCFG_TABLE_INDEX(offset);
 
-#if (MDCFG_TABLE_IMPROPER_SETTING_BEHAVIOR == 0)
-        /*
-         * MDCFG table must be monotonically incremental. Some reference
-         * behaviors for an improper setting are given in the specification,
-         * e.g., "correct the values to make the table have a proper setting".
-         * The reference model authomatically fixes it if current MDCFG table
-         * violates the monotonically incremental rule. Programmer can check
-         * this register after programming done.
-         *
-         * The MDCFG look up table is implemented in the following way:
-         * - For any m >= 1, if (MDCFG(m).t < MDCFG(m-1).t):
-         *                       MDCFG(m).t = MDCFG(m-1).t
-         */
-        for (int m = 1; m < iopmp->reg_file.hwcfg0.md_num; m++) {
-            if (iopmp->reg_file.mdcfg[m].t < iopmp->reg_file.mdcfg[m - 1].t) {
-                iopmp->reg_file.mdcfg[m].t = iopmp->reg_file.mdcfg[m - 1].t;
+        // MDCFG(m) is locked for m < MDCFGLCK.f
+        if (mdcfg_idx >= iopmp->reg_file.mdcfglck.f) {
+            if (mdcfg_temp.t < iopmp->reg_file.hwcfg1.entry_num) {
+                iopmp->reg_file.mdcfg[mdcfg_idx].t = mdcfg_temp.t;
+                iopmp->reg_file.mdcfg[mdcfg_idx].rsv = 0;
+
+            #if (MDCFG_TABLE_IMPROPER_SETTING_BEHAVIOR == 0)
+                /*
+                 * MDCFG table must be monotonically incremental. Some reference
+                 * behaviors for an improper setting are given in the specification,
+                 * e.g., "correct the values to make the table have a proper setting".
+                 * The reference model authomatically fixes it if current MDCFG table
+                 * violates the monotonically incremental rule. Programmer can check
+                 * this register after programming done.
+                 *
+                 * The MDCFG look up table is implemented in the following way:
+                 * - For any m >= 1, if (MDCFG(m).t < MDCFG(m-1).t):
+                 *                       MDCFG(m).t = MDCFG(m-1).t
+                 */
+                for (int m = 1; m < iopmp->reg_file.hwcfg0.md_num; m++) {
+                    if (iopmp->reg_file.mdcfg[m].t < iopmp->reg_file.mdcfg[m - 1].t) {
+                        iopmp->reg_file.mdcfg[m].t = iopmp->reg_file.mdcfg[m - 1].t;
+                    }
+                }
+            #endif
             }
         }
-#endif
     }
 
     // Code block for handling SRCMD table accesses for SRCMD Table Format 0
