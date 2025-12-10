@@ -39,6 +39,7 @@
 #define MIN_REG_WIDTH    4
 
 // Helper Macros for Register Calculations
+#define MDCFG_TABLE_INDEX(offset)           (((offset) - MDCFG_TABLE_BASE_OFFSET) / 4)
 #define SRCMD_TABLE_INDEX(offset)           (((offset) - SRCMD_TABLE_BASE_OFFSET) / SRCMD_REG_STRIDE)
 #define ENTRY_TABLE_INDEX(iopmp, offset)    (((offset) - (iopmp->reg_file.entryoffset.offset)) / ENTRY_REG_STRIDE)
 #define SRCMD_REG_INDEX(offset)             ((((offset) - SRCMD_TABLE_BASE_OFFSET) % SRCMD_REG_STRIDE) / MIN_REG_WIDTH)
