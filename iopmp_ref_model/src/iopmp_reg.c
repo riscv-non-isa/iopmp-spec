@@ -190,26 +190,29 @@ static bool is_access_entry_array(iopmp_dev_t *iopmp, uint64_t offset)
   * @param iopmp The IOPMP instance.
   * @param offset     The offset within the memory map to check for access.
   * @param num_bytes  The number of bytes requested for the access.
-  * @return uint8_t   Returns 1 if access is valid, 0 if invalid.
+  * @return bool   Returns 1 if access is valid, 0 if invalid.
  **/
-uint8_t is_access_valid(iopmp_dev_t *iopmp, uint64_t offset, uint8_t num_bytes) {
-    // Check if the offset falls within the allowed IOPMP rule range
-    bool iopmpRule_range;
-    iopmpRule_range = (offset >= iopmp->reg_file.entryoffset.offset) &
-                      (offset < ((iopmp->reg_file.entryoffset.offset + 0xC) + (iopmp->reg_file.hwcfg1.entry_num * ENTRY_REG_STRIDE)));
-
+static bool is_access_valid(iopmp_dev_t *iopmp, uint64_t offset, uint8_t num_bytes) {
     // Validate the access by checking:
     // 1. If the requested byte size is either 4 or 8.
     // 2. If the offset is within the allowable range for valid RRIDs,
     //    and if it is outside the range, ensure it falls within the IOPMP rule range.
     // 3. If the offset is aligned with the requested byte size.
-    if ((num_bytes != 4 && num_bytes != 8) || (num_bytes > REG_INTF_BUS_WIDTH) ||
-        (offset > (SRCMD_WH_OFFSET + ((iopmp->reg_file.hwcfg1.rrid_num - 1) * SRCMD_REG_STRIDE)) && !iopmpRule_range) ||
+    if ((num_bytes != 4 && num_bytes != 8) ||
+        (num_bytes > REG_INTF_BUS_WIDTH) ||
         ((offset & (num_bytes - 1)) != 0)) {
         return 0; // Access is invalid
     }
 
-    return 1; // Access is valid
+    if (offset < SRCMD_TABLE_BASE_OFFSET)   // All registers except SRCMD Table and Entry Array
+        return 1;
+
+    if (is_access_srcmd_table(iopmp, offset))
+        return 1;
+    if (is_access_entry_array(iopmp, offset))
+        return 1;
+
+    return 0; // Access is valid
 }
 
 /**
@@ -398,9 +401,9 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
 // IOPMP MFR configuration
     err_mfr_t err_mfr_temp = { .raw = upr_data4 };
 
-  if (!is_access_valid(iopmp, offset, num_bytes)) return;
+    if (!is_access_valid(iopmp, offset, num_bytes)) return;
 
-  switch (offset) {
+    switch (offset) {
     case VERSION_OFFSET:
       // This register is read only
       return;
