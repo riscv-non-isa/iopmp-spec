@@ -69,7 +69,7 @@ Since the address encoding scheme of TOR refers to the previous entry's memory r
 
 `ENTRY_CFG(_i_).r/w/x` indicate the read access, write access, and instruction fetch permission and they are WARL. That is, an implementation can decide which bits are programmable or hardwired and which bit combinations are unwanted.
 
-`ENTRY_CFG(_i_)` contains the basic permission fields for read, write, and address mode configuration.
+`ENTRY_CFG(_i_)` contains the basic permission fields for read, write, instruction fetch and address mode configuration.
 
 Any entry with index &#8805; `HWCFG1.entry_num` is not available. That is,
 

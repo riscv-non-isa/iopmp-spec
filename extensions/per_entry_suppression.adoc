@@ -22,7 +22,7 @@ When an illegal transaction occurs with error type "illegal read access" (0x01),
 * Illegal write access/AMO (0x02): +
 `ERR_CFG.ie && !ENTRY_CFG(_i_).siwe`
 * Illegal instruction fetch (0x03): +
-`ERR_CFG.ie && !ENTRY_CFG(_i_).siwe`
+`ERR_CFG.ie && !ENTRY_CFG(_i_).sixe`
 
 Where `!` represents logical NOT, and `&&` represents logical AND.
 
