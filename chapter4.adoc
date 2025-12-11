@@ -327,6 +327,7 @@ A complete 64-bit address consists of these two registers, `ENTRY_ADDR` and `ENT
 h|Field                         |Bits       |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF} `r`  |0:0        |WARL   |DC         |The read permission to protected memory region 
 | `w`                           |1:1        |WARL   |DC         |The write permission to the protected memory region
+| `x`                           |2:2        |WARL   |DC         |The instruction fetch permission to the protected memory region
 | `a`                           |4:3        |WARL   |DC        a|The address mode of the IOPMP entry
 
 * 0x0: OFF
