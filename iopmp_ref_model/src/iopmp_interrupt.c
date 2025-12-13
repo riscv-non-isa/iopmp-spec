@@ -22,35 +22,51 @@
  * @param intrpt Pointer to a variable to store the interrupt flag.
  */
 void generate_interrupt(iopmp_dev_t *iopmp, uint8_t *intrpt) {
-    // Extract configuration values for clarity
-    const uint8_t msi_enabled = iopmp->imp_msi && iopmp->reg_file.err_cfg.msi_en;
-    const uint8_t interrupt_enabled = iopmp->reg_file.err_cfg.ie;
-    *intrpt = 0;
-    // Check if interrupts are not enabled
-    if (interrupt_enabled) {
-        // Check if interrupts are not suppressed
-        if (!iopmp->intrpt_suppress) {
-            *intrpt = !msi_enabled;
-            if (iopmp->imp_msi) {
-                if (msi_enabled && !iopmp->reg_file.err_info.msi_werr) {
-                    // Construct MSI address and data for enabled MSI.
-                    // {MSI_ADDRH[64:34], MSI_ADDR[33:2], 2'b00}
-                    uint64_t msi_addr;
-                    if (iopmp->reg_file.hwcfg0.addrh_en) {
-                        msi_addr = CONCAT32(iopmp->reg_file.err_msiaddrh.raw, iopmp->reg_file.err_msiaddr.raw);
-                    } else {
-                        msi_addr = CONCAT32(0, iopmp->reg_file.err_msiaddr.raw << 2);
-                    }
-                    uint64_t msi_data = iopmp->reg_file.err_cfg.msidata;
-                    // Write MSI data to memory
-                    uint8_t status = write_memory(&msi_data, msi_addr, MSI_DATA_BYTE);
 
-                    // Handle bus errors during MSI write
-                    if (status == BUS_ERROR) {
-                        iopmp->reg_file.err_info.msi_werr = 1;
-                    }
-                }
-            }
+    if (!iopmp->imp_msi) {
+        // If IOPMP doesn't implement Message-Signaled Interrupts (MSI)
+        // extension, IOPMP only triggers wired interrupts.
+        // IOPMP triggers wired interrupt if the following conditions are true:
+        //   - IOPMP interrupts are enabled
+        //   - The interrupts are not suppressed
+        *intrpt = iopmp->reg_file.err_cfg.ie && !iopmp->intrpt_suppress;
+        return;
+    }
+
+    // IOPMP implements Message-Signaled Interrupts (MSI) extension.
+    // IOPMP triggers wired interrupt if the following conditions are true:
+    //   - IOPMP interrupts are enabled
+    //   - The interrupts are not suppressed
+    //   - IOPMP doesn't enable MSI
+    *intrpt = iopmp->reg_file.err_cfg.ie && !iopmp->intrpt_suppress &&
+              !iopmp->reg_file.err_cfg.msi_en;
+
+    // IOPMP implements Message-Signaled Interrupts (MSI) extension.
+    // IOPMP triggers MSI if the following conditions are true:
+    //   - IOPMP interrupts are enabled
+    //   - The interrupts are not suppressed
+    //   - MSI is enabled
+    //   - (implementation-specific) There are no pending MSI write error
+    bool msi = iopmp->reg_file.err_cfg.ie && !iopmp->intrpt_suppress &&
+               iopmp->reg_file.err_cfg.msi_en &&
+               !iopmp->reg_file.err_info.msi_werr;
+    if (msi) {
+        // Construct MSI address and data for enabled MSI.
+        uint64_t msi_addr;
+        if (iopmp->reg_file.hwcfg0.addrh_en) {
+            // {MSI_ADDRH[63:32], MSI_ADDR[31:0]}
+            msi_addr = CONCAT32(iopmp->reg_file.err_msiaddrh.raw, iopmp->reg_file.err_msiaddr.raw);
+        } else {
+            // {MSI_ADDR[33:2], 2'b00}
+            msi_addr = CONCAT32(0, iopmp->reg_file.err_msiaddr.raw << 2);
+        }
+        uint64_t msi_data = iopmp->reg_file.err_cfg.msidata;
+        // Write MSI data to memory
+        uint8_t status = write_memory(&msi_data, msi_addr, MSI_DATA_BYTE);
+
+        // Handle bus errors during MSI write
+        if (status == BUS_ERROR) {
+            iopmp->reg_file.err_info.msi_werr = 1;
         }
     }
 }
