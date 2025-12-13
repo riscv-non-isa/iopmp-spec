@@ -37,9 +37,16 @@ static void setRridSv(iopmp_dev_t *iopmp, uint16_t rrid) {
   * @param intrpt Pointer to an interrupt flag, which is set if an error is captured.
  **/
 void errorCapture(iopmp_dev_t *iopmp, perm_type_e trans_type, uint8_t error_type, uint16_t rrid, uint16_t entry_id, uint64_t err_addr, uint8_t *intrpt) {
+
+    // Current value of ERR_INFO.v
     int err_reqinfo_v = iopmp->reg_file.err_info.v;
-    // If no error has been logged and interrupt and error both are not suppressed, capture error details
-    if (!iopmp->reg_file.err_info.v && (!iopmp->error_suppress | !iopmp->intrpt_suppress)) {
+
+    // First error capture occurs when the following conditions are true:
+    //   - An interrupt is triggered, or a bus error is returned
+    //   - There is no pending error capture, that is, current ERR_INFO.v = '0'
+    bool first_record = (!iopmp->error_suppress || !iopmp->intrpt_suppress) && !err_reqinfo_v;
+
+    if (first_record) {
         iopmp->reg_file.err_info.v = 1;               // Mark error as captured
         // Set error status and transaction details
         iopmp->reg_file.err_info.ttype = trans_type;  // Transaction type (read/write)
@@ -57,9 +64,18 @@ void errorCapture(iopmp_dev_t *iopmp, perm_type_e trans_type, uint8_t error_type
             // If IOPMP doesn't implement ERR_REQID.eid it won't be updated.
             iopmp->reg_file.err_reqid.eid = entry_id;
         }
-    // If an error was previously logged, handle a subsequent violation
-    } else if (iopmp->reg_file.hwcfg2.mfr_en) {
-        if (!iopmp->error_suppress | !iopmp->intrpt_suppress) {
+    }
+
+    // If IOPMP implements Multi-Faults Record extension, IOPMP has ability to
+    // record subsequent violations when the primary error capture registers
+    // recorded last violation and software have not invalidated them yet.
+    if (iopmp->reg_file.hwcfg2.mfr_en) {
+        // Subsequent error capture occurs when the following conditions are true:
+        //   - An interrupt is triggered or a bus error is returned
+        //   - There is a pending error capture, that is, current ERR_INFO.v = '1'
+        bool subsq_record = (!iopmp->error_suppress || !iopmp->intrpt_suppress) && err_reqinfo_v;
+
+        if (subsq_record) {
             // Update violation window
             setRridSv(iopmp, rrid);
             iopmp->reg_file.err_info.svc = 1;
