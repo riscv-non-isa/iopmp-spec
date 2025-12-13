@@ -62,16 +62,7 @@ void errorCapture(iopmp_dev_t *iopmp, perm_type_e trans_type, uint8_t error_type
         if (!iopmp->error_suppress | !iopmp->intrpt_suppress) {
             // Update violation window
             setRridSv(iopmp, rrid);
-        }
-    }
-
-    if (iopmp->reg_file.hwcfg2.mfr_en) {
-        // Check for any subsequent violation and set err_info.svc
-        for (int i = 0; i < NUM_SVW; i++) {
-            if (iopmp->err_svs.sv[i].svw) {
-                iopmp->reg_file.err_info.svc = 1;
-                break;
-            }
+            iopmp->reg_file.err_info.svc = 1;
         }
     }
 
