@@ -26,17 +26,6 @@ static void setRridSv(iopmp_dev_t *iopmp, uint16_t rrid) {
 }
 
 /**
-  * @brief Checks if the corresponding bit in the error subsequent violations (SV) structure is set for a given RRID.
-  *
-  * @param iopmp The IOPMP instance.
-  * @param rrid Resource Record ID (RRID) to check in the SV structure.
-  * @return int Returns 1 if the bit corresponding to the RRID is set, otherwise returns 0.
-  */
-static int checkRridSv(iopmp_dev_t *iopmp, uint16_t rrid) {
-    return (iopmp->err_svs.sv[rrid/16].svw >> (rrid % 16)) & 0x1;
-}
-
-/**
   * @brief Captures and logs error information for a transaction request.
   *
   * @param iopmp The IOPMP instance.
@@ -70,7 +59,7 @@ void errorCapture(iopmp_dev_t *iopmp, perm_type_e trans_type, uint8_t error_type
         }
     // If an error was previously logged, handle a subsequent violation
     } else if (iopmp->reg_file.hwcfg2.mfr_en) {
-        if (!checkRridSv(iopmp, rrid) && (!iopmp->error_suppress | !iopmp->intrpt_suppress)) {
+        if (!iopmp->error_suppress | !iopmp->intrpt_suppress) {
             // Update violation window
             setRridSv(iopmp, rrid);
         }
