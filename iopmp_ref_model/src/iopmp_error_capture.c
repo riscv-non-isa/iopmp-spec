@@ -74,6 +74,8 @@ void errorCapture(iopmp_dev_t *iopmp, perm_type_e trans_type, uint8_t error_type
             // If IOPMP doesn't implement ERR_REQID.eid it won't be updated.
             iopmp->reg_file.err_reqid.eid = entry_id;
         }
+
+        generate_interrupt(iopmp, intrpt);
     }
 
     // If IOPMP implements Multi-Faults Record extension, IOPMP has ability to
@@ -91,8 +93,4 @@ void errorCapture(iopmp_dev_t *iopmp, perm_type_e trans_type, uint8_t error_type
             iopmp->reg_file.err_info.svc = 1;
         }
     }
-
-    // Generate Interrupt
-    if (!err_reqinfo_v)
-        generate_interrupt(iopmp, intrpt);
 }
