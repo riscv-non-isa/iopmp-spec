@@ -19,7 +19,13 @@
  * and data, writes them to memory, and handles any potential bus errors during the write operation.
  *
  * @param iopmp The IOPMP instance.
- * @param intrpt Pointer to a variable to store the interrupt flag.
+ * @param intrpt Pointer to the variable to store wired interrupt flag.
+ *               This flag is set to 1 if the following conditions are true:
+ *                 - the interrupts are not suppressed
+ *                 - IOPMP doesn't implement MSI extension, or MSI is not enabled
+ *               This flag is set to 0 if the following conditions are true:
+ *                 - the interrupts are suppressed, or IOPMP implements MSI extension
+ *                   and triggers MSI instead of wired interrupt
  */
 void generate_interrupt(iopmp_dev_t *iopmp, uint8_t *intrpt) {
 

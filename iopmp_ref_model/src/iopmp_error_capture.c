@@ -34,7 +34,17 @@ static void setRridSv(iopmp_dev_t *iopmp, uint16_t rrid) {
   * @param rrid Requester ID associated with the transaction.
   * @param entry_id IOPMP entry ID where the error was encountered.
   * @param err_addr Address at which the error occurred.
-  * @param intrpt Pointer to an interrupt flag, which is set if an error is captured.
+  * @param intrpt Pointer to the variable to store wired interrupt flag.
+  *               This flag is set to 1 if the following conditions are true:
+  *                 - the transaction fails
+  *                 - a primary error capture occurs
+  *                 - the interrupts are not suppressed
+  *                 - IOPMP doesn't implement MSI extension, or MSI is not enabled
+  *               This flag is set to 0 if the following conditions are true:
+  *                 - this transaction fails
+  *                 - a primary error capture occurs
+  *                 - the interrupts are suppressed, or IOPMP implements MSI extension
+  *                   and triggers MSI instead of wired interrupt
  **/
 void errorCapture(iopmp_dev_t *iopmp, perm_type_e trans_type, uint8_t error_type, uint16_t rrid, uint16_t entry_id, uint64_t err_addr, uint8_t *intrpt) {
 
