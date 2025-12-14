@@ -16,7 +16,17 @@
   *
   * @param iopmp The IOPMP instance.
   * @param trans_req The transaction request with required address, permissions, etc.
-  * @param intrpt Pointer to the interrupt flag.
+  * @param intrpt Pointer to the variable to store wired interrupt flag.
+  *               This flag is set to 1 if the following conditions are true:
+  *                 - the transaction fails
+  *                 - a primary error capture occurs
+  *                 - the interrupts are not suppressed
+  *                 - IOPMP doesn't implement MSI extension, or MSI is not enabled
+  *               This flag is set to 0 if the following conditions are true:
+  *                 - this transaction fails
+  *                 - a primary error capture occurs
+  *                 - the interrupts are suppressed, or IOPMP implements MSI extension
+  *                   and triggers MSI instead of wired interrupt
   * @return iopmp_trans_rsp_t Response structure with transaction status.
  **/
 void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iopmp_trans_rsp_t* iopmp_trans_rsp, uint8_t *intrpt) {
