@@ -26,6 +26,16 @@ h|Field                           |Bits   |R/W    |Default    |Description
 
 [cols="<2,<1,<1,<1,<6"]
 |===
+5+h|ERR_INFO{set:cellbgcolor:#D3D3D3}
+5+h|0x0064
+h|Field                           |Bits   |R/W    |Default    |Description
+|{set:cellbgcolor:#FFFFFF}
+`msi_werr`                        |3:3    |R      |0          |It's asserted when the write access to trigger an IOPMP originated MSI has failed. When it's not available, it should be ZERO.
+|`msi_werr`                       |3:3    |W1C    |N/A        |Write 1 clears the bit. Write 0 causes no effect on the bit.
+|===
+
+[cols="<2,<1,<1,<1,<6"]
+|===
 5+h|{set:cellbgcolor:#D3D3D3} ERR_MSIADDR
 5+h|0x0078
 h|Field                           |Bits       |R/W    |Default    |Description
