@@ -5,7 +5,7 @@ The `no_x` bit enables global instruction fetch protection, which is particularl
 The global instruction fetch behavior is controlled by `no_x` bit in the `HWCFG3` register:
 
 * `no_x = 0`: The IOPMP performs instruction fetch permission checking based on entry-level rules
-* `no_x = 1`: The IOPMP denies all instruction fetch transactions
+* `no_x = 1`: The IOPMP denies all instruction fetch transactions and reports them with error type "not hit any rule" (0x05)
 
 [cols="<2,<1,<1,<1,<6"]
 |===
