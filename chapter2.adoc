@@ -107,31 +107,17 @@ In the MDCFG Table, every memory domain _m_ has a register, `MDCFG(_m_)`. Field 
 * an entry with index _j_ belongs to MD _m_ if `MDCFG(_m_ - 1).t` &#8804; _j_ < `MDCFG(_m_).t`, where _m_ > 0.
 * an entry with index _j_ belongs to MD 0 if _j_ < `MDCFG(0).t`.
 
-Programmers should maintain proper settings in the MDCFG Table, where `MDCFG(_m_ + 1).t` should be greater than or equal to `MDCFG(_m_).t` for any legal MD m. Otherwise, the MDCFG table has an improper setting, that is, there exist two legal MDs _m_ and _k_, `MDCFG(_k_).t` > `MDCFG(_m_).t` for _k_ < _m_. In this case, we denote the MD _m_ has an improper setting.
+Programmers should maintain proper settings in the MDCFG Table when `HWCFG0.enable` is set, where `MDCFG(_m_ + 1).t` should be greater than or equal to `MDCFG(_m_).t` for any legal MD m. Otherwise, the MDCFG table has an improper setting, that is, there exist two legal MDs _m_ and _k_, `MDCFG(_k_).t` > `MDCFG(_m_).t` for _k_ < _m_. In this case, we denote the MD _m_ as having an improper setting.
 
-When the MDCFG Table has any improper setting, the belonging of IOPMP entries is implementation-dependent, but the following conditions should be held:
+When the MDCFG Table has an improper setting, the resulting association of IOPMP entries to MDs is implementation-dependent, but the following conditions should be held:
 
 * an entry must belong to at most one memory domain; and
 * the index of an entry in a lower-indexed memory domain should be lower than that in a higher-indexed memory domain.
 
 [NOTE]
 ====
-For portability, programmers should ensure the MDCFG Table has a proper setting during the runtime. In the case that the process of programming or initializing the MDCFG Table causes an improper setting to occur transiently, one can deassociate effected MDs in SRCMD table before programming MDCFG table to avoid security issues. Even though the procedure may introduce extra steps, the table is not subject to change at a high frequency to hurt overall performance. Thus, the specification requires programmers to maintain a proper setting instead of requiring specific hardware behaviors on improper settings.
+For portability, programmers should ensure the MDCFG Table has a proper setting during the runtime. In the case that the process of programming or initializing the MDCFG Table causes an improper setting to occur transiently, one can deassociate effected MDs in SRCMD table before programming MDCFG table to avoid security issues. Even though the procedure may introduce extra steps, the table is not subject to change at such a high frequency as to hurt overall performance. Thus, the specification requires programmers to maintain proper settings instead of requiring specific hardware behaviors on improper settings.
 ====
-
-
-[NOTE]
-====
-Here are some reference behaviors for an improper setting, which may include, but are not limited to:
-
-. correct the values to make the table have a proper setting,
-. reject the write access to make an improper setting, or
-. leave the improper setting in the MDCFG Table, but the belonging of entries for all MDs _m_ having an improper setting becomes:
-.. no entry belongs to MD _m_, or
-.. no entry belongs to all MDs _m_ to (`HWCFG0.md_num` - 1).
-
-====
-
 
 [#IOPMP_priority_and_matching_logic]
 === Priority and Matching Logic
