@@ -3,7 +3,7 @@
 == Configuration Protection
 Unauthorized alteration, even partial, of the IOPMP configuration poses a critical security threat, potentially leading to consequences ranging from Denial-of-Service (DoS) attacks to the wholesale compromise and leakage of sensitive data. Consequently, robust hardware mechanisms are indispensable for securing the integrity and content of the configuration registers.
 
-This chapter details the protection mechanisms provided by the IOPMP specification. These mechanisms allow implementations to prohibit modification of the configuration, either wholly or partially, based on the security requirements of the application scenario. Specifically, the IOPMP defines distinct write-protection controls for the SRCMD Table, the MDCFG Table, and the Entry Array.
+This chapter details the configuration protection mechanisms provided by the IOPMP specification. These mechanisms allow implementations to prohibit modification of the configuration, either wholly or partially, based on the security requirements of the application scenario. Specifically, the IOPMP defines distinct write-protection controls for the SRCMD Table, the MDCFG Table, and the Entry Array.
 
 The term 'lock' refers to a hardware feature that renders one or more fields or registers nonprogrammable until the IOPMP is reset. This feature serves to maintain the integrity of essential configurations in the event of a compromise of secure software. In cases where a lock bit is programmable, it is expected to be reset to '0' and is a W1SS field.
 
@@ -11,7 +11,7 @@ The term 'lock' refers to a hardware feature that renders one or more fields or 
 === SRCMD Table Protection
 Every `SRCMD_EN(_s_)` register has a bit `l` at bit 0, which is used to lock registers `SRCMD_EN(_s_)`, and `SRCMD_ENH(_s_)` if any.
 
-The two fields `MDLCK.md` and `MDLCKH.mdh` have 63 bits together. Every bit is used to lock the association bits with a memory domain in the SRCMD Table. For MD 0 &#x2264; _m_ &#x2264; 30, `MDLCK.md[_m_]` locks `SRCMD(_s_).md[_m_]` for all existing RRID _s_. For MD 31 &#x2264; _m_ &#x2264; 62, one should use `MDLCKH.mdh` to lock corresponding bits.
+The two fields `MDLCK.md` and `MDLCKH.mdh` have 63 bits together. Every bit is used to lock the MD association bits in the corresponding SRCMD Table entry. For MD 0 &#x2264; _m_ &#x2264; 30, `MDLCK.md[_m_]` locks `SRCMD(_s_).md[_m_]` for all existing RRID _s_. For MD 31 &#x2264; _m_ &#x2264; 62, one should use `MDLCKH.mdh` to lock corresponding bits.
 
 Bit `MDLCK.l` is a sticky to 1 and indicates if `MDLCK` and `MDLCKH` are locked.
 
@@ -31,12 +31,12 @@ Register `MDCFGLCK` is designed to partially or fully lock the MDCFG Table. `MDC
 
 [NOTE]
 ====
-If `MDCFG(_m_)` is locked for MD _m_, while `MDCFG(_m_-1)` is not locked, it could lead to the potential addition or removal of unexpected IOPMP entries within the MD _m_. This can occur by manipulating `MDCFG(_m_-1).t`. Thus, the specification requires that `MDCFG(_m_)` is locked for MD _m_, all its preceding MDCFG Table entries (`MDCFG(0)` to `MDCFG(_m_-1)`) should be locked.
+If `MDCFG(_m_)` is locked for MD _m_, while `MDCFG(_m_-1)` is not locked, it could lead to the potential addition or removal of unexpected IOPMP entries within the MD _m_. This can occur by manipulating `MDCFG(_m_-1).t`. Thus, the specification requires that if `MDCFG(_m_)` is locked for MD _m_, all its preceding MDCFG Table entries (`MDCFG(0)` to `MDCFG(_m_-1)`) must also be locked.
 ====
 
 [#ENTRY_PROTECTION]
 === Entry Protection
-IOPMP entry protection is also related to the other IOPMP entries belonging to the same memory domain. For a MD, locked entries should be placed in the higher priority. Otherwise, when the secure monitor is compromised, one unlocked entry in higher priority can overwrite all the other locked or non-locked entries in lower priority.  A register `ENTRYLCK` is defined to indicate the number of nonprogrammable entries. `ENTRYLCK` register has two fields: `ENTRYLCK.l` and `ENTRYLCK.f`. Any IOPMP entry with index _i_ < `ENTRYLCK.f` is not programmable. `ENTRYLCK.f` is incremental-only. Any smaller value can not be written into it. Besides, `ENTRYLCK.l` is the lock to `ENTRYLCK.f` and itself. If `ENTRYLCK` is hardwired, `ENTRYLCK.l` should be wired to 1.
+IOPMP entry protection is also related to the other IOPMP entries belonging to the same memory domain. For a MD, locked entries should be placed in the higher priorities. Otherwise, when the secure monitor is compromised, one unlocked entry in higher priority can override the effects of all the other locked or non-locked entries in lower priority.  A register `ENTRYLCK` is defined to indicate the number of nonprogrammable entries. `ENTRYLCK` register has two fields: `ENTRYLCK.l` and `ENTRYLCK.f`. Any IOPMP entry with index _i_ < `ENTRYLCK.f` is not programmable. `ENTRYLCK.f` is incremental-only. Any smaller value can not be written into it. Besides, `ENTRYLCK.l` is the lock to `ENTRYLCK.f` and itself. If `ENTRYLCK` is hardwired, `ENTRYLCK.l` should be wired to 1.
 
 [#SUMMARY_PROTECTION]
 === Summary of Table, Register, and Field Locks
