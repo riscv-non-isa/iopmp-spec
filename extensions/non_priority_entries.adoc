@@ -46,7 +46,7 @@ IOPMPs don't report error type = 0x04 "Partial hit on a priority rule" on non-pr
 If one matching entry is priority, the reaction is the same as baseline IOPMP entry array.
 
 ==== Error Reporting
-If one matching entry is non-priority, the transaction is legal if any matching entry permits its access type. If no matching entry permits, the transaction is illegal with error type = "illegal read access" (0x01) for read access transaction or "illegal write access/AMO" (0x02) for write access/AMO transaction. If an IOPMP supports instruction fetch permission check (`HWCFG2.chk_x` = 1), the IOPMP reports illegal instruction fetch transaction with with error type = "illegal instruction fetch" (0x03).
+If one matching entry is non-priority, the transaction is legal if any matching entry permits its access type. If no matching entry permits, the transaction is illegal with error type = "illegal read access" (0x01) for read access transaction , "illegal write access/AMO" (0x02) for write access/AMO transaction, or "illegal instruction fetch" (0x03) for instruction fetch transaction.
 
 For an illegal transaction matching multiple non-priority entries, if the interrupt is triggered or the bus error response is returned, `ERR_REQID.eid` stores the index of any of them.
 

@@ -47,7 +47,11 @@ image::../images/srcmd_format2_example.png[]
 endif::[]
 
 `SRCMD_PERM(_m_)` and `SRCMD_PERMH(_m_)` are available when `HWCFG3.srcmd_fmt` = 2.
-In MD-indexed Format, an IOPMP checks both the permission of `SRCMD_PERM(H)(_m_)` and the `ENTRY_CFG.r/w/x` permission. A transaction is legal if either of them allows the transaction.
+In MD-indexed Format, an IOPMP checks both the permission of `SRCMD_PERM(H)(_m_)` and the `ENTRY_CFG.r/w/x` permission.
+The instruction fetch permission of `SRCMD_PERM(H)(_m_)` is considered the same as its corresponding read permission.
+A transaction is legal if either of them allows the transaction.
+
+==== Register(s) and Field(s)
 
 [cols="<2,<1,<1,<1,<6"]
 |===
@@ -63,14 +67,13 @@ h|Field |Bits |R/W |Default |Description
 
 |===
 
-==== Register(s) and Field(s)
-
 [cols="<2,<1,<1,<1,<6"]
 |===
 5+h|{set:cellbgcolor:#D3D3D3} SRCMD_PERM(_m_), _m_ = 0...`HWCFG0.md_num`-1
 5+h|0x1000 + (_m_) × 32
 h|Field |Bits |R/W |Default |Description
 |{set:cellbgcolor:#FFFFFF} `perm` |31:0 |WARL |DC |Holds two bits per RRID that give the RRID's read and write permissions for memory domain _m_. Bit 2*_s_ holds the read permission for RRID _s_, and bit 2*_s_+1 holds the write permission for RRID _s_, where _s_≤15.
+The instruction fetch permission is considered the same as the read permission.
 |===
 
 [cols="<2,<1,<1,<1,<6"]
@@ -79,4 +82,5 @@ h|Field |Bits |R/W |Default |Description
 5+h|0x1004 + (_m_) × 32
 h|Field |Bits |R/W |Default |Description
 |{set:cellbgcolor:#FFFFFF} `permh` |31:0 |WARL |DC |Holds two bits per RRID that give the RRID's read and write permissions for memory domain _m_. Bit 2*(_s_-16) holds the read permission for RRID _s_, and bit 2*(_s_-16)+1 holds the write permission for RRID _s_, where _s_≥16. The register is implemented when `HWCFG1.rrid_num` > 16.
+The instruction fetch permission is considered the same as the read permission.
 |===
