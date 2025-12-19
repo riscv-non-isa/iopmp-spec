@@ -9,9 +9,9 @@
 
 include::intro.adoc[]
 
-:sectnums:
-
 include::application_note_registers.adoc[]
+
+:sectnums:
 
 // Write Protection Devices 
 include::write_protection_devices.adoc[]
@@ -19,8 +19,14 @@ include::write_protection_devices.adoc[]
 // Instruction Fetch Protection Devices 
 include::x_protection_devices.adoc[]
 
+// Data Only Devices and Buses
+include::data_devices_buses.adoc[]
+
 // SRCMD Table Reduction (includes Source-enforcement as Format 1)
 include::srcmd_reduction.adoc[]
+
+// Reference Behaviors of Improper Settings on MDCFG Table
+include::improper_mdcfg_reference.adoc[]
 
 // MDCFG Table Reduction
 include::mdcfg_reduction.adoc[]
