@@ -77,7 +77,7 @@ h|Field                            |Bits   |R/W    |Default    |Description
 5+h|HWCFG0{set:cellbgcolor:#D3D3D3}
 5+h|0x0008
 h|Field                             |Bits   |R/W    |Default   |Description
-|{set:cellbgcolor:#FFFFFF} `enable` |0:0    |W1SS   |0         |Indicate if the IOPMP checks transactions by default. If it is implemented, it should be initial to 0 and sticky to 1. If it is not implemented, it should be wired to 1.
+|{set:cellbgcolor:#FFFFFF} `enable` |0:0    |W1SS   |IMP       |Indicate if the IOPMP checks transactions by default. If it is implemented, it should be initial to 0 and sticky to 1. If it is not implemented, it should be wired to 1.
 |`HWCFG2_en`                        |1:1    |R      |IMP       |Indicate if `HWCFG2` is implemented.
 |`HWCFG3_en`                        |2:2    |R      |IMP       |Indicate if `HWCFG3` is implemented.
 |`rsv`                              |23:3   |ZERO   |0         |Must be zero on write, reserved for future.
@@ -136,8 +136,8 @@ h|Field                             |Bits   |R/W    |Default    |Description
 5+h|MDLCK{set:cellbgcolor:#D3D3D3}
 5+h|0x0040
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF} `l`  |0:0        |W1SS   |0          | Lock bit to `MDLCK` and `MDLCKH` register.
-|`md`                           |31:1       |WARL   |0          | `md[_m_]` is sticky to 1 and indicates if `SRCMD_EN(_s_).md[_m_]` is locked for all RRID _s_. 
+|{set:cellbgcolor:#FFFFFF} `l`  |0:0        |W1SS   |IMP        | Lock bit to `MDLCK` and `MDLCKH` register.
+|`md`                           |31:1       |WARL   |IMP        | `md[_m_]` is sticky to 1 and indicates if `SRCMD_EN(_s_).md[_m_]` is locked for all RRID _s_. 
 |===
 
 [cols="<2,<1,<1,<1,<6"]
@@ -145,7 +145,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 5+h|{set:cellbgcolor:#D3D3D3} MDLCKH
 5+h|0x0044
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF} `mdh`|31:0       |WARL   |0          | `mdh[_m_]` is sticky to 1 and indicates if `SRCMD_ENH(_s_).mdh[_m_]` is locked for all RRID _s_.
+|{set:cellbgcolor:#FFFFFF} `mdh`|31:0       |WARL   |IMP        | `mdh[_m_]` is sticky to 1 and indicates if `SRCMD_ENH(_s_).mdh[_m_]` is locked for all RRID _s_.
 |===
 
 `MDCFGLCK` is the lock register to MDCFG Table.
@@ -155,7 +155,7 @@ h|Field                         |Bits       |R/W    |Default    |Description
 5+h|{set:cellbgcolor:#D3D3D3} MDCFGLCK
 5+h|0x0048
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF} `l`  |0:0        |W1SS   |0          | Lock bit to `MDCFGLCK` register.
+|{set:cellbgcolor:#FFFFFF} `l`  |0:0        |W1SS   |IMP        | Lock bit to `MDCFGLCK` register.
 |`f`                            |6:1        |WARL   |IMP        | Indicate the number of locked MDCFG entries - `MDCFG(_m_)` is locked for _m_ < `f`. 
 On write, the field only accepts the value larger than the previous value until the next reset cycle; otherwise, there is no effect.
 |{set:cellbgcolor:#FFFFFF} `rsv`|31:7       |ZERO   |0          | Must be zero on write, reserved for future
@@ -168,7 +168,7 @@ On write, the field only accepts the value larger than the previous value until 
 5+h|{set:cellbgcolor:#D3D3D3} ENTRYLCK
 5+h|0x004C
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF} `l`  |0:0        |W1SS   |0          | Lock bit to `ENTRYLCK` register.
+|{set:cellbgcolor:#FFFFFF} `l`  |0:0        |W1SS   |IMP        | Lock bit to `ENTRYLCK` register.
 |{set:cellbgcolor:#FFFFFF} `f`  |16:1       |WARL   |IMP        | Indicate the number of locked IOPMP entries - `ENTRY_ADDR(_i_)`, `ENTRY_ADDRH(_i_)`, and `ENTRY_CFG(_i_)` are locked for _i_ < `f`. On write, the field only accepts the value larger than the previous value until the next reset cycle; otherwise, there is no effect.
 |{set:cellbgcolor:#FFFFFF} `rsv`|31:17      |ZERO   |0          | Must be zero on write, reserved for future
 |===
@@ -182,9 +182,9 @@ h|Field                         |Bits       |R/W    |Default    |Description
 5+h|ERR_CFG{set:cellbgcolor:#D3D3D3}
 5+h|0x0060
 h|Field                           |Bits   |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF} `l`    |0:0    |W1SS   |0          |Lock bit to `ERR_CFG` register.
-|{set:cellbgcolor:#FFFFFF} `ie`   |1:1    |WARL   |0          |Enable the interrupt of the IOPMP rule violation.
-|{set:cellbgcolor:#FFFFFF} `rs`   |2:2    |WARL   |0         a| 
+|{set:cellbgcolor:#FFFFFF} `l`    |0:0    |W1SS   |IMP        |Lock bit to `ERR_CFG` register.
+|{set:cellbgcolor:#FFFFFF} `ie`   |1:1    |WARL   |IMP        |Enable the interrupt of the IOPMP rule violation.
+|{set:cellbgcolor:#FFFFFF} `rs`   |2:2    |WARL   |IMP       a| 
 
 To suppress an error response on an IOPMP rule violation.
 
@@ -289,7 +289,7 @@ h|Field                          |Bits       |R/W    |Default    |Description
 5+h|{set:cellbgcolor:#D3D3D3} SRCMD_EN(_s_), _s_ = 0...`HWCFG1.rrid_num`-1
 5+h|0x1000 + (_s_) × 32
 h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF} `l`  |0:0        |W1SS   |0          | A sticky lock bit. When set, locks `SRCMD_EN(_s_)` and `SRCMD_ENH(_s_)`.
+|{set:cellbgcolor:#FFFFFF} `l`  |0:0        |W1SS   |IMP        | A sticky lock bit. When set, locks `SRCMD_EN(_s_)` and `SRCMD_ENH(_s_)`.
 |`md`                           |31:1       |WARL   |DC         | `md[_m_]` = 1 indicates MD _m_ is associated with RRID _s_.
 |===
 

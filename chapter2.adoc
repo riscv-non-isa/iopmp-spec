@@ -158,11 +158,11 @@ Some AMO implementations of I/O agents are using a non-atomic read-modify-write 
 image::images/iopmp_unit_block_diagram.png[]
 
 === Error Reactions
-Upon detecting an illegal transaction, the IOPMP could initiate three of the following actions: 
+Upon detecting an illegal transaction, the IOPMP could initiate one or more of the following actions: 
 
 * Trigger an interrupt to notify the system of the violation.
 
-* Return bus error (or a decode error) or not with an implementation-defined value. 
+* Return implementation-defined bus error or faked succeed with an implementation-defined value from receiver ports. 
 
 * Log the error details in IOPMP error record registers.
 
