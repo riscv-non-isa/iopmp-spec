@@ -95,6 +95,26 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
         }
     }
 
+    // When no_w is set to 1, the IOPMP denies all write transactions regardless
+    // of entry rule configurations, reporting them with error type
+    // "not hit any rule" (0x05).
+    if (trans_req->perm == WRITE_ACCESS && iopmp->reg_file.hwcfg3.no_w) {
+        iopmp->error_suppress = iopmp->reg_file.err_cfg.rs;
+        error_type = NOT_HIT_ANY_RULE;
+        goto stop_and_report_fault;
+    }
+
+    if (trans_req->perm == INSTR_FETCH) {
+        // When chk_x and no_x are set to 1, the IOPMP denies all instruction
+        // fetch transactions regardless of entry rule configurations, reporting
+        // them with error type "not hit any rule" (0x05).
+        if (iopmp->reg_file.hwcfg2.chk_x && iopmp->reg_file.hwcfg3.no_x) {
+            iopmp->error_suppress = iopmp->reg_file.err_cfg.rs;
+            error_type = NOT_HIT_ANY_RULE;
+            goto stop_and_report_fault;
+        }
+    }
+
     // Read SRCMD table based on `rrid`
     if (iopmp->reg_file.hwcfg3.srcmd_fmt == 0) {
         #if (SRC_ENFORCEMENT_EN == 1)
