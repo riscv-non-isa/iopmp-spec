@@ -3,13 +3,14 @@
 IOPMPs may only protect from data only device such as general DMA.
 The IOPMP under the general DMA in <<IOPMP_SE_Example>> illustrates an example integration.
 In this scenario, instruction fetch permission checking is not required.
-Therefore, all permission bits related to instruction fetch (`x` in `ENTRY_CFG`, and `SRCMD_X`/`SRCMD_XH` of <<#SPS_EXT,SPS extension>>) can be fixed to 0, or not implemented.
+Therefore, all fields related to instruction fetch can be fixed to 0, or not implemented.
+This can apply to `x` in `ENTRY_CFG`, `sixe`/`sexe` of <<#PEIS_PEES,Per-entry Interrupt/Bus Error Suppression>> in `ENTRY_CFG`, and `SRCMD_X`/`SRCMD_XH` of <<#SPS_EXT,SPS extension>>.
 
 For some small-scale systems which have a single RISC-V hart with PMP and data-only bus initiators,
 or for some system buses that don't provide any instruction fetch hint,
 the IOPMP can treat the instruction fetch accesses as data read accesses.
 This simplifies both the system and IOPMP configuration by fixing all instruction fetch permission bits to 0, or making them unavailable.
-The field `HWCFG3.xinr` indicates whether the IOPMP data read permission treats the instruction fetch accesses as data read accesses.
+The field `HWCFG3.xinr` indicates whether the IOPMP treats the instruction fetch accesses as data read accesses.
 
 [NOTE]
 ====
@@ -23,5 +24,5 @@ Consequently, the system bus in such a configuration only needs to support gener
 5+h|0x0014
 h|Field |Bits |R/W |Default |Description
 |{set:cellbgcolor:#FFFFFF} `xinr` |11:11 |R |IMP a|Indicates whether the IOPMP treats the instruction fetch accesses as data read accesses.
-All instruction fetch permission bits of the IOPMP can be fixed to 0, or unavailable.
+All fields related to instruction fetch permission can be fixed to 0, or unavailable.
 |===
