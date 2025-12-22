@@ -46,6 +46,9 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
         assert(trans_req->is_amo == 0);
     }
 
+    uint8_t error_type = NO_ERROR;
+    uint16_t error_eid = 0;
+
     iopmp->intrpt_suppress = 0;
     iopmp->error_suppress  = 0;
     int lwr_entry, upr_entry;
@@ -76,13 +79,8 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
     if (trans_req->rrid >= iopmp->reg_file.hwcfg1.rrid_num) {
         // Initially, check for global error suppression
         iopmp->error_suppress = iopmp->reg_file.err_cfg.rs;
-        if (iopmp->imp_error_capture) {
-            errorCapture(iopmp, trans_req->perm, UNKNOWN_RRID, trans_req->rrid, 0, trans_req->addr, intrpt);
-        }
-        // In case of error suppression, success response is returned, with user defined value on initiator port
-        // NOTE: You can change the `user` value
-        if (iopmp->error_suppress) { iopmp_trans_rsp->status = IOPMP_SUCCESS; iopmp_trans_rsp->user = USER; }
-        return ;
+        error_type = UNKNOWN_RRID;
+        goto stop_and_report_fault;
     }
 
     if (iopmp->rrid_stall[trans_req->rrid]) {
@@ -93,11 +91,8 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
         }
         else if (iopmp->reg_file.err_cfg.stall_violation_en) {
             iopmp->error_suppress = iopmp->reg_file.err_cfg.rs;
-            if (iopmp->imp_error_capture) {
-                errorCapture(iopmp, trans_req->perm, STALLED_TRANSACTION, trans_req->rrid, 0, trans_req->addr, intrpt);
-            }
-            if (iopmp->error_suppress) { iopmp_trans_rsp->status = IOPMP_SUCCESS; iopmp_trans_rsp->user = USER; }
-            return ;
+            error_type = STALLED_TRANSACTION;
+            goto stop_and_report_fault;
         }
     }
 
@@ -169,13 +164,10 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
                     }
                     continue;
                 }
-                if (iopmp->imp_error_capture) {
-                    errorCapture(iopmp, trans_req->perm, iopmpMatchStatus, trans_req->rrid, cur_entry, trans_req->addr, intrpt);
-                }
-                // In case of error suppression, success response is returned, with user defined value on initiator port
-                // NOTE: You can change the `user` value
-                if (iopmp->error_suppress) { iopmp_trans_rsp->status = IOPMP_SUCCESS; iopmp_trans_rsp->user = USER; }
-                return ;  // Error found, capture and return response
+
+                error_type = iopmpMatchStatus;
+                error_eid  = cur_entry;
+                goto stop_and_report_fault;
             }
         }
     }
@@ -184,11 +176,21 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
     if (nonPrioRuleStatus == NOT_HIT_ANY_RULE) { iopmp->error_suppress = iopmp->reg_file.err_cfg.rs; }
     else { iopmp->error_suppress = nonPrioErrorSup; iopmp->intrpt_suppress = nonPrioIntrSup; }
 
+    error_type = nonPrioRuleStatus;
+    error_eid  = nonPrioRuleNum;
+    goto stop_and_report_fault;
+
+stop_and_report_fault:
+    // If IOPMP implements error capture feature, IOPMP triggers error capture
+    // to log the error information into the registers.
     if (iopmp->imp_error_capture) {
-        errorCapture(iopmp, trans_req->perm, nonPrioRuleStatus, trans_req->rrid, nonPrioRuleNum, trans_req->addr, intrpt);
+        errorCapture(iopmp, trans_req->perm, error_type, trans_req->rrid, error_eid, trans_req->addr, intrpt);
     }
     // Return response with default status if no match/error occurs
     // In case of error suppression, success response is returned, with user defined value on initiator port
     // NOTE: You can change the `user` value
-    if (iopmp->error_suppress) { iopmp_trans_rsp->status = IOPMP_SUCCESS; iopmp_trans_rsp->user = USER; }
+    if (iopmp->error_suppress) {
+        iopmp_trans_rsp->status = IOPMP_SUCCESS;
+        iopmp_trans_rsp->user = USER;
+    }
 }
