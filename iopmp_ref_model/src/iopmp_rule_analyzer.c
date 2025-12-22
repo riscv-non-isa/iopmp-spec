@@ -200,10 +200,6 @@ static iopmpMatchStatus_t iopmpCheckPerms(iopmp_dev_t *iopmp, uint16_t rrid, per
 iopmpMatchStatus_t iopmpRuleAnalyzer(iopmp_dev_t *iopmp, iopmp_trans_req_t trans_req, uint64_t prev_iopmpaddr, uint64_t iopmpaddr, entry_cfg_t iopmpcfg, uint8_t md, int is_priority) {
     iopmpMatchStatus_t match_status = ENTRY_MATCH;  // Default to full match
     uint64_t start_addr, end_addr;
-    bool no_w  = iopmp->reg_file.hwcfg3.no_w;     // Write restriction
-    bool no_x  = iopmp->reg_file.hwcfg3.no_x;     // Execute restriction
-    bool chk_x = iopmp->reg_file.hwcfg2.chk_x;    // Execute permission check enable
-    if ((no_w && (trans_req.perm == WRITE_ACCESS)) || (no_x && (trans_req.perm == INSTR_FETCH) && chk_x)) { return ENTRY_NOTMATCH; }
 
     // Set up the address range; if range setup fails, return not matched
     if (iopmpAddrRange(&start_addr, &end_addr, prev_iopmpaddr, iopmpaddr, iopmpcfg)) { return ENTRY_NOTMATCH; }
