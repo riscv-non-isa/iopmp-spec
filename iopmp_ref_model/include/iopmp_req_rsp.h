@@ -62,7 +62,7 @@ typedef struct __attribute__((__packed__)) {
     uint32_t rrid;          // Requester ID
     uint8_t  user;          // User mode indicator
     uint8_t  rrid_stalled;  // Requester ID stall status
-    uint16_t rrid_transl;
+    uint16_t rrid_transl;   // The RRID tagged to outgoing transactions
     status_e status;        // Transaction status (success or error)
 } iopmp_trans_rsp_t;
 
