@@ -15,6 +15,21 @@
 #include "iopmp.h"
 
 /**
+* @brief Translate the type of requested permission by transaction to IOPMP error type
+*
+* @param perm Type of permission requested by transaction
+* @return iopmpErrorType_t enum representing the IOPMP error type
+ */
+static iopmpErrorType_t perm_to_etype(perm_type_e perm)
+{
+    if (perm == WRITE_ACCESS)
+        return ILLEGAL_WRITE_ACCESS;
+    else if (perm == INSTR_FETCH)
+        return ILLEGAL_INSTR_FETCH;
+    return ILLEGAL_READ_ACCESS;
+}
+
+/**
   * @brief Processes the IOPMP transaction request, traversing the SRCMD and MDCFG tables
   *        and entry array to match address and permissions.
   *
@@ -46,7 +61,7 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
         assert(trans_req->is_amo == 0);
     }
 
-    uint8_t error_type = NO_ERROR;
+    iopmpErrorType_t error_type = NO_ERROR;
     uint16_t error_eid = 0;
 
     iopmp->intrpt_suppress = 0;
@@ -60,7 +75,7 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
     int nonPrioErrorSup    = 0;
     int nonPrioIntrSup     = 0;
     int firstIllegalAccess = 1;
-    iopmpMatchStatus_t nonPrioRuleStatus = NOT_HIT_ANY_RULE;
+    iopmpErrorType_t nonPrioRuleStatus = NOT_HIT_ANY_RULE;
     int nonPrioRuleNum = 0;
 
     // IOPMP always allow the transaction when enable = 0
@@ -156,47 +171,79 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
             uint64_t prev_addr     = (cur_entry == 0) ? 0 : CONCAT32(iopmp->iopmp_entries.entry_table[cur_entry - 1].entry_addrh.addrh, iopmp->iopmp_entries.entry_table[cur_entry - 1].entry_addr.addr);
             uint64_t curr_addr     = CONCAT32(iopmp->iopmp_entries.entry_table[cur_entry].entry_addrh.addrh, iopmp->iopmp_entries.entry_table[cur_entry].entry_addr.addr);
             entry_cfg_t entry_cfg  = iopmp->iopmp_entries.entry_table[cur_entry].entry_cfg;
-            bool is_priority_entry;
-
-            if (iopmp->reg_file.hwcfg2.non_prio_en) {
-                is_priority_entry = (cur_entry < iopmp->reg_file.hwcfg2.prio_entry);
-            } else {
-                is_priority_entry = true;
-            }
 
             // Analyze entry for match
-            iopmpMatchStatus = iopmpRuleAnalyzer(iopmp, *trans_req, prev_addr, curr_addr, entry_cfg, cur_md, is_priority_entry);
-
-            if (iopmpMatchStatus == ENTRY_MATCH) {
+            iopmpMatchStatus = iopmpRuleAnalyzer(iopmp, *trans_req, prev_addr, curr_addr, entry_cfg, cur_md);
+            if (iopmpMatchStatus == ENTRY_MATCH_GRANT) {
+                // If the entry matches all bytes of the transaction and grants
+                // transaction permission to operate, the transaction is legal.
                 goto pass_checks;
-            } else if (iopmpMatchStatus != ENTRY_NOTMATCH) {
-                if (!is_priority_entry) {
-                    if (iopmp->imp_error_capture) {
-                        nonPrioErrorSup |= iopmp->error_suppress;
-                        nonPrioIntrSup  |= iopmp->intrpt_suppress;
-                        if (firstIllegalAccess) {
-                            nonPrioRuleStatus = iopmpMatchStatus;
-                            nonPrioRuleNum    = cur_entry;
-                            firstIllegalAccess = 0;
-                        }
+            } else if (iopmpMatchStatus == ENTRY_PARTIAL_MATCH) {
+                // If the partial matching entry is non-priority entry, just
+                // keep checking next entry.
+                if (iopmp->reg_file.hwcfg2.non_prio_en && cur_entry >= iopmp->reg_file.hwcfg2.prio_entry)
+                    goto check_next_entry;
+
+                // If the partial matching entry is priority entry, check fails.
+                // The priority entry must match all bytes of a transaction, or
+                // transaction is illegal with error type =
+                // "partial hit on a priority rule" (0x04).
+                iopmp->error_suppress = iopmp->reg_file.err_cfg.rs;
+                error_type = PARTIAL_HIT_ON_PRIORITY;
+                error_eid  = cur_entry;
+                goto stop_and_report_fault;
+            } else if (iopmpMatchStatus == ENTRY_MATCH_NOTGRANT) {
+                // If the matching entry is non-priority entry but doesn't grant
+                // transaction permission to operate, the model records this
+                // access as "first illegal access". This "first illegal access"
+                // will be reported if the subsequent entries still fail the
+                // checks. If no matching entry permits, the transaction is
+                // illegal.
+                if (iopmp->reg_file.hwcfg2.non_prio_en && cur_entry >= iopmp->reg_file.hwcfg2.prio_entry) {
+                    nonPrioErrorSup |= iopmp->error_suppress;
+                    nonPrioIntrSup  |= iopmp->intrpt_suppress;
+                    if (firstIllegalAccess) {
+                        nonPrioRuleStatus = perm_to_etype(trans_req->perm);
+                        nonPrioRuleNum    = cur_entry;
+                        firstIllegalAccess = 0;
                     }
-                    continue;
+                    goto check_next_entry;
                 }
 
-                error_type = iopmpMatchStatus;
+                // If the matching entry is priority entry but doesn't grant
+                // transaction permission to operate, the transaction is illegal
+                // with error type = "illegal read access" (0x01) for read
+                // access transaction, "illegal write access/AMO" (0x02) for
+                // write access/atomic memory operation (AMO) transaction.
+                error_type = perm_to_etype(trans_req->perm);
                 error_eid  = cur_entry;
                 goto stop_and_report_fault;
             }
+
+            // ENTRY_NOTMATCH: Keep checking next entry
+check_next_entry:
         }
     }
 
     // If No rule hits, enable error suppression based on global error suppression bit
     if (iopmp->reg_file.hwcfg2.non_prio_en) {
-        if (nonPrioRuleStatus == NOT_HIT_ANY_RULE) { iopmp->error_suppress = iopmp->reg_file.err_cfg.rs; }
-        else { iopmp->error_suppress = nonPrioErrorSup; iopmp->intrpt_suppress = nonPrioIntrSup; }
-
-        error_type = nonPrioRuleStatus;
-        error_eid  = nonPrioRuleNum;
+        if (nonPrioRuleStatus == NOT_HIT_ANY_RULE) {
+            // None of the non-priority entries fully matches the transaction
+            iopmp->error_suppress = iopmp->reg_file.err_cfg.rs;
+            error_type = NOT_HIT_ANY_RULE;
+        } else {
+            // At least one non-priority entry fully matches the transaction but
+            // doesn't grant transaction permission.
+            // The IOPMP specification says:
+            // If no matching entry permits, the transaction is illegal with
+            // error type = "illegal read access" (0x01) for read access
+            // transaction or "illegal write access/AMO" (0x02) for write
+            // access/AMO transaction.
+            iopmp->error_suppress = nonPrioErrorSup;
+            iopmp->intrpt_suppress = nonPrioIntrSup;
+            error_type = nonPrioRuleStatus;
+            error_eid  = nonPrioRuleNum;
+        }
     } else {
         iopmp->error_suppress = iopmp->reg_file.err_cfg.rs;
         error_type = NOT_HIT_ANY_RULE;

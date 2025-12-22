@@ -107,10 +107,31 @@ typedef struct iopmp_cfg_t {
     bool imp_msi;                       // IOPMP implements message-signaled interrupts (MSI)
 } iopmp_cfg_t;
 
+// Enumerates specific match and error statuses for transactions
+typedef enum {
+    ENTRY_NOTMATCH,                     // Entry doesn't match any byte of a transation
+    ENTRY_PARTIAL_MATCH,                // Entry matches partial bytes of a transation
+    ENTRY_MATCH,                        // Entry matches all bytes of a transation
+    ENTRY_MATCH_NOTGRANT,               // Entry matches all bytes of a transaction, but doesn't grant transaction permission
+    ENTRY_MATCH_GRANT,                  // Entry matches all bytes of a transaction and grants transaction permission
+} iopmpMatchStatus_t;
+
+// Enumerates the type of violation for transactions
+typedef enum {
+    NO_ERROR                = 0x00,     // No error
+    ILLEGAL_READ_ACCESS     = 0x01,     // Illegal read access attempted
+    ILLEGAL_WRITE_ACCESS    = 0x02,     // Illegal write access attempted
+    ILLEGAL_INSTR_FETCH     = 0x03,     // Illegal instruction fetch attempted
+    PARTIAL_HIT_ON_PRIORITY = 0x04,     // Partial hit on a priority entry
+    NOT_HIT_ANY_RULE        = 0x05,     // No rule matched the transaction
+    UNKNOWN_RRID            = 0x06,     // Unknown requester ID in transaction
+    STALLED_TRANSACTION     = 0x07,     // Error due to a stalled transaction
+} iopmpErrorType_t;
+
 uint8_t write_memory(uint64_t *data, uint64_t addr, uint32_t size);
 
 // Function Declarations: Core IOPMP operations
-iopmpMatchStatus_t iopmpRuleAnalyzer(iopmp_dev_t *iopmp, iopmp_trans_req_t trans_req, uint64_t prev_iopmpaddr, uint64_t iopmpaddr, entry_cfg_t iopmpcfg, uint8_t md, int is_priority);
+iopmpMatchStatus_t iopmpRuleAnalyzer(iopmp_dev_t *iopmp, iopmp_trans_req_t trans_req, uint64_t prev_iopmpaddr, uint64_t iopmpaddr, entry_cfg_t iopmpcfg, uint8_t md);
 void errorCapture(iopmp_dev_t *iopmp, perm_type_e trans_type, uint8_t error_type, uint16_t rrid, uint16_t entry_id, uint64_t err_addr, uint8_t *intrpt);
 void generate_interrupt(iopmp_dev_t *iopmp, uint8_t *intrpt);
 
