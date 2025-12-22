@@ -191,11 +191,16 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
     }
 
     // If No rule hits, enable error suppression based on global error suppression bit
-    if (nonPrioRuleStatus == NOT_HIT_ANY_RULE) { iopmp->error_suppress = iopmp->reg_file.err_cfg.rs; }
-    else { iopmp->error_suppress = nonPrioErrorSup; iopmp->intrpt_suppress = nonPrioIntrSup; }
+    if (iopmp->reg_file.hwcfg2.non_prio_en) {
+        if (nonPrioRuleStatus == NOT_HIT_ANY_RULE) { iopmp->error_suppress = iopmp->reg_file.err_cfg.rs; }
+        else { iopmp->error_suppress = nonPrioErrorSup; iopmp->intrpt_suppress = nonPrioIntrSup; }
 
-    error_type = nonPrioRuleStatus;
-    error_eid  = nonPrioRuleNum;
+        error_type = nonPrioRuleStatus;
+        error_eid  = nonPrioRuleNum;
+    } else {
+        iopmp->error_suppress = iopmp->reg_file.err_cfg.rs;
+        error_type = NOT_HIT_ANY_RULE;
+    }
     goto stop_and_report_fault;
 
 pass_checks:
