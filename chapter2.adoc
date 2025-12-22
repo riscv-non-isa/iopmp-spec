@@ -177,7 +177,7 @@ The error capture record maintains the specifics of the first illegal access det
 * no interrupt regarding the access is triggered, and
 * no bus error is returned.
 
-An error capture only occurs when there is no pending error, that is, `ERR_INFO.v` = ‘0’. If a pending error exists (`v` = ‘1’), the record will not be updated, even if a new illegal access is detected. In other words, `v`  indicates whether the content of the capture record is valid and should be intentionally cleared in order to capture subsequent illegal accesses. One can write 1 to the bit to clear it. The error capture record is optional. If it is not implemented, `v` should be wired to zero. One can implement the error capture record, but doesn't implement the error entry index record (`ERR_REQID.eid`). In this case, `eid` should be wired to 0xffff.
+An error capture only occurs when there is no pending error, that is, `ERR_INFO.v` = ‘0’. If a pending error exists (`v` = ‘1’), the record will not be updated, even if a new illegal access is detected. In other words, `v`  indicates whether the content of the capture record is valid and should be intentionally cleared in order to capture subsequent illegal accesses. One can write 1 to the bit to clear it. The error capture record is optional. If it is not implemented, `HWCFG0.no_err_rec` should be wired to one. One can implement the error capture record, but doesn't implement the error entry index record (`ERR_REQID.eid`). In this case, `eid` should be wired to 0xffff.
 
 The following table is a summary of error types:
 
