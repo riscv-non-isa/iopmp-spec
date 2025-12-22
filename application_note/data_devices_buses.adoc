@@ -24,5 +24,5 @@ Consequently, the system bus in such a configuration only needs to support gener
 5+h|0x0014
 h|Field |Bits |R/W |Default |Description
 |{set:cellbgcolor:#FFFFFF} `xinr` |11:11 |R |IMP a|Indicates whether the IOPMP treats the instruction fetch accesses as data read accesses.
-All fields related to instruction fetch permission can be fixed to 0, or unavailable.
+All fields related to instruction fetch can be fixed to 0, or unavailable.
 |===
