@@ -46,6 +46,7 @@ typedef enum {
 
 // Enumerates specific match and error statuses for transactions
 typedef enum {
+    NO_ERROR               = 0x00,  // No error
     ILLEGAL_READ_ACCESS    = 0x01,  // Illegal read access attempted
     ILLEGAL_WRITE_ACCESS   = 0x02,  // Illegal write access attempted
     ILLEGAL_INSTR_FETCH    = 0x03,  // Illegal instruction fetch attempted
