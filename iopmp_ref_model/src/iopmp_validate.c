@@ -65,8 +65,7 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
 
     // IOPMP always allow the transaction when enable = 0
     if (!iopmp->reg_file.hwcfg0.enable) {
-        iopmp_trans_rsp->status = IOPMP_SUCCESS;
-        return ;
+        goto pass_checks;
     }
 
     // Tag a new RRID which represents that the transaction has been checked.
@@ -149,8 +148,7 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
             iopmpMatchStatus = iopmpRuleAnalyzer(iopmp, *trans_req, prev_addr, curr_addr, entry_cfg, cur_md, is_priority_entry);
 
             if (iopmpMatchStatus == ENTRY_MATCH) {
-                iopmp_trans_rsp->status = IOPMP_SUCCESS;
-                return ;  // Return on successful match
+                goto pass_checks;
             } else if (iopmpMatchStatus != ENTRY_NOTMATCH) {
                 if (!is_priority_entry) {
                     if (iopmp->imp_error_capture) {
@@ -179,6 +177,10 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
     error_type = nonPrioRuleStatus;
     error_eid  = nonPrioRuleNum;
     goto stop_and_report_fault;
+
+pass_checks:
+    iopmp_trans_rsp->status = IOPMP_SUCCESS;
+    return;
 
 stop_and_report_fault:
     // If IOPMP implements error capture feature, IOPMP triggers error capture
