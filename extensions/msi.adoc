@@ -1,15 +1,27 @@
 [#MSI]
-=== Message-Signaled Interrupts (MSI)
+=== Message-Signaled Interrupts (MSI) Extension
 
 The extension can trigger message-signaled interrupts (MSI) by writing a word of data to a specific physical address. It can be used in the systems built with an Incoming Message-Signaled Interrupt Controller (IMSIC) cite:[AIA].
 
+The bit `HWCFG2.msi_en` indicates whether the IOPMP supports MSI extension. 
+
 The address is MSI address and is specified by `ERR_MSIADDR` and `ERR_MSIADDRH` (implemented only when `HWCFG0.addrh_en` = 1), while the content to write is stored in the field `msidata` in the register `ERR_CFG`. The `ERR_MSIADDR`, `ERR_MSIADDRH`, and `ERR_CFG` are locked by the `ERR_CFG.l`.
 
-`ERR_MSIADDRH` is available if the target address of IMSIC uses over 34 bits (greater than 0x2_0000_0000). `ERR_MSIADDR` encodes bit 31 to bit 0 of the address, while `ERR_MSIADDRH` encodes bit 63 to bit 32. When the target address of IMSIC uses less than or equal to 34 bits, `ERR_MSIADDR` encodes bit 33 to bit 2. `ERR_MSIADDRH` is available only when `HWCFG0.addrh_en` = 1 and `ERR_CFG.msi_en` = 1.    
+`ERR_MSIADDRH` is available if the target address of IMSIC uses over 34 bits (greater than 0x2_0000_0000). `ERR_MSIADDR` encodes bit 31 to bit 0 of the address, while `ERR_MSIADDRH` encodes bit 63 to bit 32. When the target address of IMSIC uses less than or equal to 34 bits, `ERR_MSIADDR` encodes bit 33 to bit 2. `ERR_MSIADDRH` is available only when `HWCFG0.addrh_en` = 1 and `HWCFG2.msi_en` = 1.
 
-The bit `ERR_CFG.msi_en` indicates whether the IOPMP triggers interrupt by MSI or wired interrupt. IOPMP triggers MSI when `ERR_CFG.msi_en` = 1 and triggers wired interrupt when `ERR_CFG.msi_en` = 0. `ERR_MSIADDR`, `ERR_MSIADDRH`, and `ERR_CFG.msidata` are not necessary available when `ERR_CFG.msi_en` = 0. `ERR_CFG.msi_en` can be programmable or hardwired.
+The bit `ERR_CFG.msi_sel` indicates whether the IOPMP triggers interrupt by MSI or wired interrupt. IOPMP triggers MSI when `ERR_CFG.msi_sel` = 1 and triggers wired interrupt when `ERR_CFG.msi_sel` = 0. 
+`ERR_CFG.msi_sel` can be programmable or hardwired.
 
 `ERR_INFO.msi_werr` indicates whether a write access to trigger an IOPMP-originated MSI has failed. It is asserted when the write access to trigger an IOPMP-originated MSI has failed. When it's not available, it should be zero. Writing 1 to `ERR_INFO.msi_werr` clears the bit.
+
+[cols="<2,<1,<1,<1,<6"]
+|===
+5+h|HWCFG2{set:cellbgcolor:#D3D3D3}
+5+h|0x0010
+h|Field                           |Bits   |R/W    |Default    |Description
+|{set:cellbgcolor:#FFFFFF}
+`msi_en`                          |26:26  |R      |IMP       a|Indicates whether the IOPMP supports MSI extension. 
+|===
 
 [cols="<2,<1,<1,<1,<6"]
 |===
@@ -17,7 +29,7 @@ The bit `ERR_CFG.msi_en` indicates whether the IOPMP triggers interrupt by MSI o
 5+h|0x0060
 h|Field                           |Bits   |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}
-`msi_en`                          |3:3    |WARL   |IMP       a|Indicates whether the IOPMP triggers interrupt by MSI or wired interrupt:
+`msi_sel`                         |3:3    |WARL   |IMP       a|Indicates whether the IOPMP triggers interrupt by MSI or wired interrupt:
 
 * 0x0: the IOPMP triggers interrupt by wired interrupt
 * 0x1: the IOPMP triggers interrupt by MSI 
@@ -29,9 +41,9 @@ h|Field                           |Bits   |R/W    |Default    |Description
 5+h|ERR_INFO{set:cellbgcolor:#D3D3D3}
 5+h|0x0064
 h|Field                           |Bits   |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}
-`msi_werr`                        |3:3    |R      |0          |It's asserted when the write access to trigger an IOPMP originated MSI has failed. When it's not available, it should be ZERO.
-|`msi_werr`                       |3:3    |W1C    |N/A        |Write 1 clears the bit. Write 0 causes no effect on the bit.
+.2+|{set:cellbgcolor:#FFFFFF}
+`msi_werr`                     .2+|3:3    |R      |0          |It's asserted when the write access to trigger an IOPMP originated MSI has failed. When it's not available, it should be ZERO.
+                                          |W1C    |N/A        |Write 1 clears the bit. Write 0 causes no effect on the bit.
 |===
 
 [cols="<2,<1,<1,<1,<6"]
