@@ -88,7 +88,9 @@ This function also can prevent the risk of deadlock in some systems. If an imple
 
 ==== Resume Stall
 
-In order to resume all stalled transactions, the IOPMP can be prompted by writing 0 to `MDSTALL`. This corresponds to Step 3 of <<#PROGRAMMING_STEPS, Programming Steps>>.  After `MDSTALL` is written by zero, an IOPMP should clear `MDSTALL.is_busy` within some time, at which point all transactions have been resumed.
+In order to resume all stalled transactions, writing 0 to `MDSTALLH`, then writing 0 to `MDSTALL`.
+This corresponds to Step 3 of <<#PROGRAMMING_STEPS, Programming Steps>>.
+After `MDSTALL` is written by zero, an IOPMP should clear `MDSTALL.is_busy` within some time, at which point all transactions have been resumed.
 
 ==== The Order to Stall
 In Step 1 of <<#PROGRAMMING_STEPS, Programming Steps>>, `MDSTALL` can be written at most once and before a resume. Writing a non-zero value to `MDSTALL` multiple times after a resume leads to RRIDs' stall states being undefined.
@@ -98,12 +100,14 @@ After `MDSTALL` and all `RRIDSCP` are written, the action to stall desired trans
 
 Based on <<#PROGRAMMING_STEPS, Programming Steps>>, complete steps to program an IOPMP should be followed.
 
-** Step 1.1: write `MDSTALL` once // exactly once
-** Step 1.2: write `RRIDSCP` zero or more times
-** Step 1.3: poll until `MDSTALL.is_busy` == 0 // to ensure all stalls takes effect if necessary for the implementation
+** Step 1.1: write `MDSTALLH`
+** Step 1.2: write `MDSTALL` once // exactly once
+** Step 1.3: write `RRIDSCP` zero or more times
+** Step 1.4: poll until `MDSTALL.is_busy` == 0 // to ensure all stalls takes effect if necessary for the implementation
 ** Step 2: update IOPMP's settings
-** Step 3.1: write `MDSTALL` = 0 // resume all transactions
-** Step 3.2: poll until `MDSTALL.is_busy` == 0  // optional, to ensure all resumes take effect. 
+** Step 3.1: write 0 to `MDSTALLH`
+** Step 3.2: write 0 to `MDSTALL` // resume all transactions
+** Step 3.3: poll until `MDSTALL.is_busy` == 0  // optional, to ensure all resumes take effect. 
 
 Some steps may be skipped according to the actual implementation.
 
