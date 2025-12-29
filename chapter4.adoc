@@ -202,7 +202,7 @@ To suppress an error response on an IOPMP rule violation.
 h|Field                            |Bits   |R/W   |Default |Description
 
 .2+|{set:cellbgcolor:#FFFFFF} 
-`v`                             .2+|0:0    |R     |0       | Indicate if the illegal capture recorder (`ERR_REQID`, `ERR_REQADDR`, `ERR_REQADDRH`, `ERR_INFO.ttype`, and `ERR_INFO.etype`) has a valid content and will keep the content until the bit is cleared. An interrupt will be triggered if a violation is detected and related interrupt enable/supression configure bits are not disabled, the interrupt will keep asserted until the error valid is cleared.
+`v`                             .2+|0:0    |R     |0       | Indicate if the illegal capture recorder (`ERR_REQID`, `ERR_REQADDR`, `ERR_REQADDRH`, `ERR_INFO.ttype`, and `ERR_INFO.etype`) has a valid content and will keep the content until the bit is cleared. An interrupt will be triggered if a violation is detected and related interrupt enable/suppression configure bits are not disabled, the interrupt will keep asserted until the error valid is cleared.
                                            |W1C   |N/A     | Write 1 clears the bit, the illegal recorder reactivates and the interrupt (if enabled). Write 0 causes no effect on the bit.
 |{set:cellbgcolor:#FFFFFF} `ttype` |2:1    |R     |0      a|{set:cellbgcolor:#FFFFFF} Indicated the transaction type of the first captured violation
 

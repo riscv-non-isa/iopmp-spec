@@ -53,7 +53,7 @@ For the cases with multiple matched non-priority entries indexed by _i_~0~, _i_~
 * Illegal instruction fetch (0x03): +
 `ERR_CFG.ie && ( !ENTRY_CFG(_i_~0~).sixe || !ENTRY_CFG(_i_~1~).sixe || ... || !ENTRY_CFG(_i~N~_).sixe )`
 
-The condition of per-entry bus error response supression is:
+The condition of per-entry bus error response suppression is:
 
 * Illegal read access (0x01): + 
 `!ERR_CFG.rs && ( !ENTRY_CFG(_i_~0~).sere || !ENTRY_CFG(_i_~1~).sere || ... || !ENTRY_CFG(_i~N~_).sere )`
