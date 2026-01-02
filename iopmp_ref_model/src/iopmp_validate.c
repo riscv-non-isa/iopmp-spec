@@ -61,6 +61,12 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
         assert(trans_req->is_amo == 0);
     }
 
+#if (SRC_ENFORCEMENT_EN == 1)
+    // Enforce RRID=0 for Source-Enforcement
+    const uint16_t rrid = 0;
+#else
+    const uint16_t rrid = trans_req->rrid;
+#endif
     iopmpErrorType_t error_type = NO_ERROR;
     uint16_t error_eid = 0;
 
@@ -90,14 +96,14 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
     }
 
     // Check for valid RRID; if invalid, capture error and return
-    if (trans_req->rrid >= iopmp->reg_file.hwcfg1.rrid_num) {
+    if (rrid >= iopmp->reg_file.hwcfg1.rrid_num) {
         // Initially, check for global error suppression
         iopmp->error_suppress = iopmp->reg_file.err_cfg.rs;
         error_type = UNKNOWN_RRID;
         goto stop_and_report_fault;
     }
 
-    if (iopmp->rrid_stall[trans_req->rrid]) {
+    if (iopmp->rrid_stall[rrid]) {
         if (iopmp->stall_cntr != STALL_BUF_DEPTH){
             iopmp_trans_rsp->rrid_stalled = 1;
             iopmp->stall_cntr++;
@@ -132,13 +138,8 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
 
     // Read SRCMD table based on `rrid`
     if (iopmp->reg_file.hwcfg3.srcmd_fmt == 0) {
-        #if (SRC_ENFORCEMENT_EN == 1)
-            srcmd_en  = iopmp->reg_file.srcmd_table[0].srcmd_en;
-            srcmd_enh = iopmp->reg_file.srcmd_table[0].srcmd_enh;
-        #else
-            srcmd_en  = iopmp->reg_file.srcmd_table[trans_req->rrid].srcmd_en;
-            srcmd_enh = iopmp->reg_file.srcmd_table[trans_req->rrid].srcmd_enh;
-        #endif
+        srcmd_en  = iopmp->reg_file.srcmd_table[rrid].srcmd_en;
+        srcmd_enh = iopmp->reg_file.srcmd_table[rrid].srcmd_enh;
     }
 
     int start_md_num;
@@ -149,8 +150,8 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
         start_md_num = 0;
         end_md_num   = iopmp->reg_file.hwcfg0.md_num;
     } else if (iopmp->reg_file.hwcfg3.srcmd_fmt == 1) {
-        start_md_num = SRC_ENFORCEMENT_EN ? 0 : trans_req->rrid;
-        end_md_num   = SRC_ENFORCEMENT_EN ? 1 : trans_req->rrid + 1;
+        start_md_num = rrid;
+        end_md_num   = rrid + 1;
     }
 
     // Traverse each MD entry and perform address/permission checks
@@ -258,7 +259,7 @@ stop_and_report_fault:
     // If IOPMP implements error capture feature, IOPMP triggers error capture
     // to log the error information into the registers.
     if (iopmp->imp_error_capture) {
-        errorCapture(iopmp, trans_req->perm, error_type, trans_req->rrid, error_eid, trans_req->addr, intrpt);
+        errorCapture(iopmp, trans_req->perm, error_type, rrid, error_eid, trans_req->addr, intrpt);
     }
     // Return response with default status if no match/error occurs
     // In case of error suppression, success response is returned, with user defined value on initiator port
