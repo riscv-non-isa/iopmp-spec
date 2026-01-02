@@ -77,7 +77,6 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
     srcmd_en_t  srcmd_en;
     srcmd_enh_t srcmd_enh;
 
-    iopmpMatchStatus_t iopmpMatchStatus;
     int nonPrioErrorSup    = 0;
     int nonPrioIntrSup     = 0;
     int firstIllegalAccess = 1;
@@ -154,6 +153,18 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
         end_md_num   = rrid + 1;
     }
 
+    /* Prepare input of the rule analyzer which are fixed during entry checks */
+    iopmp_rule_analyzer_input_t rule_analyzer_i;
+    iopmp_rule_analyzer_output_t rule_analyzer_o;
+    rule_analyzer_i.rrid         = rrid;
+    rule_analyzer_i.trans_start  = trans_req->addr;
+    rule_analyzer_i.trans_end    = trans_req->addr +
+                          ((int)pow(2, trans_req->size) * (trans_req->length + 1));
+    rule_analyzer_i.perm         = trans_req->perm;
+    rule_analyzer_i.is_amo       = trans_req->is_amo;
+    rule_analyzer_o.match_status = ENTRY_NOTMATCH;
+    rule_analyzer_o.grant_perm   = false;
+
     // Traverse each MD entry and perform address/permission checks
     for (int cur_md = start_md_num; cur_md < end_md_num; ++cur_md) {
         if (iopmp->reg_file.hwcfg3.srcmd_fmt == 0) {
@@ -169,17 +180,25 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
         }
 
         for (int cur_entry = lwr_entry; cur_entry < upr_entry; cur_entry++) {
-            uint64_t prev_addr     = (cur_entry == 0) ? 0 : CONCAT32(iopmp->iopmp_entries.entry_table[cur_entry - 1].entry_addrh.addrh, iopmp->iopmp_entries.entry_table[cur_entry - 1].entry_addr.addr);
-            uint64_t curr_addr     = CONCAT32(iopmp->iopmp_entries.entry_table[cur_entry].entry_addrh.addrh, iopmp->iopmp_entries.entry_table[cur_entry].entry_addr.addr);
-            entry_cfg_t entry_cfg  = iopmp->iopmp_entries.entry_table[cur_entry].entry_cfg;
+            /* Assign necessary input information */
+            rule_analyzer_i.prev_iopmpaddr =
+                (cur_entry == 0) ? 0 : CONCAT32(iopmp->iopmp_entries.entry_table[cur_entry - 1].entry_addrh.addrh,
+                                            iopmp->iopmp_entries.entry_table[cur_entry - 1].entry_addr.addr);
+            rule_analyzer_i.iopmpaddr = CONCAT32(iopmp->iopmp_entries.entry_table[cur_entry].entry_addrh.addrh,
+                                            iopmp->iopmp_entries.entry_table[cur_entry].entry_addr.addr);
+            rule_analyzer_i.iopmpcfg = iopmp->iopmp_entries.entry_table[cur_entry].entry_cfg;
+            rule_analyzer_i.md       = cur_md;
+            /* Reset output information */
+            rule_analyzer_o.match_status = ENTRY_NOTMATCH;
+            rule_analyzer_o.grant_perm   = false;
 
-            // Analyze entry for match
-            iopmpMatchStatus = iopmpRuleAnalyzer(iopmp, *trans_req, prev_addr, curr_addr, entry_cfg, cur_md);
-            if (iopmpMatchStatus == ENTRY_MATCH_GRANT) {
+            // Analyze entry for matching and permission granting
+            iopmpRuleAnalyzer(iopmp, &rule_analyzer_i, &rule_analyzer_o);
+            if (rule_analyzer_o.match_status == ENTRY_MATCH && rule_analyzer_o.grant_perm) {
                 // If the entry matches all bytes of the transaction and grants
                 // transaction permission to operate, the transaction is legal.
                 goto pass_checks;
-            } else if (iopmpMatchStatus == ENTRY_PARTIAL_MATCH) {
+            } else if (rule_analyzer_o.match_status == ENTRY_PARTIAL_MATCH) {
                 // If the partial matching entry is non-priority entry, just
                 // keep checking next entry.
                 if (iopmp->reg_file.hwcfg2.non_prio_en && cur_entry >= iopmp->reg_file.hwcfg2.prio_entry)
@@ -193,7 +212,7 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
                 error_type = PARTIAL_HIT_ON_PRIORITY;
                 error_eid  = cur_entry;
                 goto stop_and_report_fault;
-            } else if (iopmpMatchStatus == ENTRY_MATCH_NOTGRANT) {
+            } else if (rule_analyzer_o.match_status == ENTRY_MATCH && !rule_analyzer_o.grant_perm) {
                 // If the matching entry is non-priority entry but doesn't grant
                 // transaction permission to operate, the model records this
                 // access as "first illegal access". This "first illegal access"

@@ -70,7 +70,8 @@ static int iopmpAddrRange(uint64_t *startAddr, uint64_t *endAddr, uint64_t prev_
 /**
   * @brief Determine the matching status of transaction request address against IOPMP entry range.
   *
-  * @param trans_req Transaction request containing address, size, and length
+  * @param trans_start Start address of the transaction
+  * @param trans_end End address of the transaction
   * @param lo Lower bound of the IOPMP range
   * @param hi Upper bound of the IOPMP range
   * @return iopmpMatchStatus_t Status of the match:
@@ -78,18 +79,17 @@ static int iopmpAddrRange(uint64_t *startAddr, uint64_t *endAddr, uint64_t prev_
   *         - ENTRY_PARTIAL_MATCH: Entry matches partial bytes of a transation
   *         - ENTRY_NOTMATCH: Entry doesn't cover any byte of the transaction
  **/
-static iopmpMatchStatus_t iopmpMatchAddr(iopmp_trans_req_t trans_req, uint64_t lo, uint64_t hi) {
+static iopmpMatchStatus_t iopmpMatchAddr(uint64_t trans_start,
+                                         uint64_t trans_end,
+                                         uint64_t lo, uint64_t hi) {
     // Validate range
     if (hi < lo) { return ENTRY_NOTMATCH; }  // Invalid range, no match
 
-    // Compute the end address of the transaction
-    uint64_t trans_end = trans_req.addr + ((int)pow(2, trans_req.size) * (trans_req.length + 1));
-
     // Check if transaction falls outside the IOPMP entry range
-    if (trans_end <= lo || trans_req.addr >= hi) { return ENTRY_NOTMATCH; } // No match, transaction outside range
+    if (trans_end <= lo || trans_start >= hi) { return ENTRY_NOTMATCH; } // No match, transaction outside range
 
     // Determine if there's a full match
-    if (trans_req.addr >= lo && trans_end <= hi) { return ENTRY_MATCH; }
+    if (trans_start >= lo && trans_end <= hi) { return ENTRY_MATCH; }
 
     return ENTRY_PARTIAL_MATCH;
 }
@@ -103,11 +103,10 @@ static iopmpMatchStatus_t iopmpMatchAddr(iopmp_trans_req_t trans_req, uint64_t l
   * @param iopmpcfg IOPMP configuration for the entry
   * @param md Respective Memory Domain
   * @param is_amo Indicates the AMO Access
-  * @return iopmpMatchStatus_t Status of the match and permission check:
-  *         - ENTRY_MATCH_GRANT: Entry matches all bytes of a transaction and grants transation permission
-  *         - ENTRY_MATCH_NOTGRANT: Entry matches all bytes of a transaction but doesn't grant transation permission
+  * @return - true if entry grants transation permission
+  *         - false if entry doesn't grant transation permission
  **/
-static iopmpMatchStatus_t iopmpCheckPerms(iopmp_dev_t *iopmp, uint16_t rrid, perm_type_e req_perm, entry_cfg_t iopmpcfg, uint8_t md, bool is_amo) {
+static bool iopmpCheckPerms(iopmp_dev_t *iopmp, uint16_t rrid, perm_type_e req_perm, entry_cfg_t iopmpcfg, uint8_t md, bool is_amo) {
     // Common permission checks
     bool read_allowed    = false;
     bool write_allowed   = false;
@@ -156,14 +155,14 @@ static iopmpMatchStatus_t iopmpCheckPerms(iopmp_dev_t *iopmp, uint16_t rrid, per
             iopmp->intrpt_suppress = iopmpcfg.sire;
             iopmp->error_suppress  = iopmpcfg.sere | iopmp->reg_file.err_cfg.rs;
         }
-        return read_allowed ? ENTRY_MATCH_GRANT : ENTRY_MATCH_NOTGRANT;
+        return read_allowed;
 
     case WRITE_ACCESS:
         if (!write_allowed) {
             iopmp->intrpt_suppress = iopmpcfg.siwe;
             iopmp->error_suppress  = iopmpcfg.sewe | iopmp->reg_file.err_cfg.rs;
         }
-        return write_allowed ? ENTRY_MATCH_GRANT : ENTRY_MATCH_NOTGRANT;
+        return write_allowed;
 
     case INSTR_FETCH:
         if (iopmp->reg_file.hwcfg2.chk_x) {
@@ -171,16 +170,16 @@ static iopmpMatchStatus_t iopmpCheckPerms(iopmp_dev_t *iopmp, uint16_t rrid, per
                 iopmp->intrpt_suppress = iopmpcfg.sixe;
                 iopmp->error_suppress  = iopmpcfg.sexe | iopmp->reg_file.err_cfg.rs;
             }
-            return execute_allowed ? ENTRY_MATCH_GRANT : ENTRY_MATCH_NOTGRANT;
+            return execute_allowed;
         } else if (read_allowed) {
-            return ENTRY_MATCH_GRANT;   // Grant Execute permission via Read fallback
+            return read_allowed;   // Grant Execute permission via Read fallback
         }
         iopmp->intrpt_suppress = iopmpcfg.sixe;
         iopmp->error_suppress  = iopmpcfg.sexe | iopmp->reg_file.err_cfg.rs;
-        return ENTRY_MATCH_NOTGRANT;
+        return false;
 
     default:
-        return ENTRY_MATCH_NOTGRANT;    // Default case for invalid permission request
+        return false;   // Default case for invalid permission request
     }
 }
 
@@ -188,40 +187,34 @@ static iopmpMatchStatus_t iopmpCheckPerms(iopmp_dev_t *iopmp, uint16_t rrid, per
   * @brief Analyze the matching status and permissions of a transaction request
   *
   * @param iopmp The IOPMP instance.
-  * @param trans_req Transaction request containing address, permissions, etc.
-  * @param prev_iopmpaddr Previous IOPMP address (used in TOR mode)
-  * @param iopmpaddr Current IOPMP address
-  * @param iopmpcfg IOPMP entry configuration
-  * @param md Respective Memory Domain
-  * @return iopmpMatchStatus_t Status of the match and permission check:
-  *         - ENTRY_NOTMATCH: Entry doesn't cover any byte of the transaction
-  *         - ENTRY_PARTIAL_MATCH: Entry matches partial bytes of a transation
-  *         - ENTRY_MATCH_NOTGRANT: Entry matches all bytes of a transaction, but doesn't grant transaction permission
-  *         - ENTRY_MATCH_GRANT: Entry matches all bytes of a transaction and grants transaction permission
+  * @param input All the information the analyzer needs.
+  * @param output Address matching status and permission grant result.
  **/
-iopmpMatchStatus_t iopmpRuleAnalyzer(iopmp_dev_t *iopmp, iopmp_trans_req_t trans_req, uint64_t prev_iopmpaddr, uint64_t iopmpaddr, entry_cfg_t iopmpcfg, uint8_t md) {
-    iopmpMatchStatus_t match_status = ENTRY_MATCH;  // Default to full match
+void iopmpRuleAnalyzer(iopmp_dev_t *iopmp,
+                       iopmp_rule_analyzer_input_t *input,
+                       iopmp_rule_analyzer_output_t *output)
+{
     uint64_t start_addr, end_addr;
 
     // Set up the address range; if range setup fails, return not matched
-    if (iopmpAddrRange(&start_addr, &end_addr, prev_iopmpaddr, iopmpaddr, iopmpcfg)) { return ENTRY_NOTMATCH; }
+    if (iopmpAddrRange(&start_addr, &end_addr, input->prev_iopmpaddr,
+                       input->iopmpaddr, input->iopmpcfg)) {
+        output->match_status = ENTRY_NOTMATCH;
+        return;
+    }
 
     // Match transaction address to the IOPMP address range
     // Multiply the addresses with 4 is equivalent to (Address << 2)
-    iopmpMatchStatus_t addr_match_status = iopmpMatchAddr(trans_req, (start_addr * 4), (end_addr * 4));
-    if (addr_match_status == ENTRY_NOTMATCH || addr_match_status == ENTRY_PARTIAL_MATCH) {
+    output->match_status = iopmpMatchAddr(input->trans_start, input->trans_end,
+                                          (start_addr * 4), (end_addr * 4));
+    if (output->match_status == ENTRY_NOTMATCH ||
+        output->match_status == ENTRY_PARTIAL_MATCH) {
         // It's unnecessary to check entry permissions in these two cases
-        return addr_match_status;
+        return;
     }
 
     // iopmpMatchAddr() returns ENTRY_MATCH. Further checks entry permissions
-    #if (SRC_ENFORCEMENT_EN)
-        match_status = iopmpCheckPerms(iopmp, 0, trans_req.perm, iopmpcfg, md, trans_req.is_amo);
-    #else
-    // Check access permissions
-        match_status = iopmpCheckPerms(iopmp, trans_req.rrid, trans_req.perm, iopmpcfg, md, trans_req.is_amo);
-    #endif
-
-    // If all checks pass, return full match status
-    return match_status;
+    output->grant_perm = iopmpCheckPerms(iopmp, input->rrid, input->perm,
+                                         input->iopmpcfg, input->md,
+                                         input->is_amo);
 }
