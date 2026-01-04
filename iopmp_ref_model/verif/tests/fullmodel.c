@@ -1047,7 +1047,7 @@ int main()
     configure_srcmd_n(&iopmp, SRCMD_EN, 0, 0x02, 4);
     configure_srcmd_n(&iopmp, SRCMD_R, 0, 0x02, 4);
     configure_srcmd_n(&iopmp, SRCMD_W, 0, 0x02, 4);
-    configure_mdcfg_n(0, 2, 4);
+    configure_mdcfg_n(&iopmp, 0, 2, 4);
     configure_entry_n(&iopmp, ENTRY_ADDR, 0, 90, 4); // (364 >> 2) and keeping lsb 0
     configure_entry_n(&iopmp, ENTRY_CFG, 0, (NAPOT | W | R), 4);
     set_hwcfg0_enable(&iopmp);
