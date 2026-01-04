@@ -171,12 +171,8 @@ static bool iopmpCheckPerms(iopmp_dev_t *iopmp, uint16_t rrid, perm_type_e req_p
                 iopmp->error_suppress  = iopmpcfg.sexe | iopmp->reg_file.err_cfg.rs;
             }
             return execute_allowed;
-        } else if (read_allowed) {
-            return read_allowed;   // Grant Execute permission via Read fallback
         }
-        iopmp->intrpt_suppress = iopmpcfg.sixe;
-        iopmp->error_suppress  = iopmpcfg.sexe | iopmp->reg_file.err_cfg.rs;
-        return false;
+        return false;   // Instruction fetch check not implemented
 
     default:
         return false;   // Default case for invalid permission request

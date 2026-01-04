@@ -67,6 +67,7 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
 #else
     const uint16_t rrid = trans_req->rrid;
 #endif
+    perm_type_e trans_perm = trans_req->perm;
     iopmpErrorType_t error_type = NO_ERROR;
     uint16_t error_eid = 0;
 
@@ -118,13 +119,13 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
     // When no_w is set to 1, the IOPMP denies all write transactions regardless
     // of entry rule configurations, reporting them with error type
     // "not hit any rule" (0x05).
-    if (trans_req->perm == WRITE_ACCESS && iopmp->reg_file.hwcfg3.no_w) {
+    if (trans_perm == WRITE_ACCESS && iopmp->reg_file.hwcfg3.no_w) {
         iopmp->error_suppress = iopmp->reg_file.err_cfg.rs;
         error_type = NOT_HIT_ANY_RULE;
         goto stop_and_report_fault;
     }
 
-    if (trans_req->perm == INSTR_FETCH) {
+    if (trans_perm == INSTR_FETCH) {
         // When chk_x and no_x are set to 1, the IOPMP denies all instruction
         // fetch transactions regardless of entry rule configurations, reporting
         // them with error type "not hit any rule" (0x05).
@@ -132,6 +133,12 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
             iopmp->error_suppress = iopmp->reg_file.err_cfg.rs;
             error_type = NOT_HIT_ANY_RULE;
             goto stop_and_report_fault;
+        }
+        // When chk_x = 0, The IOPMP doesn't perform instruction fetch
+        // permission checking. Instead, the IOPMP treats instruction fetch as
+        // read access.
+        if (!iopmp->reg_file.hwcfg2.chk_x) {
+            trans_perm = READ_ACCESS;
         }
     }
 
@@ -160,7 +167,7 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
     rule_analyzer_i.trans_start  = trans_req->addr;
     rule_analyzer_i.trans_end    = trans_req->addr +
                           ((int)pow(2, trans_req->size) * (trans_req->length + 1));
-    rule_analyzer_i.perm         = trans_req->perm;
+    rule_analyzer_i.perm         = trans_perm;
     rule_analyzer_i.is_amo       = trans_req->is_amo;
     rule_analyzer_o.match_status = ENTRY_NOTMATCH;
     rule_analyzer_o.grant_perm   = false;
@@ -223,7 +230,7 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
                     nonPrioErrorSup |= iopmp->error_suppress;
                     nonPrioIntrSup  |= iopmp->intrpt_suppress;
                     if (firstIllegalAccess) {
-                        nonPrioRuleStatus = perm_to_etype(trans_req->perm);
+                        nonPrioRuleStatus = perm_to_etype(trans_perm);
                         nonPrioRuleNum    = cur_entry;
                         firstIllegalAccess = 0;
                     }
@@ -235,7 +242,7 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
                 // with error type = "illegal read access" (0x01) for read
                 // access transaction, "illegal write access/AMO" (0x02) for
                 // write access/atomic memory operation (AMO) transaction.
-                error_type = perm_to_etype(trans_req->perm);
+                error_type = perm_to_etype(trans_perm);
                 error_eid  = cur_entry;
                 goto stop_and_report_fault;
             }
@@ -278,7 +285,7 @@ stop_and_report_fault:
     // If IOPMP implements error capture feature, IOPMP triggers error capture
     // to log the error information into the registers.
     if (iopmp->imp_error_capture) {
-        errorCapture(iopmp, trans_req->perm, error_type, rrid, error_eid, trans_req->addr, intrpt);
+        errorCapture(iopmp, trans_perm, error_type, rrid, error_eid, trans_req->addr, intrpt);
     }
     // Return response with default status if no match/error occurs
     // In case of error suppression, success response is returned, with user defined value on initiator port
