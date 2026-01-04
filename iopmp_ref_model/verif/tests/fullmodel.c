@@ -548,6 +548,24 @@ int main()
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
     END_TEST();)
 
+    START_TEST("Test NAPOT - 8 Byte Instruction access when chk_x=0");
+    cfg.chk_x = false;
+    reset_iopmp(&iopmp, &cfg);
+    configure_srcmd_n(&iopmp, SRCMD_EN, 32, 0x10, 4);
+    configure_srcmd_n(&iopmp, SRCMD_R, 32, 0x10, 4);
+    configure_mdcfg_n(&iopmp, 3, 2, 4);
+    configure_entry_n(&iopmp, ENTRY_ADDR, 1, 90, 4); // (364 >> 2) and keeping lsb 0
+    configure_entry_n(&iopmp, ENTRY_CFG, 1, (NAPOT), 4);
+    set_hwcfg0_enable(&iopmp);
+    receiver_port(32, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
+    // requestor Port Signals
+    iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
+    iopmp_trans_req.perm = READ_ACCESS; // Since chk_x=0, we expect ttype="Read access" in CHECK_IOPMP_TRANS()
+    CHECK_IOPMP_TRANS(&iopmp, IOPMP_ERROR, ILLEGAL_READ_ACCESS);
+    write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
+    cfg.chk_x = true;
+    END_TEST();    
+
     START_TEST_IF(iopmp.imp_mdlck, "Test MDLCK, updating locked srcmd_en field",
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, MDLCK_OFFSET, 0x10, 4);
