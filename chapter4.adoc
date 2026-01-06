@@ -105,7 +105,7 @@ h|0x0010
 |===
 h|HWCFG3{set:cellbgcolor:#D3D3D3}
 h|0x0014
-|{set:cellbgcolor:#FFFFFF} See xref:APPICATION_NOTE[xrefstyle=full].
+|{set:cellbgcolor:#FFFFFF} See xref:APPLICATION_NOTE[xrefstyle=full].
 |===
 
 `HWCFG_USER` is an optional register to provide users to define their own configurations.

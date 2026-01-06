@@ -139,7 +139,7 @@ An entry qualifies as a matching entry for an incoming transaction if:
 
 The matching entry can grant a transaction according to its access type. If the matching entry allows the access type, the transaction is legal. Every entry can permit read, write, and instruction fetch access by its `r`, `w`, and `x` bits, respectively.
 
-The matching entry must match all bytes of a transaction, or the transaction is illegal with error type = "partial hit on a priority rule" (0x04), irrespective of its permission. If an entry is matched but doesn't grant transaction permission to operate, the transaction is illegal with error type = "illegal read access" (0x01) for read access transaction, "illegal write access/AMO" (0x02) for write access/atomic memory operation (AMO) transaction, "illegal instruction fetch" (0x03) for instruction fetch transaction.
+The matching entry must match all bytes of a transaction, or the transaction is illegal with error type = "partial hit on a priority rule" (0x04), irrespective of its permission. If an entry is matched but doesn't grant the transaction permission to operate, the transaction is illegal with error type = "illegal read access" (0x01) for read access transaction, "illegal write access/AMO" (0x02) for write access/atomic memory operation (AMO) transaction, "illegal instruction fetch" (0x03) for instruction fetch transaction.
 
 Finally, if no matching entry exists, the transaction is illegal with error type = "not hit any rule" (0x05).
 
