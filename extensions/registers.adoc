@@ -14,10 +14,11 @@ This chapter also introduces an additional error type (`ERR_INFO.etype`).
 [%autowidth, options="header"]
 |===
    |Offset    |Register    |Field            |Bits     |Related section(s)
-.9+|0x0010 .9+|`HWCFG2`    |`prio_entry`     |15:0  .3+|<<NON_PRIORITY_ENTRIES>>
+.10+|0x0010 .10+|`HWCFG2`  |`prio_entry`     |15:0  .3+|<<NON_PRIORITY_ENTRIES>>
                            |`prio_ent_prog`  |16:16
                            |`non_prio_en`    |17:17 
-                           |`rsv`            |26:18    |(Must be zero on write, reserved for future.)
+                           |`rsv`            |25:18    |(Must be zero on write, reserved for future.)
+                           |`msi_en`         |26:26    |<<MSI>>
                            |`peis`           |27:27 .2+|<<PEIS_PEES>>
                            |`pees`           |28:28
                            |`sps_en`         |29:29    |<<SPS_EXT>>
@@ -26,7 +27,7 @@ This chapter also introduces an additional error type (`ERR_INFO.etype`).
    |0x0030    |`MDSTALL`   2+|All                   .3+|<<Program_IOPMPs>>
    |0x0034    |`MDSTALLH`  2+|All
    |0x0038    |`RRIDSCP`   2+|All
-.3+|0x0060 .3+|`ERR_CFG`   |`msi_en`         |3:3      |<<MSI>>
+.3+|0x0060 .3+|`ERR_CFG`   |`msi_sel`         |3:3      |<<MSI>>
                            |`stall_violation_en` |4:4      |<<Program_IOPMPs>>
                            |`msidata`        |18:8     |<<MSI>>
 .3+|0x0064 .3+|`ERR_INFO`  |`msi_werr`       |3:3      |<<MSI>>
