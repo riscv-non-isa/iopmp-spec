@@ -40,7 +40,7 @@ Multiple matching entries are allowed for non-priority entries because they shar
 
 [NOTE]
 ====
-IOPMPs don't report error type = 0x04 "Partial hit on a priority rule" on non-priority entries because non-priority entries must covers all bytes of the transaction.
+IOPMPs don't report error type = 0x04 "Partial hit on a priority rule" on non-priority entries because non-priority entries must cover all bytes of the transaction.
 ====
 
 If one matching entry is priority, the reaction is the same as baseline IOPMP entry array.

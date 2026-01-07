@@ -8,16 +8,16 @@ This section summarizes the additional registers and fields required when implem
 .Register and field summary
 [%autowidth, options="header"]
 |===
-  |Offset |Register |Field |Bits |Related section(s)
-.9+|0x0014 .9+|`HWCFG3` |`mdcfg_fmt` |1:0 .2+|<<mdcfg-table-formats>>
-                     |`md_entry_num` |10:4
-                     |`xinr`        |11:11  |<<Data Only Devices and Buses>>
-                     |`srcmd_fmt` |3:2 |<<srcmd-table-formats>>
-                     |`no_w` |13:13 |<<Write Protection Devices>>
-                     |`no_x` |12:12 |<<Instruction Fetch Protection Devices>>
-                     |`rrid_transl_en` |14:14 .3+|<<Cascading IOPMP>>
-                     |`rrid_transl_prog` |15:15
-                     |`rrid_transl` |31:16
+   |Offset    |Register |Field              |Bits     |Related section(s)
+.9+|0x0014 .9+|`HWCFG3` |`mdcfg_fmt`        |1:0      |<<mdcfg-table-formats>>
+                        |`srcmd_fmt`        |3:2      |<<srcmd-table-formats>>
+                        |`md_entry_num`     |10:4     |<<mdcfg-table-formats>>
+                        |`xinr`             |11:11    |<<Data Only Devices and Buses>>
+                        |`no_x`             |12:12    |<<Instruction Fetch Protection Devices>>
+                        |`no_w`             |13:13    |<<Write Protection Devices>>
+                        |`rrid_transl_en`   |14:14 .3+|<<Cascading IOPMP>>
+                        |`rrid_transl_prog` |15:15
+                        |`rrid_transl`      |31:16
   |0x1000 + +
   (_m_) × 32 |`SRCMD_PERM(_m_)` 2+|All .2+|<<SRCMD-MD-indexed>>
   |0x1004 + +
