@@ -98,6 +98,8 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
 
     // Hardware Configuration
     iopmp->reg_file.hwcfg0.enable           = cfg->enable;
+    iopmp->reg_file.hwcfg0.HWCFG2_en        = 1;    // HWCFG2 is always implemented by reference model
+    iopmp->reg_file.hwcfg0.HWCFG3_en        = 1;    // HWCFG3 is always implemented by reference model
     iopmp->reg_file.hwcfg0.md_num           = cfg->md_num;
     iopmp->reg_file.hwcfg0.addrh_en         = cfg->addrh_en;
     iopmp->reg_file.hwcfg0.tor_en           = cfg->tor_en;
@@ -114,8 +116,6 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     iopmp->reg_file.hwcfg2.sps_en           = cfg->sps_en;
     iopmp->reg_file.hwcfg2.stall_en         = cfg->stall_en;
     iopmp->reg_file.hwcfg2.mfr_en           = cfg->mfr_en;
-    /* Set HWCFG2_en if HWCFG2 is not zero */
-    iopmp->reg_file.hwcfg0.HWCFG2_en        = (iopmp->reg_file.hwcfg2.raw) != 0 ? true : false;
 
     iopmp->reg_file.hwcfg3.mdcfg_fmt        = cfg->mdcfg_fmt;
     iopmp->reg_file.hwcfg3.srcmd_fmt        = cfg->srcmd_fmt;
@@ -129,8 +129,6 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
         iopmp->reg_file.hwcfg3.rrid_transl_prog = cfg->rrid_transl_prog;
         iopmp->reg_file.hwcfg3.rrid_transl      = cfg->rrid_transl;
     }
-    /* Set HWCFG3_en if HWCFG3 is not zero */
-    iopmp->reg_file.hwcfg0.HWCFG3_en        = (iopmp->reg_file.hwcfg3.raw) != 0 ? true : false;
 
     iopmp->reg_file.entryoffset.offset      = cfg->entryoffset;
 
