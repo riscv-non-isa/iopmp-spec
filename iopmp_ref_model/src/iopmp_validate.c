@@ -103,9 +103,10 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
         goto stop_and_report_fault;
     }
 
+    // Check rrid_stall[s] bit array if IOPMP implements stall-related feature.
     // rrid_stall[s] are signals indicating that transactions with corresponding
     // RRID s must be stalled (rrid_stall[s] = 1) or not (rrid_stall[s] = 0).
-    if (iopmp->rrid_stall[rrid]) {
+    if (iopmp->reg_file.hwcfg2.stall_en && iopmp->rrid_stall[rrid]) {
         // IOPMP can implement a stall buffer to queue stalled transactions.
         // If there is any space in the buffer, IOPMP queues the transactions
         // until the buffer is full. The reference model just returns a flag to
