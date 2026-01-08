@@ -166,7 +166,7 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
     rule_analyzer_i.rrid         = rrid;
     rule_analyzer_i.trans_start  = trans_req->addr;
     rule_analyzer_i.trans_end    = trans_req->addr +
-                          ((int)pow(2, trans_req->size) * (trans_req->length + 1));
+                                   ((int)pow(2, trans_req->size) * (trans_req->length + 1));
     rule_analyzer_i.perm         = trans_perm;
     rule_analyzer_i.is_amo       = trans_req->is_amo;
     rule_analyzer_o.match_status = ENTRY_NOTMATCH;
@@ -190,9 +190,9 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
             /* Assign necessary input information */
             rule_analyzer_i.prev_iopmpaddr =
                 (cur_entry == 0) ? 0 : CONCAT32(iopmp->iopmp_entries.entry_table[cur_entry - 1].entry_addrh.addrh,
-                                            iopmp->iopmp_entries.entry_table[cur_entry - 1].entry_addr.addr);
+                                                iopmp->iopmp_entries.entry_table[cur_entry - 1].entry_addr.addr);
             rule_analyzer_i.iopmpaddr = CONCAT32(iopmp->iopmp_entries.entry_table[cur_entry].entry_addrh.addrh,
-                                            iopmp->iopmp_entries.entry_table[cur_entry].entry_addr.addr);
+                                                 iopmp->iopmp_entries.entry_table[cur_entry].entry_addr.addr);
             rule_analyzer_i.iopmpcfg = iopmp->iopmp_entries.entry_table[cur_entry].entry_cfg;
             rule_analyzer_i.md       = cur_md;
             /* Reset output information */
