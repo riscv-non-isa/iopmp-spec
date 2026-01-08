@@ -103,13 +103,23 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
         goto stop_and_report_fault;
     }
 
+    // rrid_stall[s] are signals indicating that transactions with corresponding
+    // RRID s must be stalled (rrid_stall[s] = 1) or not (rrid_stall[s] = 0).
     if (iopmp->rrid_stall[rrid]) {
-        if (iopmp->stall_cntr != STALL_BUF_DEPTH){
+        // IOPMP can implement a stall buffer to queue stalled transactions.
+        // If there is any space in the buffer, IOPMP queues the transactions
+        // until the buffer is full. The reference model just returns a flag to
+        // indicate that the input transaction is stalled in this case.
+        if (iopmp->imp_stall_buffer && iopmp->stall_cntr != STALL_BUF_DEPTH) {
             iopmp_trans_rsp->rrid_stalled = 1;
             iopmp->stall_cntr++;
-            return ;
+            return;
         }
-        else if (iopmp->reg_file.err_cfg.stall_violation_en) {
+        // If IOPMP doesn't implement any stall buffer or the stall buffer is
+        // full, IOPMP cannot queue the transactions.
+        // IOPMP can fault the stalled transactions in this case and record the
+        // error due to the stalled transactions.
+        if (iopmp->reg_file.err_cfg.stall_violation_en) {
             iopmp->error_suppress = iopmp->reg_file.err_cfg.rs;
             error_type = STALLED_TRANSACTION;
             goto stop_and_report_fault;
