@@ -124,6 +124,12 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
             error_type = STALLED_TRANSACTION;
             goto stop_and_report_fault;
         }
+
+        // There is no available stall buffer and IOPMP doesn't fault stalled
+        // transactions. The transactions are truly stalled. The reference model
+        // just return a special flag to simulate this behavior.
+        iopmp_trans_rsp->rrid_stalled_no_available_buffer = 1;
+        return;
     }
 
     // When no_w is set to 1, the IOPMP denies all write transactions regardless
