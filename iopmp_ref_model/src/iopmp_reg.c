@@ -582,7 +582,9 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
                 iopmp->reg_file.err_cfg.msi_en         = err_cfg_temp.msi_en;
                 iopmp->reg_file.err_cfg.msidata        = err_cfg_temp.msidata;
             }
-            iopmp->reg_file.err_cfg.stall_violation_en = err_cfg_temp.stall_violation_en;
+            if (iopmp->reg_file.hwcfg2.stall_en) {
+                iopmp->reg_file.err_cfg.stall_violation_en = err_cfg_temp.stall_violation_en;
+            }
             iopmp->reg_file.err_cfg.rsv1               = 0;
             iopmp->reg_file.err_cfg.rsv2               = 0;
         }
