@@ -81,7 +81,7 @@ h|Field                             |Bits   |R/W    |Default   |Description
 |`HWCFG2_en`                        |1:1    |R      |IMP       |Indicate if `HWCFG2` is implemented.
 |`HWCFG3_en`                        |2:2    |R      |IMP       |Indicate if `HWCFG3` is implemented.
 |`rsv`                              |22:3   |ZERO   |0         |Must be zero on write, reserved for future.
-|`no_err_rec`                       |23:23  |R      |IMP       |Indicate if error record (`ERR_INFO`, `ERR_REQADDR`, `ERR_REQADDR`, `ERR_REQID` and `ERR_USER(0:7)`) is not implemented.
+|`no_err_rec`                       |23:23  |R      |IMP       |Indicate if error record (`ERR_INFO`, `ERR_REQADDR`, `ERR_REQADDRH`, `ERR_REQID` and `ERR_USER(0:7)`) is not implemented.
 |`md_num`                           |29:24  |R      |IMP       |Indicate the supported number of MD in the instance.
 |`addrh_en`                         |30:30  |R      |IMP       |Indicate if `ENTRY_ADDRH(_i_)` and `ERR_REQADDRH` are available.
 |`tor_en`                           |31:31  |R      |IMP       |Indicate if TOR is supported.
