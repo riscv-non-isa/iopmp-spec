@@ -209,7 +209,7 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
                 // If the partial matching entry is non-priority entry, just
                 // keep checking next entry.
                 if (iopmp->reg_file.hwcfg2.non_prio_en && cur_entry >= iopmp->reg_file.hwcfg2.prio_entry)
-                    goto check_next_entry;
+                    continue;
 
                 // If the partial matching entry is priority entry, check fails.
                 // The priority entry must match all bytes of a transaction, or
@@ -234,7 +234,7 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
                         nonPrioRuleNum    = cur_entry;
                         firstIllegalAccess = 0;
                     }
-                    goto check_next_entry;
+                    continue;
                 }
 
                 // If the matching entry is priority entry but doesn't grant
@@ -248,7 +248,6 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
             }
 
             // ENTRY_NOTMATCH: Keep checking next entry
-check_next_entry:
         }
     }
 
