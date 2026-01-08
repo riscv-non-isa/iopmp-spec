@@ -64,6 +64,7 @@ int main()
     cfg.imp_err_reqid_eid = true;
     cfg.imp_rridscp = true;
     cfg.imp_msi = true;
+    cfg.imp_stall_buffer = true;
 
 #if (SRC_ENFORCEMENT_EN == 0)
 

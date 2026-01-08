@@ -87,6 +87,9 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     // ENTRYOFFSET must beyond SRCMD table
     if (cfg->entryoffset < (SRCMD_TABLE_BASE_OFFSET + cfg->rrid_num * SRCMD_REG_STRIDE))
         return -1;
+    // Stall buffer is only needed when stall features are implemented
+    if (cfg->imp_stall_buffer && !cfg->stall_en)
+        return -1;
 
     // Zeroize all states
     memset(iopmp, 0, sizeof(*iopmp));
@@ -148,6 +151,7 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     iopmp->imp_err_reqid_eid                = cfg->imp_err_reqid_eid;
     iopmp->imp_rridscp                      = cfg->imp_rridscp;
     iopmp->imp_msi                          = cfg->imp_msi;
+    iopmp->imp_stall_buffer                 = cfg->imp_stall_buffer;
 
     return 0;
 }
@@ -496,7 +500,13 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
             iopmp->reg_file.mdstall.md     = mdstall_temp.md;
             rrid_stall_update(iopmp, iopmp->reg_file.mdstall.exempt);
             if ((mdstall_temp.raw == 0) && (iopmp->reg_file.mdstall.raw == 0)) {
-                iopmp->stall_cntr = 0;
+                // The stalled transactions are resumed. If IOPMP implements a
+                // stall buffer, IOPMP flushes all the stalled transactions in
+                // the buffer. The reference model just zerorize the counter to
+                // simulate this behavior.
+                if (iopmp->imp_stall_buffer) {
+                    iopmp->stall_cntr = 0;
+                }
             }
         }
         if (num_bytes == 4) break;
