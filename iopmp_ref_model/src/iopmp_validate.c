@@ -103,17 +103,34 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
         goto stop_and_report_fault;
     }
 
-    if (iopmp->rrid_stall[rrid]) {
-        if (iopmp->stall_cntr != STALL_BUF_DEPTH){
+    // Check rrid_stall[s] bit array if IOPMP implements stall-related feature.
+    // rrid_stall[s] are signals indicating that transactions with corresponding
+    // RRID s must be stalled (rrid_stall[s] = 1) or not (rrid_stall[s] = 0).
+    if (iopmp->reg_file.hwcfg2.stall_en && iopmp->rrid_stall[rrid]) {
+        // IOPMP can implement a stall buffer to queue stalled transactions.
+        // If there is any space in the buffer, IOPMP queues the transactions
+        // until the buffer is full. The reference model just returns a flag to
+        // indicate that the input transaction is stalled in this case.
+        if (iopmp->imp_stall_buffer && iopmp->stall_cntr != STALL_BUF_DEPTH) {
             iopmp_trans_rsp->rrid_stalled = 1;
             iopmp->stall_cntr++;
-            return ;
+            return;
         }
-        else if (iopmp->reg_file.err_cfg.stall_violation_en) {
+        // If IOPMP doesn't implement any stall buffer or the stall buffer is
+        // full, IOPMP cannot queue the transactions.
+        // IOPMP can fault the stalled transactions in this case and record the
+        // error due to the stalled transactions.
+        if (iopmp->reg_file.err_cfg.stall_violation_en) {
             iopmp->error_suppress = iopmp->reg_file.err_cfg.rs;
             error_type = STALLED_TRANSACTION;
             goto stop_and_report_fault;
         }
+
+        // There is no available stall buffer and IOPMP doesn't fault stalled
+        // transactions. The transactions are truly stalled. The reference model
+        // just return a special flag to simulate this behavior.
+        iopmp_trans_rsp->rrid_stalled_no_available_buffer = 1;
+        return;
     }
 
     // When no_w is set to 1, the IOPMP denies all write transactions regardless
@@ -166,7 +183,7 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
     rule_analyzer_i.rrid         = rrid;
     rule_analyzer_i.trans_start  = trans_req->addr;
     rule_analyzer_i.trans_end    = trans_req->addr +
-                          ((int)pow(2, trans_req->size) * (trans_req->length + 1));
+                                   ((int)pow(2, trans_req->size) * (trans_req->length + 1));
     rule_analyzer_i.perm         = trans_perm;
     rule_analyzer_i.is_amo       = trans_req->is_amo;
     rule_analyzer_o.match_status = ENTRY_NOTMATCH;
@@ -190,9 +207,9 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
             /* Assign necessary input information */
             rule_analyzer_i.prev_iopmpaddr =
                 (cur_entry == 0) ? 0 : CONCAT32(iopmp->iopmp_entries.entry_table[cur_entry - 1].entry_addrh.addrh,
-                                            iopmp->iopmp_entries.entry_table[cur_entry - 1].entry_addr.addr);
+                                                iopmp->iopmp_entries.entry_table[cur_entry - 1].entry_addr.addr);
             rule_analyzer_i.iopmpaddr = CONCAT32(iopmp->iopmp_entries.entry_table[cur_entry].entry_addrh.addrh,
-                                            iopmp->iopmp_entries.entry_table[cur_entry].entry_addr.addr);
+                                                 iopmp->iopmp_entries.entry_table[cur_entry].entry_addr.addr);
             rule_analyzer_i.iopmpcfg = iopmp->iopmp_entries.entry_table[cur_entry].entry_cfg;
             rule_analyzer_i.md       = cur_md;
             /* Reset output information */
