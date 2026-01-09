@@ -272,9 +272,9 @@ typedef union {
 typedef union {
     struct {
         uint32_t l   : 1;                   // ock bit to MDCFGLCK register.
-        uint32_t f   : 7;                   // Indicate the number of locked MDCFG entries
+        uint32_t f   : 6;                   // Indicate the number of locked MDCFG entries
                                             // MDCFG(i) is locked for i < f.
-        uint32_t rsv : 24;                  // Reserved for future use
+        uint32_t rsv : 25;                  // Reserved for future use
     };
     uint32_t raw;
 } mdcfglck_t;
