@@ -38,6 +38,8 @@ static void setRridSv(iopmp_dev_t *iopmp, uint16_t rrid) {
   * @param rrid Requester ID associated with the transaction.
   * @param entry_id IOPMP entry ID where the error was encountered.
   * @param err_addr Address at which the error occurred.
+  * @param gen_intrpt Generate interrupt or not.
+  * @param gen_buserr Generate bus error or not.
   * @param intrpt Pointer to the variable to store wired interrupt flag.
   *               This flag is set to 1 if the following conditions are true:
   *                 - the transaction fails
@@ -50,7 +52,9 @@ static void setRridSv(iopmp_dev_t *iopmp, uint16_t rrid) {
   *                 - the interrupts are suppressed, or IOPMP implements MSI extension
   *                   and triggers MSI instead of wired interrupt
  **/
-void errorCapture(iopmp_dev_t *iopmp, perm_type_e trans_type, uint8_t error_type, uint16_t rrid, uint16_t entry_id, uint64_t err_addr, uint8_t *intrpt) {
+void errorCapture(iopmp_dev_t *iopmp, perm_type_e trans_type, uint8_t error_type,
+                  uint16_t rrid, uint16_t entry_id, uint64_t err_addr,
+                  bool gen_intrpt, bool gen_buserr, uint8_t *intrpt) {
 
     // Current value of ERR_INFO.v
     int err_reqinfo_v = iopmp->reg_file.err_info.v;
@@ -58,7 +62,7 @@ void errorCapture(iopmp_dev_t *iopmp, perm_type_e trans_type, uint8_t error_type
     // First error capture occurs when the following conditions are true:
     //   - An interrupt is triggered, or a bus error is returned
     //   - There is no pending error capture, that is, current ERR_INFO.v = '0'
-    bool first_record = (!iopmp->error_suppress || !iopmp->intrpt_suppress) && !err_reqinfo_v;
+    bool first_record = (gen_intrpt || gen_buserr) && !err_reqinfo_v;
 
     if (first_record) {
         iopmp->reg_file.err_info.v = 1;               // Mark error as captured
@@ -79,7 +83,7 @@ void errorCapture(iopmp_dev_t *iopmp, perm_type_e trans_type, uint8_t error_type
             iopmp->reg_file.err_reqid.eid = entry_id;
         }
 
-        generate_interrupt(iopmp, intrpt);
+        generate_interrupt(iopmp, gen_intrpt, intrpt);
     }
 
     // If IOPMP implements Multi-Faults Record extension, IOPMP has ability to
@@ -89,7 +93,7 @@ void errorCapture(iopmp_dev_t *iopmp, perm_type_e trans_type, uint8_t error_type
         // Subsequent error capture occurs when the following conditions are true:
         //   - An interrupt is triggered or a bus error is returned
         //   - There is a pending error capture, that is, current ERR_INFO.v = '1'
-        bool subsq_record = (!iopmp->error_suppress || !iopmp->intrpt_suppress) && err_reqinfo_v;
+        bool subsq_record = (gen_intrpt || gen_buserr) && err_reqinfo_v;
 
         if (subsq_record) {
             // Update violation window

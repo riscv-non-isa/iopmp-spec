@@ -23,6 +23,7 @@
  * and data, writes them to memory, and handles any potential bus errors during the write operation.
  *
  * @param iopmp The IOPMP instance.
+ * @param gen_intrpt Generate interrupt or not.
  * @param intrpt Pointer to the variable to store wired interrupt flag.
  *               This flag is set to 1 if the following conditions are true:
  *                 - the interrupts are not suppressed
@@ -31,7 +32,7 @@
  *                 - the interrupts are suppressed, or IOPMP implements MSI extension
  *                   and triggers MSI instead of wired interrupt
  */
-void generate_interrupt(iopmp_dev_t *iopmp, uint8_t *intrpt) {
+void generate_interrupt(iopmp_dev_t *iopmp, bool gen_intrpt, uint8_t *intrpt) {
 
     if (!iopmp->imp_msi) {
         // If IOPMP doesn't implement Message-Signaled Interrupts (MSI)
@@ -39,7 +40,7 @@ void generate_interrupt(iopmp_dev_t *iopmp, uint8_t *intrpt) {
         // IOPMP triggers wired interrupt if the following conditions are true:
         //   - IOPMP interrupts are enabled
         //   - The interrupts are not suppressed
-        *intrpt = iopmp->reg_file.err_cfg.ie && !iopmp->intrpt_suppress;
+        *intrpt = gen_intrpt;
         return;
     }
 
@@ -48,8 +49,7 @@ void generate_interrupt(iopmp_dev_t *iopmp, uint8_t *intrpt) {
     //   - IOPMP interrupts are enabled
     //   - The interrupts are not suppressed
     //   - IOPMP doesn't enable MSI
-    *intrpt = iopmp->reg_file.err_cfg.ie && !iopmp->intrpt_suppress &&
-              !iopmp->reg_file.err_cfg.msi_en;
+    *intrpt = gen_intrpt && !iopmp->reg_file.err_cfg.msi_en;
 
     // IOPMP implements Message-Signaled Interrupts (MSI) extension.
     // IOPMP triggers MSI if the following conditions are true:
@@ -57,8 +57,7 @@ void generate_interrupt(iopmp_dev_t *iopmp, uint8_t *intrpt) {
     //   - The interrupts are not suppressed
     //   - MSI is enabled
     //   - (implementation-specific) There are no pending MSI write error
-    bool msi = iopmp->reg_file.err_cfg.ie && !iopmp->intrpt_suppress &&
-               iopmp->reg_file.err_cfg.msi_en &&
+    bool msi = gen_intrpt && iopmp->reg_file.err_cfg.msi_en &&
                !iopmp->reg_file.err_info.msi_werr;
     if (msi) {
         // Construct MSI address and data for enabled MSI.

@@ -70,16 +70,16 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
     perm_type_e trans_perm = trans_req->perm;
     iopmpErrorType_t error_type = NO_ERROR;
     uint16_t error_eid = 0;
+    bool gen_intrpt = iopmp->reg_file.err_cfg.ie;
+    bool gen_buserr = !iopmp->reg_file.err_cfg.rs;
 
-    iopmp->intrpt_suppress = 0;
-    iopmp->error_suppress  = 0;
     int lwr_entry, upr_entry;
 
     srcmd_en_t  srcmd_en;
     srcmd_enh_t srcmd_enh;
 
-    int nonPrioErrorSup    = 0;
-    int nonPrioIntrSup     = 0;
+    bool gen_intrpt_nonPrio = false;
+    bool gen_buserr_nonPrio = false;
     int firstIllegalAccess = 1;
     iopmpErrorType_t nonPrioRuleStatus = NOT_HIT_ANY_RULE;
     int nonPrioRuleNum = 0;
@@ -97,8 +97,6 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
 
     // Check for valid RRID; if invalid, capture error and return
     if (rrid >= iopmp->reg_file.hwcfg1.rrid_num) {
-        // Initially, check for global error suppression
-        iopmp->error_suppress = iopmp->reg_file.err_cfg.rs;
         error_type = UNKNOWN_RRID;
         goto stop_and_report_fault;
     }
@@ -121,7 +119,6 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
         // IOPMP can fault the stalled transactions in this case and record the
         // error due to the stalled transactions.
         if (iopmp->reg_file.err_cfg.stall_violation_en) {
-            iopmp->error_suppress = iopmp->reg_file.err_cfg.rs;
             error_type = STALLED_TRANSACTION;
             goto stop_and_report_fault;
         }
@@ -137,7 +134,6 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
     // of entry rule configurations, reporting them with error type
     // "not hit any rule" (0x05).
     if (trans_perm == WRITE_ACCESS && iopmp->reg_file.hwcfg3.no_w) {
-        iopmp->error_suppress = iopmp->reg_file.err_cfg.rs;
         error_type = NOT_HIT_ANY_RULE;
         goto stop_and_report_fault;
     }
@@ -147,7 +143,6 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
         // fetch transactions regardless of entry rule configurations, reporting
         // them with error type "not hit any rule" (0x05).
         if (iopmp->reg_file.hwcfg2.chk_x && iopmp->reg_file.hwcfg3.no_x) {
-            iopmp->error_suppress = iopmp->reg_file.err_cfg.rs;
             error_type = NOT_HIT_ANY_RULE;
             goto stop_and_report_fault;
         }
@@ -234,7 +229,6 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
                 // The priority entry must match all bytes of a transaction, or
                 // transaction is illegal with error type =
                 // "partial hit on a priority rule" (0x04).
-                iopmp->error_suppress = iopmp->reg_file.err_cfg.rs;
                 error_type = PARTIAL_HIT_ON_PRIORITY;
                 error_eid  = cur_entry;
                 goto stop_and_report_fault;
@@ -246,14 +240,40 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
                 // checks. If no matching entry permits, the transaction is
                 // illegal.
                 if (iopmp->reg_file.hwcfg2.non_prio_en && cur_entry >= iopmp->reg_file.hwcfg2.prio_entry) {
-                    nonPrioErrorSup |= iopmp->error_suppress;
-                    nonPrioIntrSup  |= iopmp->intrpt_suppress;
+                    // The logic to generate interrupt when matching non-priority entries is:
+                    // "ERR_CFG.ie && (!ENTRY_CFG(i0).{sire|siwe|sixe} || !ENTRY_CFG(i1).{sire|siwe|sixe} ... )"
+                    // Here we perform (!ENTRY_CFG(i0).{sire|siwe|sixe} || !ENTRY_CFG(i1).{sire|siwe|sixe} ... ).
+                    if (iopmp->reg_file.hwcfg2.peis) {
+                        gen_intrpt_nonPrio = (gen_intrpt_nonPrio || !rule_analyzer_o.sie);
+                    }
+                    // The logic to generate bus error when matching non-priority entries is:
+                    // "!ERR_CFG.rs && (!ENTRY_CFG(i0).{sere|sewe|sexe} || !ENTRY_CFG(i1).{sere|sewe|sexe} ... )"
+                    // Here we perform (!ENTRY_CFG(i0).{sere|sewe|sexe} || !ENTRY_CFG(i1).{sere|sewe|sexe} ... ).
+                    if (iopmp->reg_file.hwcfg2.pees) {
+                        gen_buserr_nonPrio = (gen_buserr_nonPrio || !rule_analyzer_o.see);
+                    }
+
                     if (firstIllegalAccess) {
                         nonPrioRuleStatus = perm_to_etype(trans_perm);
                         nonPrioRuleNum    = cur_entry;
                         firstIllegalAccess = 0;
                     }
                     continue;
+                }
+
+                // If IOPMP supports per-entry interrupt suppression, IOPMP
+                // checks the suppression bit in ENTRY_CFG of the matched entry.
+                // The logic to generate interrupt when matching any priority entry is:
+                // "ERR_CFG.ie && !ENTRY_CFG(i).{sire|siwe|sixe}"
+                if (iopmp->reg_file.hwcfg2.peis) {
+                    gen_intrpt = gen_intrpt && !rule_analyzer_o.sie;
+                }
+                // If IOPMP supports per-entry bus error suppression, IOPMP
+                // checks the suppression bit in ENTRY_CFG of the matched entry.
+                // The logic to generate bus error when matching any priority entry is:
+                // "!ERR_CFG.rs && !ENTRY_CFG(i).{sere|sewe|sexe}"
+                if (iopmp->reg_file.hwcfg2.pees) {
+                    gen_buserr = gen_buserr && !rule_analyzer_o.see;
                 }
 
                 // If the matching entry is priority entry but doesn't grant
@@ -274,7 +294,6 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
     if (iopmp->reg_file.hwcfg2.non_prio_en) {
         if (nonPrioRuleStatus == NOT_HIT_ANY_RULE) {
             // None of the non-priority entries fully matches the transaction
-            iopmp->error_suppress = iopmp->reg_file.err_cfg.rs;
             error_type = NOT_HIT_ANY_RULE;
         } else {
             // At least one non-priority entry fully matches the transaction but
@@ -284,13 +303,21 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
             // error type = "illegal read access" (0x01) for read access
             // transaction or "illegal write access/AMO" (0x02) for write
             // access/AMO transaction.
-            iopmp->error_suppress = nonPrioErrorSup;
-            iopmp->intrpt_suppress = nonPrioIntrSup;
             error_type = nonPrioRuleStatus;
             error_eid  = nonPrioRuleNum;
+
+            // The logic to generate interrupt when matching non-priority entries is:
+            // "ERR_CFG.ie && (!ENTRY_CFG(i0).{sire|siwe|sixe} || !ENTRY_CFG(i1).{sire|siwe|sixe} ... )"
+            if (iopmp->reg_file.hwcfg2.peis) {
+                gen_intrpt = gen_intrpt && gen_intrpt_nonPrio;
+            }
+            // The logic to generate bus error when matching non-priority entries is:
+            // "!ERR_CFG.rs && (!ENTRY_CFG(i0).{sere|sewe|sexe} || !ENTRY_CFG(i1).{sere|sewe|sexe} ... )"
+            if (iopmp->reg_file.hwcfg2.pees) {
+                gen_buserr = gen_buserr && gen_buserr_nonPrio;
+            }
         }
     } else {
-        iopmp->error_suppress = iopmp->reg_file.err_cfg.rs;
         error_type = NOT_HIT_ANY_RULE;
     }
     goto stop_and_report_fault;
@@ -303,12 +330,12 @@ stop_and_report_fault:
     // If IOPMP implements error capture feature, IOPMP triggers error capture
     // to log the error information into the registers.
     if (iopmp->imp_error_capture) {
-        errorCapture(iopmp, trans_perm, error_type, rrid, error_eid, trans_req->addr, intrpt);
+        errorCapture(iopmp, trans_perm, error_type, rrid, error_eid, trans_req->addr, gen_intrpt, gen_buserr, intrpt);
     }
     // Return response with default status if no match/error occurs
     // In case of error suppression, success response is returned, with user defined value on initiator port
     // NOTE: You can change the `user` value
-    if (iopmp->error_suppress) {
+    if (!gen_buserr) {
         iopmp_trans_rsp->status = IOPMP_SUCCESS;
         iopmp_trans_rsp->user = USER;
     }
