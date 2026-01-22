@@ -60,8 +60,6 @@ typedef struct iopmp_dev_t {
     iopmp_regs_t reg_file;              // Register file for IOPMP
     iopmp_entries_t iopmp_entries;      // IOPMP entry table
     err_mfrs_t err_svs;                 // Error status vector
-    int intrpt_suppress;                // Set when interrupt is suppressed
-    int error_suppress;                 // Set when error is suppressed
     int rrid_stall[IOPMP_MAX_RRID_NUM]; // Stall status array for requester IDs
     int stall_cntr;                     // Counts stalled transactions
     bool imp_mdlck;                     // IOPMP implements the Memory Domain Lock (MDLCK) feature
@@ -158,7 +156,9 @@ uint8_t write_memory(uint64_t *data, uint64_t addr, uint32_t size);
 // Function Declarations: Core IOPMP operations
 void iopmpRuleAnalyzer(iopmp_dev_t *iopmp, iopmp_rule_analyzer_input_t *input,
                        iopmp_rule_analyzer_output_t *output);
-void errorCapture(iopmp_dev_t *iopmp, perm_type_e trans_type, uint8_t error_type, uint16_t rrid, uint16_t entry_id, uint64_t err_addr, uint8_t *intrpt);
-void generate_interrupt(iopmp_dev_t *iopmp, uint8_t *intrpt);
+void errorCapture(iopmp_dev_t *iopmp, perm_type_e trans_type, uint8_t error_type,
+                  uint16_t rrid, uint16_t entry_id, uint64_t err_addr,
+                  bool gen_intrpt, bool gen_buserr, uint8_t *intrpt);
+void generate_interrupt(iopmp_dev_t *iopmp, bool gen_intrpt, uint8_t *intrpt);
 
 #endif // IOPMP_H
