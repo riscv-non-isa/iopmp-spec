@@ -215,6 +215,8 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
             /* Reset output information */
             rule_analyzer_o.match_status = ENTRY_NOTMATCH;
             rule_analyzer_o.grant_perm   = false;
+            rule_analyzer_o.sie          = false;
+            rule_analyzer_o.see          = false;
 
             // Analyze entry for matching and permission granting
             iopmpRuleAnalyzer(iopmp, &rule_analyzer_i, &rule_analyzer_o);

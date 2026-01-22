@@ -103,10 +103,14 @@ static iopmpMatchStatus_t iopmpMatchAddr(uint64_t trans_start,
   * @param iopmpcfg IOPMP configuration for the entry
   * @param md Respective Memory Domain
   * @param is_amo Indicates the AMO Access
+  * @param sie Output 0 if matched entry doesn't suppress the interrupt, otherwise output 1
+  * @param see Output 0 if matched entry doesn't suppress the bus error, otherwise output 1
   * @return - true if entry grants transation permission
   *         - false if entry doesn't grant transation permission
  **/
-static bool iopmpCheckPerms(iopmp_dev_t *iopmp, uint16_t rrid, perm_type_e req_perm, entry_cfg_t iopmpcfg, uint8_t md, bool is_amo) {
+static bool iopmpCheckPerms(iopmp_dev_t *iopmp, uint16_t rrid, perm_type_e req_perm,
+                            entry_cfg_t iopmpcfg, uint8_t md, bool is_amo,
+                            bool *sie, bool *see) {
     // Common permission checks
     bool read_allowed    = false;
     bool write_allowed   = false;
@@ -152,23 +156,23 @@ static bool iopmpCheckPerms(iopmp_dev_t *iopmp, uint16_t rrid, perm_type_e req_p
     switch (req_perm) {
     case READ_ACCESS:
         if (!read_allowed) {
-            iopmp->intrpt_suppress = iopmpcfg.sire;
-            iopmp->error_suppress  = iopmpcfg.sere | iopmp->reg_file.err_cfg.rs;
+            *sie = iopmp->reg_file.hwcfg2.peis ? iopmpcfg.sire : false;
+            *see = iopmp->reg_file.hwcfg2.pees ? iopmpcfg.sere : false;
         }
         return read_allowed;
 
     case WRITE_ACCESS:
         if (!write_allowed) {
-            iopmp->intrpt_suppress = iopmpcfg.siwe;
-            iopmp->error_suppress  = iopmpcfg.sewe | iopmp->reg_file.err_cfg.rs;
+            *sie = iopmp->reg_file.hwcfg2.peis ? iopmpcfg.siwe : false;
+            *see = iopmp->reg_file.hwcfg2.pees ? iopmpcfg.sewe : false;
         }
         return write_allowed;
 
     case INSTR_FETCH:
         if (iopmp->reg_file.hwcfg2.chk_x) {
             if (!execute_allowed) {
-                iopmp->intrpt_suppress = iopmpcfg.sixe;
-                iopmp->error_suppress  = iopmpcfg.sexe | iopmp->reg_file.err_cfg.rs;
+                *sie = iopmp->reg_file.hwcfg2.peis ? iopmpcfg.sixe : false;
+                *see = iopmp->reg_file.hwcfg2.pees ? iopmpcfg.sexe : false;
             }
             return execute_allowed;
         }
@@ -212,5 +216,6 @@ void iopmpRuleAnalyzer(iopmp_dev_t *iopmp,
     // iopmpMatchAddr() returns ENTRY_MATCH. Further checks entry permissions
     output->grant_perm = iopmpCheckPerms(iopmp, input->rrid, input->perm,
                                          input->iopmpcfg, input->md,
-                                         input->is_amo);
+                                         input->is_amo,
+                                         &output->sie, &output->see);
 }

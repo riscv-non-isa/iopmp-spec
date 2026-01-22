@@ -145,6 +145,12 @@ typedef struct iopmp_rule_analyzer_input_t {
 typedef struct iopmp_rule_analyzer_output_t {
     iopmpMatchStatus_t match_status;
     bool grant_perm;
+    bool sie;           // When per-entry interrupt suppression is supported,
+                        // this signal indicates the matched entry suppresses
+                        // the interrupt for requested permission.
+    bool see;           // When per-entry bus error suppression is supported,
+                        // this signal indicates the matched entry suppresses
+                        // the bus error for requested permission.
 } iopmp_rule_analyzer_output_t;
 
 uint8_t write_memory(uint64_t *data, uint64_t addr, uint32_t size);
