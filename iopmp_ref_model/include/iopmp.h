@@ -42,6 +42,8 @@
 #define WORD_BITS        32
 #define MIN_REG_WIDTH    4
 
+#define MIN_GRANULARITY  4
+
 // Helper Macros for Register Calculations
 #define MDCFG_TABLE_INDEX(offset)           (((offset) - MDCFG_TABLE_BASE_OFFSET) / 4)
 #define SRCMD_TABLE_INDEX(offset)           (((offset) - SRCMD_TABLE_BASE_OFFSET) / SRCMD_REG_STRIDE)
@@ -62,6 +64,7 @@ typedef struct iopmp_dev_t {
     err_mfrs_t err_svs;                 // Error status vector
     int rrid_stall[IOPMP_MAX_RRID_NUM]; // Stall status array for requester IDs
     int stall_cntr;                     // Counts stalled transactions
+    uint64_t granularity;               // The granularity (bytes) of protected regions by entry
     bool imp_mdlck;                     // IOPMP implements the Memory Domain Lock (MDLCK) feature
     bool imp_error_capture;             // IOPMP implements the error capture record
     bool imp_err_reqid_eid;             // IOPMP implements ERR_REQID.eid
@@ -99,6 +102,7 @@ typedef struct iopmp_cfg_t {
     bool rrid_transl_prog;              // HWCFG3.rrid_transl field is programmable
     uint16_t rrid_transl;               // The RRID tagged to outgoing transactions
     uint64_t entryoffset;               // The offset address of the IOPMP array from the base of an IOPMP instance
+    uint64_t granularity;               // The granularity (bytes) of protected regions by entry
     bool imp_mdlck;                     // IOPMP implements the Memory Domain Lock (MDLCK) feature
     bool imp_error_capture;             // IOPMP implements the error capture record
     bool imp_err_reqid_eid;             // IOPMP implements ERR_REQID.eid
