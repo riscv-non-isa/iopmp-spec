@@ -64,6 +64,53 @@ int main()
     cfg.imp_msi = true;
     cfg.imp_stall_buffer = true;
 
+    START_TEST("Test entry granularity and encoding of ENTRY_ADDR(H)");
+    uint32_t entry_addr, entry_addrh;
+    cfg.granularity = MIN_GRANULARITY;  // G=0
+    reset_iopmp(&iopmp, &cfg);
+    configure_entry_n(&iopmp, ENTRY_ADDR, 1, 5678 >> 2, 4);
+    configure_entry_n(&iopmp, ENTRY_CFG, 1, (NA4 | R), 4);
+    entry_addr  = read_entry_n(&iopmp, ENTRY_ADDR,  1, 4);
+    entry_addrh = read_entry_n(&iopmp, ENTRY_ADDRH, 1, 4);
+    FAIL_IF((entry_addr != (5678 >> 2)));
+    FAIL_IF((entry_addrh != 0));
+    cfg.granularity = (1ULL << (1+2));  // G=1
+    reset_iopmp(&iopmp, &cfg);
+    configure_entry_n(&iopmp, ENTRY_ADDR, 1, 5678 >> 2, 4);
+    configure_entry_n(&iopmp, ENTRY_CFG, 1, (NA4 | R), 4);  // Will be OFF because G=1
+    entry_addr  = read_entry_n(&iopmp, ENTRY_ADDR,  1, 4);
+    entry_addrh = read_entry_n(&iopmp, ENTRY_ADDRH, 1, 4);
+    FAIL_IF((entry_addr != ((5678 >> 2) & ~0x1)));  // OFF. Bits [G-1:0] read as all zeros
+    FAIL_IF((entry_addrh != 0));
+    configure_entry_n(&iopmp, ENTRY_CFG, 1, (TOR | R), 4);
+    entry_addr  = read_entry_n(&iopmp, ENTRY_ADDR,  1, 4);
+    entry_addrh = read_entry_n(&iopmp, ENTRY_ADDRH, 1, 4);
+    FAIL_IF((entry_addr != ((5678 >> 2) & ~0x1)));  // TOR. Bits [G-1:0] read as all zeros
+    FAIL_IF((entry_addrh != 0));
+    cfg.granularity = (1ULL << (35+2)); // G=35
+    reset_iopmp(&iopmp, &cfg);
+    configure_entry_n(&iopmp, ENTRY_ADDR, 1, (0xFF), 4);
+    configure_entry_n(&iopmp, ENTRY_ADDRH, 1, (0xF2000000FF) >> 32, 4);
+    configure_entry_n(&iopmp, ENTRY_CFG, 1, (NA4 | R), 4);  // Will be OFF because G=35
+    entry_addr  = read_entry_n(&iopmp, ENTRY_ADDR,  1, 4);
+    entry_addrh = read_entry_n(&iopmp, ENTRY_ADDRH, 1, 4);
+    FAIL_IF((entry_addr != (0)));       // OFF. Bits [G-1:0] read as all zeros
+    FAIL_IF((entry_addrh != (0xF0)));   // OFF. Bits [G-1:0] read as all zeros
+    configure_entry_n(&iopmp, ENTRY_CFG, 1, (TOR | R), 4);
+    entry_addr  = read_entry_n(&iopmp, ENTRY_ADDR,  1, 4);
+    entry_addrh = read_entry_n(&iopmp, ENTRY_ADDRH, 1, 4);
+    FAIL_IF((entry_addr != (0)));       // TOR. Bits [G-1:0] read as all zeros
+    FAIL_IF((entry_addrh != (0xF0)));   // TOR. Bits [G-1:0] read as all zeros
+    configure_entry_n(&iopmp, ENTRY_CFG, 1, (NAPOT | R), 4);
+    entry_addr  = read_entry_n(&iopmp, ENTRY_ADDR,  1, 4);
+    entry_addrh = read_entry_n(&iopmp, ENTRY_ADDRH, 1, 4);
+    FAIL_IF((entry_addr != (0xFFFFFFFF)));  // NAPOT. Bits [G-2:0] read as all ones
+    FAIL_IF((entry_addrh != (0xF3)));       // NAPOT. Bits [G-2:0] read as all ones
+    END_TEST();
+
+    // Reset granularity for following tests
+    cfg.granularity = MIN_GRANULARITY;
+
 #if (SRC_ENFORCEMENT_EN == 0)
     START_TEST("Test OFF - Read Access permissions");
     reset_iopmp(&iopmp, &cfg);
@@ -566,7 +613,7 @@ int main()
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_ERROR, ILLEGAL_READ_ACCESS);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
     cfg.chk_x = true;
-    END_TEST();    
+    END_TEST();
 
     START_TEST_IF(iopmp.imp_mdlck, "Test MDLCK, updating locked srcmd_en field",
     reset_iopmp(&iopmp, &cfg);
