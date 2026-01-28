@@ -814,12 +814,17 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
                     iopmp->iopmp_entries.entry_table[entry_idx].entry_cfg.w = entry_cfg_temp.w;
                     iopmp->iopmp_entries.entry_table[entry_idx].entry_cfg.x = entry_cfg_temp.x;
                     if (entry_cfg_temp.a == IOPMP_TOR) {
-                        // ENTRY_CFG.A is WARL, check for TOR Enable before, writing.
+                        // ENTRY_CFG.A is WARL, check tor_en before writing.
                         if (iopmp->reg_file.hwcfg0.tor_en) {
                             iopmp->iopmp_entries.entry_table[entry_idx].entry_cfg.a = entry_cfg_temp.a;
                         }
-                    }
-                    else {
+                    } else if (entry_cfg_temp.a == IOPMP_NA4) {
+                        // ENTRY_CFG.A is WARL, check granularity before writing.
+                        if (iopmp->granularity == MIN_GRANULARITY) {
+                            iopmp->iopmp_entries.entry_table[entry_idx].entry_cfg.a = entry_cfg_temp.a;
+                        }
+                    } else {
+                        // Always legal to set OFF or NAPOT
                         iopmp->iopmp_entries.entry_table[entry_idx].entry_cfg.a = entry_cfg_temp.a;
                     }
 
