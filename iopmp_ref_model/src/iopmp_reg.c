@@ -90,6 +90,13 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     // Stall buffer is only needed when stall features are implemented
     if (cfg->imp_stall_buffer && !cfg->stall_en)
         return -1;
+    // The granularity must greater or equal to 4 bytes and must be power of 2
+    if ((cfg->granularity < MIN_GRANULARITY) ||
+        ((cfg->granularity & (cfg->granularity - 1)) != 0))
+        return -1;
+    // It doesn't make sense to have the granularity greater than 32-bit but no ENTRY_ADDRH
+    if ((cfg->granularity > UINT32_MAX) && !cfg->addrh_en)
+        return -1;
 
     // Zeroize all states
     memset(iopmp, 0, sizeof(*iopmp));
@@ -146,6 +153,7 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
         iopmp->reg_file.err_reqid.eid       = 0xFFFF;
     }
 
+    iopmp->granularity                      = cfg->granularity;
     iopmp->imp_mdlck                        = cfg->imp_mdlck;
     iopmp->imp_error_capture                = cfg->imp_error_capture;
     iopmp->imp_err_reqid_eid                = cfg->imp_err_reqid_eid;
