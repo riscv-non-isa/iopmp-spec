@@ -34,6 +34,7 @@
 /**
   * @brief Computes the address range based on the IOPMP entry configuration.
   *
+  * @param iopmp The IOPMP instance.
   * @param startAddr Pointer to store the start address of the range
   * @param endAddr Pointer to store the end address of the range
   * @param prev_iopmpaddr Previous IOPMP address (used in TOR mode)
@@ -41,7 +42,7 @@
   * @param iopmpcfg IOPMP entry configuration
   * @return 0 on success, 1 if the IOPMP entry is disabled
  **/
-static int iopmpAddrRange(uint64_t *startAddr, uint64_t *endAddr, uint64_t prev_iopmpaddr, uint64_t iopmpaddr, entry_cfg_t iopmpcfg) {
+static int iopmpAddrRange(iopmp_dev_t *iopmp, uint64_t *startAddr, uint64_t *endAddr, uint64_t prev_iopmpaddr, uint64_t iopmpaddr, entry_cfg_t iopmpcfg) {
     uint64_t napot_mask;
     // Check if IOPMP entry is OFF
     if (iopmpcfg.a == IOPMP_OFF) { return 1; }
@@ -53,6 +54,13 @@ static int iopmpAddrRange(uint64_t *startAddr, uint64_t *endAddr, uint64_t prev_
             break;
 
         case IOPMP_TOR:  // Address range specified by top-of-range mode
+            /* Bits [G-1:0] do not affect the TOR address-matching logic */
+            uint8_t G = get_granularity_G(iopmp);
+            if (G >= 1) {
+                uint64_t G_mask = gen_granularity_tor_mask(G);
+                prev_iopmpaddr &= ~G_mask;
+                iopmpaddr      &= ~G_mask;
+            }
             *startAddr = prev_iopmpaddr;
             *endAddr   = iopmpaddr;
             break;
@@ -197,7 +205,7 @@ void iopmpRuleAnalyzer(iopmp_dev_t *iopmp,
     uint64_t start_addr, end_addr;
 
     // Set up the address range; if range setup fails, return not matched
-    if (iopmpAddrRange(&start_addr, &end_addr, input->prev_iopmpaddr,
+    if (iopmpAddrRange(iopmp, &start_addr, &end_addr, input->prev_iopmpaddr,
                        input->iopmpaddr, input->iopmpcfg)) {
         output->match_status = ENTRY_NOTMATCH;
         return;
