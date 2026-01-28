@@ -28,6 +28,19 @@
 /* Generate 32-bit mask[h:l] */
 #define GENMASK_32(h, l) \
     (((~(uint32_t)0) - ((uint32_t)1 << (l)) + 1) & (~(uint32_t)0 >> (32-1-(h))))
+/* Generate 64-bit mask[h:l] */
+#define GENMASK_64(h, l) \
+    (((~(uint64_t)0) - ((uint64_t)1 << (l)) + 1) & (~(uint64_t)0 >> (64-1-(h))))
+
+uint64_t gen_granularity_tor_mask(uint8_t G)
+{
+    return GENMASK_64(G - 1, 0);
+}
+
+uint64_t gen_granularity_napot_mask(uint8_t G)
+{
+    return GENMASK_64(G - 2, 0);
+}
 
 /**
  * @brief Resets the I/O Physical Memory Protection (IOPMP) configuration
@@ -267,6 +280,54 @@ static bool is_access_valid(iopmp_dev_t *iopmp, uint64_t offset, uint8_t num_byt
 }
 
 /**
+ * @brief Reads ENTRY_ADDR or ENTRY_ADDRH from requested entry
+ *
+ * @param iopmp The IOPMP instance.
+ * @param entry_idx The index of the entry to be read.
+ * @param read_addrh Whether to read ENTRY_ADDRH or not (ENTRY_ADDR).
+ *
+ * @return The 32-bit value of the register.
+ */
+static uint32_t read_entry_addr(iopmp_dev_t *iopmp, uint16_t entry_idx,
+                                bool read_addrh)
+{
+    entry_table_t entry;
+    uint64_t entry_addr_64;
+    uint32_t pmp_a;
+    uint8_t G;
+    uint64_t G_mask;
+
+    entry = iopmp->iopmp_entries.entry_table[entry_idx];
+    entry_addr_64 = CONCAT32(entry.entry_addrh.addrh, entry.entry_addr.addr);
+    pmp_a = entry.entry_cfg.a;
+    G = get_granularity_G(iopmp);
+
+    switch (pmp_a) {
+    case IOPMP_OFF:
+        /* fallthrough */
+    case IOPMP_TOR:
+        /* When G>=1 and the mode is OFF or TOR, bits [G-1:0] read as all zeros */
+        if (G >= 1) {
+            G_mask = gen_granularity_tor_mask(G);
+            entry_addr_64 &= ~G_mask;
+        }
+        break;
+    case IOPMP_NAPOT:
+        /* When G>=2 and the mode is NAPOT, bits [G-2:0] read as all ones */
+        if (G >= 2) {
+            G_mask = gen_granularity_napot_mask(G);
+            entry_addr_64 |= G_mask;
+        }
+        break;
+    default:
+        break;
+    }
+
+    return read_addrh ? (entry_addr_64 >> 32) :         // ENTRY_ADDRH
+                        (entry_addr_64 & UINT32_MAX);   // ENTRY_ADDR
+}
+
+/**
  * @brief Reads a register based on the given offset and byte size.
  *
  * This function handles special cases for specific offsets (e.g., error registers)
@@ -328,6 +389,12 @@ reg_intf_dw read_register(iopmp_dev_t *iopmp, uint64_t offset, uint8_t num_bytes
 
     // If the offset is within the valid range for entry registers, return the appropriate value.
     if (is_access_entry_array(iopmp, offset)) {
+        uint32_t entry_reg = ENTRY_REG_INDEX(iopmp, offset);
+        uint16_t entry_idx = ENTRY_TABLE_INDEX(iopmp, offset);
+
+        if (entry_reg == 0 || entry_reg == 1)
+            return read_entry_addr(iopmp, entry_idx, (entry_reg == 1));
+
         // Return 4-byte or 8-byte register value based on num_bytes.
         return iopmp->iopmp_entries.regs4[(offset - iopmp->reg_file.entryoffset.offset) / num_bytes];
     }
