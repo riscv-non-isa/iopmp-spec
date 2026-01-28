@@ -165,4 +165,20 @@ void errorCapture(iopmp_dev_t *iopmp, perm_type_e trans_type, uint8_t error_type
                   bool gen_intrpt, bool gen_buserr, uint8_t *intrpt);
 void generate_interrupt(iopmp_dev_t *iopmp, bool gen_intrpt, uint8_t *intrpt);
 
+/*
+ * Calculate IOPMP granularity value 'G'
+ *
+ * The granularity value 'G' is defined as log2(granularity) - 2, where
+ * granularity is the minimum alignment requirement for IOPMP regions in bytes.
+ */
+static inline uint8_t get_granularity_G(iopmp_dev_t *iopmp)
+{
+    return __builtin_ctzll(iopmp->granularity >> 2);
+}
+
+// Generate granularity bitmask [G-1:0]
+uint64_t gen_granularity_tor_mask(uint8_t G);
+// Generate granularity bitmask [G-2:0]
+uint64_t gen_granularity_napot_mask(uint8_t G);
+
 #endif // IOPMP_H
