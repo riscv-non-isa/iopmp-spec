@@ -199,6 +199,10 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
         }
 
         for (int cur_entry = lwr_entry; cur_entry < upr_entry; cur_entry++) {
+            /* Any entry with index >= HWCFG1.entry_num is not available */
+            if (cur_entry >= iopmp->reg_file.hwcfg1.entry_num)
+                break;
+
             /* Assign necessary input information */
             rule_analyzer_i.prev_iopmpaddr =
                 (cur_entry == 0) ? 0 : CONCAT32(iopmp->iopmp_entries.entry_table[cur_entry - 1].entry_addrh.addrh,
