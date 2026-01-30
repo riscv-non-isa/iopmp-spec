@@ -42,6 +42,8 @@
 #define WORD_BITS        32
 #define MIN_REG_WIDTH    4
 
+#define MIN_GRANULARITY  4
+
 // Helper Macros for Register Calculations
 #define MDCFG_TABLE_INDEX(offset)           (((offset) - MDCFG_TABLE_BASE_OFFSET) / 4)
 #define SRCMD_TABLE_INDEX(offset)           (((offset) - SRCMD_TABLE_BASE_OFFSET) / SRCMD_REG_STRIDE)
@@ -62,6 +64,7 @@ typedef struct iopmp_dev_t {
     err_mfrs_t err_svs;                 // Error status vector
     int rrid_stall[IOPMP_MAX_RRID_NUM]; // Stall status array for requester IDs
     int stall_cntr;                     // Counts stalled transactions
+    uint64_t granularity;               // The granularity (bytes) of protected regions by entry
     bool imp_mdlck;                     // IOPMP implements the Memory Domain Lock (MDLCK) feature
     bool imp_error_capture;             // IOPMP implements the error capture record
     bool imp_err_reqid_eid;             // IOPMP implements ERR_REQID.eid
@@ -99,6 +102,7 @@ typedef struct iopmp_cfg_t {
     bool rrid_transl_prog;              // HWCFG3.rrid_transl field is programmable
     uint16_t rrid_transl;               // The RRID tagged to outgoing transactions
     uint64_t entryoffset;               // The offset address of the IOPMP array from the base of an IOPMP instance
+    uint64_t granularity;               // The granularity (bytes) of protected regions by entry
     bool imp_mdlck;                     // IOPMP implements the Memory Domain Lock (MDLCK) feature
     bool imp_error_capture;             // IOPMP implements the error capture record
     bool imp_err_reqid_eid;             // IOPMP implements ERR_REQID.eid
@@ -160,5 +164,21 @@ void errorCapture(iopmp_dev_t *iopmp, perm_type_e trans_type, uint8_t error_type
                   uint16_t rrid, uint16_t entry_id, uint64_t err_addr,
                   bool gen_intrpt, bool gen_buserr, uint8_t *intrpt);
 void generate_interrupt(iopmp_dev_t *iopmp, bool gen_intrpt, uint8_t *intrpt);
+
+/*
+ * Calculate IOPMP granularity value 'G'
+ *
+ * The granularity value 'G' is defined as log2(granularity) - 2, where
+ * granularity is the minimum alignment requirement for IOPMP regions in bytes.
+ */
+static inline uint8_t get_granularity_G(iopmp_dev_t *iopmp)
+{
+    return __builtin_ctzll(iopmp->granularity >> 2);
+}
+
+// Generate granularity bitmask [G-1:0]
+uint64_t gen_granularity_tor_mask(uint8_t G);
+// Generate granularity bitmask [G-2:0]
+uint64_t gen_granularity_napot_mask(uint8_t G);
 
 #endif // IOPMP_H

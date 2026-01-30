@@ -118,6 +118,18 @@ void configure_entry_n(iopmp_dev_t *iopmp, uint8_t entry_reg, uint64_t entry_idx
 }
 
 /**
+ * @brief Read Entry Table
+ *
+ * @param iopmp The IOPMP instance.
+ * @param entry_reg It could be ENTRY_ADDR, ENTRY_ADDRH, ENTRY_CFG, ENTRY_USER_CFG.
+ * @param entry_idx It could be any legal Entry Table Index.
+ * @param num_bytes It could be 4-Byte read or 8-Byte read.
+  */
+reg_intf_dw read_entry_n(iopmp_dev_t *iopmp, uint8_t entry_reg, uint64_t entry_idx, uint8_t num_bytes) {
+    return read_register(iopmp, iopmp->reg_file.entryoffset.offset + entry_reg + (entry_idx * ENTRY_REG_STRIDE), num_bytes);
+}
+
+/**
   * @brief Receiver Port Signals
   *
   * @param rrid RRID Of the Bus Initiator

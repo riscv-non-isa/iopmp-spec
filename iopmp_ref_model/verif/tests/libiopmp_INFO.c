@@ -58,6 +58,7 @@ int main(void)
     cfg.rrid_transl_prog = false;
     cfg.rrid_transl = 48;
     cfg.entryoffset = 0x2000;
+    cfg.granularity = MIN_GRANULARITY;
     cfg.imp_mdlck = true;
     cfg.imp_error_capture = true;
     cfg.imp_err_reqid_eid = true;
