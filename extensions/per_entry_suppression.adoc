@@ -30,7 +30,7 @@ Where `!` represents logical NOT, and `&&` represents logical AND.
 `HWCFG2.pees` indicates whether the IOPMP supports per-entry bus error suppression. If `HWCFG2.pees` is 1, every entry _i_ has three interrupt suppression bits, `sere`, `sewe`, `sexe`, in register `ENTRY_CFG(_i_)`.
 The bits suppress bus error due to illegal read access, illegal writes access/AMO and illegal instruction fetch respectively.
 
-When an illegal transaction occurs with error type "illegal read access" (0x01), "illegal write access/AMO" (0x02), or "illegal instruction fetch (0x03)", an IOPMP responds bus error if the bus error is not suppressed by `ERR_CFG.rs` and corresponding per-entry suppression bit. `rs` globally suppresses returning a bus error on illegal access. When global suppression is disabled, individual per-entry suppression is possible using `sere`, `sewe`, and `sexe` in `ENTRY_CFG(_i_)` for illegal read access, illegal write access/AMO, and illegal instruction fetch, respectively. Considering Entry _i_ matches an illegal transaction, the condition for a bus error response for each access type can be described as follows:
+When an illegal transaction occurs with error type "illegal read access" (0x01), "illegal write access/AMO" (0x02), or "illegal instruction fetch" (0x03), an IOPMP responds bus error if the bus error is not suppressed by `ERR_CFG.rs` and corresponding per-entry suppression bit. `rs` globally suppresses returning a bus error on illegal access. When global suppression is disabled, individual per-entry suppression is possible using `sere`, `sewe`, and `sexe` in `ENTRY_CFG(_i_)` for illegal read access, illegal write access/AMO, and illegal instruction fetch, respectively. Considering Entry _i_ matches an illegal transaction, the condition for a bus error response for each access type can be described as follows:
 
 * Illegal read access (0x01): +
 `!ERR_CFG.rs && !ENTRY_CFG(_i_).sere`
@@ -88,7 +88,7 @@ h|Field                         |Bits       |R/W       |Default    |Description
 |`sere`                         |8:8        |WARL      |IMP       a|Suppress the (bus) error on an illegal read access caught by the entry:
 
 * 0x0: respond an error if `ERR_CFG.rs` is 0x0. 
-* 0x1: do not respond an error. User to define the behavior, e.g., respond a success with an implementation-dependent value to the initiator.
+* 0x1: do not respond an error. User to define the behavior, e.g., respond a success with an implementation-dependent value to the requester.
 
 |`sewe`                         |9:9        |WARL      |IMP       a|Suppress the (bus) error on an illegal write access/AMO caught by the entry:
 
@@ -97,5 +97,5 @@ h|Field                         |Bits       |R/W       |Default    |Description
 |`sexe`                         |10:10      |WARL      |IMP       a|Suppress the (bus) error on an illegal instruction fetch caught by the entry:
 
 * 0x0: respond an error if `ERR_CFG.rs` is 0x0.
-* 0x1: do not respond an error. User to define the behavior, e.g., respond a success with an implementation-dependent value to the initiator.
+* 0x1: do not respond an error. User to define the behavior, e.g., respond a success with an implementation-dependent value to the requester.
 |===
