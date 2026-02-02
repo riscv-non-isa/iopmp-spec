@@ -7,46 +7,44 @@ This document refers to the term “secure monitor” as the software responsibl
 [%autowidth, cols="<1,<3", options="header"]
 |===
 |Term |Description
-|AMO| atomic memory operation
-|DC| don't care
-|DMA| direct memory access
-|DRAM| dynamic random-access memory
-|ID| identifier
-|IMP|implementation-dependent
-|IMSIC| Incoming Message-Signaled Interrupt Controller, defined in the RISC-V advanced interrupt architecture (AIA) cite:[AIA] specification
-|IOMMU| Input-Output Memory Management Unit cite:[IOMMU], a RISC-V non-ISA specification
-|MD| memory domain
-|MMIO|memory mapped input/output devices
-|NA4|naturally aligned four-byte region, one of the address matching mode used in RISC-V PMP cite:[PrivISA] and IOPMP
-|NAPOT|naturally aligned power-of-2 region, one of the address matching mode used in RISC-V PMP cite:[PrivISA] and IOPMP
-|N/A| not available
-|RRID| Request Role ID
-|RX|receiver
-|TOR|top boundary of an arbitrary range, one of the address matching mode used in RISC-V PMP cite:[PrivISA] and IOPMP
-|TX|transmitter
-|WARL|write any read legal, a behavior of fields
-|W1C|write '1' clear, a behavior of single bit fields
-|W1CS|write '1' clear and sticky to 0, a behavior of single bit fields: writing '1' clears the bit. If the bit is cleared, this state remains fixed until IOPMP registers are reset.
-|W1SS|write '1' set and sticky to 1, a behavior of single bit fields: writing '1' sets the bit. If the bit is set, this state remains fixed until IOPMP registers are reset.
-|X( _n_ )|the _n_-th register in the register array X, which starts from 0.
-|X[ _n_ ]|the _n_-th bit of a register X or register field X
-|X( _n_ : _m_ )|the _n_-th to _m_-th registers of a register X.
-|X[ _n_ : _m_ ]|the _n_-th to _m_-th bits of a register X or register field X.
+|AMO  | Atomic memory operation.
+|DC   | Don't care.
+|DMA  | Direct memory access.
+|DRAM | Dynamic random-access memory.
+|ID   | Identifier.
+|IMP  | Implementation-dependent.
+|IMSIC| Incoming Message-Signaled Interrupt Controller, defined in the RISC-V advanced interrupt architecture (AIA) cite:[AIA] specification.
+|IOMMU| Input-Output Memory Management Unit cite:[IOMMU], a RISC-V non-ISA specification.
+|MD   | Memory domain.
+|MMIO | Memory mapped input/output devices.
+|NA4  | Naturally aligned four-byte region, one of the address matching mode used in RISC-V PMP cite:[PrivISA] and IOPMP.
+|NAPOT| Naturally aligned power-of-2 region, one of the address matching mode used in RISC-V PMP cite:[PrivISA] and IOPMP.
+|N/A  | Not available.
+|RRID | Request Role ID.
+|TOR  | Top boundary of an arbitrary range, one of the address matching mode used in RISC-V PMP cite:[PrivISA] and IOPMP.
+|WARL | Write any read legal, a behavior of fields.
+|RW1C | Read bit return the status and write '1' clear the status, a behavior of single bit fields.
+|W1CS | Write '1' clear and sticky to 0, a behavior of single bit fields: writing '1' clears the bit. If the bit is cleared, this state remains fixed until IOPMP registers are reset.
+|W1SS | Write '1' set and sticky to 1, a behavior of single bit fields: writing '1' sets the bit. If the bit is set, this state remains fixed until IOPMP registers are reset.
+|X( _n_ )| The _n_-th register in the register array X, which starts from 0.
+|X[ _n_ ]| The _n_-th bit of a register X or register field X
+|X( _n_ : _m_ )| The _n_-th to _m_-th registers of a register X.
+|X[ _n_ : _m_ ]| The _n_-th to _m_-th bits of a register X or register field X.
 |===
 
 === Request-Role-ID and Transaction
-Request Role ID, RRID for short, is a unique ID to identify a system-defined security context. For example, a unique RRID can be a transaction requestor or a group of transaction requestors with the same permission. Depending on the IOPMP integration, transactions may be tagged with an RRID to identify the requestor. Tagging requestors with RRID is implementation-dependent. The number of bits of an RRID is implementation-dependent as well. If different channels or modes of a requestor could be granted different access permissions, they can have their own RRID.
+Request Role ID (RRID) is a unique ID to identify a system-defined security context. For example, a unique RRID can be a transaction requester or a group of transaction requesters with the same permission. Depending on the IOPMP integration, transactions may be tagged with an RRID to identify the requester. Tagging requesters with RRID is implementation-dependent. The number of bits of an RRID is implementation-dependent as well. If different channels or modes of a requester could be granted different access permissions, they can have their own RRID.
 
 
-=== Requestor Port, Receiver Port and Control Port
-An IOPMP has one or multiple requestor ports, one or multiple receiver ports and one control port. A receiver port is where a transaction goes into the IOPMP, and a requestor port is where a transaction leaves it if the transaction passes all the checks. The control port is used to program the IOPMP.
+=== Requester Port, Receiver Port and Control Port
+An IOPMP has one or multiple requester ports, one or multiple receiver ports and one control port. A receiver port is where a transaction goes into the IOPMP, and a requester port is where a transaction leaves it if the transaction passes all the checks. The control port is used to program the IOPMP.
 
 === Memory Domain
-An Request-Role-ID (RRID) serves as an abstract identifier for a transaction initiator, representing one or more requestors that are assigned an identical set of potential access permissions. Conversely, a Memory Domain (MD) is an abstract construct representing a transaction destination. Its primary purpose is to logically group a set of memory regions that share a common functional or security objective, thereby simplifying the subsequent management. MDs are indexed starting from zero.
+A Request-Role-ID (RRID) serves as an abstract identifier for a transaction requester, representing one or more requesters that are assigned an identical set of potential access permissions. Conversely, a Memory Domain (MD) is an abstract construct representing a transaction destination. Its primary purpose is to logically group a set of memory regions that share a common functional or security objective, thereby simplifying the subsequent management. MDs are indexed starting from zero.
 
 For example, a Network Interface Controller (NIC) typically utilizes multiple memory areas, such as a Receive (RX) data buffer, a Transmit (TX) data buffer, and a set of control registers. These distinct regions, due to their association with the single NIC device and similar access requirements, can be efficiently consolidated into a single Memory Domain. If a processor (or other bus agent) is given full control over the NIC's operation, that agent may then be explicitly associated with this MD.
 
-It’s important to note that, generally speaking, a single RRID can be associated with multiple memory domains (MDs), and a MD can be associated with multiple RRIDs. SRCMD Table is a one of fundamental structures in IOPMP to indicate associations between RRIDs and MDs, which will be introduced in <<#SRCMD_TABLE, SRCMD Table>>.
+It’s important to note that, generally speaking, a single RRID can be associated with multiple memory domains (MDs), and a MD can be associated with multiple RRIDs. SRCMD Table is one of the fundamental structures in IOPMP to indicate associations between RRIDs and MDs, which will be introduced in <<#SRCMD_TABLE, SRCMD Table>>.
 
 MDCFG Table also is one of fundamental structures in IOPMP to define a set of memory regions in a MD, which will be introduced in <<#MDCFG_TABLE, MDCFG Table>>. An IOPMP entry defines a single memory region, which will be introduced in <<#IOPMP_ENTRY, IOPMP Entry and IOPMP Entry Array>>. 
 
@@ -57,7 +55,7 @@ An RRID associated with a MD may not have full permissions on all memory regions
 === IOPMP Entry and IOPMP Entry Array
 The IOPMP entry array, contains `HWCFG1.entry_num` IOPMP entries, where the value zero is reserved. Each entry, starting from an index of zero, includes a specified memory region and the corresponding permissions.
 
-For an entry indexed by _i_, `ENTRY_ADDR(_i_)`, `ENTRY_ADDRH(_i_)` and `ENTRY_CFG(_i_).a` encode the memory region in the same way as the RISC-V PMP. `ENTRY_ADDR(_i_)` and `ENTRY_ADDRH(_i_)` are the encoded address for the IOPMP with addresses greater than 34 bits. For addresses less than and equal to 34 bits, only `ENTRY_ADDR(_i_)` is in use. To determine whether `ENTRY_ADDRH(_i_)` are implemented, one can check `HWCFG0.addrh_en`. Please refer <<#HWCFG0, HWCFG0>> for more details of `HWCFG0.addrh_en`. `ENTRY_CFG(_i_).a` is the address mode, which are OFF, NA4, NAPOT, and TOR. Please refer to the RISC-V privileged spec cite:[PrivISA] for the details of the encoding schemes. `HWCFG0.tor_en` = 1 indicates the IOPMP supports TOR address mode.
+For an entry indexed by _i_, `ENTRY_ADDR(_i_)`, `ENTRY_ADDRH(_i_)` and `ENTRY_CFG(_i_).a` encode the memory region in the same way as the RISC-V PMP. `ENTRY_ADDR(_i_)` and `ENTRY_ADDRH(_i_)` are the encoded address for the IOPMP with addresses greater than 34 bits. For addresses less than and equal to 34 bits, only `ENTRY_ADDR(_i_)` is in use. To determine whether `ENTRY_ADDRH(_i_)` are implemented, software can check `HWCFG0.addrh_en`. Please refer <<#HWCFG0, HWCFG0>> for more details of `HWCFG0.addrh_en`. `ENTRY_CFG(_i_).a` is the address mode, which are OFF, NA4, NAPOT, and TOR. Please refer to the RISC-V privileged spec cite:[PrivISA] for the details of the encoding schemes. `HWCFG0.tor_en` = 1 indicates the IOPMP supports TOR address mode.
 
 [NOTE]
 ====
@@ -84,12 +82,16 @@ A memory domain may have an IOPMP entry with index &#8805; `HWCFG1.entry_num` du
 ====
 
 When an RRID is associated with a memory domain, it is also inherently associated with all the entries that belong to that memory domain.
+<<EXAMPLE_RRID2ENTRY>> illustrates an example of relations between RRIDs, memory domains, and IOPMP entries. In the example, RRID 0 is associated with entry 0, 1, 2, 5, 6, and RRID 1 is associated with entry 0, 1, 2, 3, 4.
 
+[#EXAMPLE_RRID2ENTRY]
+.An example of relations between RRIDs, memory domains, and IOPMP entries.
+image::images/rrid2entry.png[align="center", width=80%]
 
 [#SRCMD_TABLE]
 === SRCMD Table
 
-The SRCMD Table is an array indexed by RRID that associates each requestor with its memory domains. The table uses a bitmap approach where each RRID can be associated with multiple memory domains. When a IOPMP receives a transaction with RRID _s_, IOPMP first looks up the SRCMD Table to find out all the memory domains associated to requestor _s_. An IOPMP instance can support up to 65,535 requestors, the actual number of requestors can be implementation-defined and is indicated in `HWCFG1.rrid_num`. The SRCMD Table defines the mapping from a transaction requestor to its associated MDs.
+The SRCMD Table is an array indexed by RRID that associates each requester with its memory domains. The table uses a bitmap approach where each RRID can be associated with multiple memory domains. When a IOPMP receives a transaction with RRID _s_, IOPMP first looks up the SRCMD Table to find out all the memory domains associated to requester _s_. An IOPMP instance can support up to 65,535 requesters, the actual number of requesters can be implementation-defined and is indicated in `HWCFG1.rrid_num`. The SRCMD Table defines the mapping from a transaction requester to its associated MDs.
 
 The register `SRCMD_EN(_s_)` must be implemented for each existing RRID _s_. Every bit in the 31-bit field `SRCMD_EN(_s_).md` indicates a memory domain. Bit _j_ in `SRCMD_EN(_s_).md` indicates if MD _j_ is associated with RRID _s_. If the number of MDs is more than 31, the register `SRCMD_ENH(_s_)` and its 32-bit field `SRCMD_ENH(_s_).mdh` can be implemented to support up to 63 memory domains. Bit _j_ in `SRCMD_ENH(_s_).mdh` indicates if MD (_j_ + 31) is associated with RRID _s_. For unimplemented memory domains, the corresponding bits should be hardwired read-only zero.
 
@@ -107,7 +109,7 @@ In the MDCFG Table, every memory domain _m_ has a register, `MDCFG(_m_)`. Field 
 * an entry with index _j_ belongs to MD _m_ if `MDCFG(_m_ - 1).t` &#8804; _j_ < `MDCFG(_m_).t`, where _m_ > 0.
 * an entry with index _j_ belongs to MD 0 if _j_ < `MDCFG(0).t`.
 
-Programmers should maintain proper settings in the MDCFG Table when `HWCFG0.enable` is set, where `MDCFG(_m_ + 1).t` should be greater than or equal to `MDCFG(_m_).t` for any legal MD m. Otherwise, the MDCFG table has an improper setting, that is, there exist two legal MDs _m_ and _k_, `MDCFG(_k_).t` > `MDCFG(_m_).t` for _k_ < _m_. In this case, we denote the MD _m_ as having an improper setting.
+Programmers should maintain proper settings in the MDCFG Table when `HWCFG0.enable` is set, where `MDCFG(_m_ + 1).t` should be greater than or equal to `MDCFG(_m_).t` for any legal MD m. Otherwise, the MDCFG table has an improper setting, that is, there exist two legal MDs _m_ and _k_, `MDCFG(_k_).t` > `MDCFG(_m_).t` for _k_ < _m_. In this case, the specification denotes the MD _m_ as having an improper setting.
 
 When the MDCFG Table has an improper setting, the resulting association of IOPMP entries to MDs is implementation-dependent, but the following conditions should be held:
 
@@ -116,14 +118,14 @@ When the MDCFG Table has an improper setting, the resulting association of IOPMP
 
 [NOTE]
 ====
-For portability, programmers should ensure the MDCFG Table has a proper setting during the runtime. In the case that the process of programming or initializing the MDCFG Table causes an improper setting to occur transiently, one can deassociate effected MDs in SRCMD table before programming MDCFG table to avoid security issues. Even though the procedure may introduce extra steps, the table is not subject to change at such a high frequency as to hurt overall performance. Thus, the specification requires programmers to maintain proper settings instead of requiring specific hardware behaviors on improper settings.
+For portability, programmers should ensure the MDCFG Table has a proper setting during the runtime. In the case that the process of programming or initializing the MDCFG Table causes an improper setting to occur transiently, software can deassociate effected MDs in SRCMD table before programming MDCFG table to avoid security issues. Even though the procedure may introduce extra steps, the table is not subject to change at such a high frequency as to hurt overall performance. Thus, the specification requires programmers to maintain proper settings instead of requiring specific hardware behaviors on improper settings.
 ====
 
 [#IOPMP_priority_and_matching_logic]
 === Priority and Matching Logic
 The IOPMP uses entry-based permission checking to determine whether transactions are allowed or denied.
 
-When a transaction arrives at an IOPMP, the IOPMP first checks whether the RRID carried by the transaction is legal. If the RRID is illegal, the transaction is illegal with error type = "Unknown RRID" (0x06)".
+When a transaction arrives at an IOPMP, the IOPMP first checks whether the RRID carried by the transaction is legal. If the RRID is illegal, the transaction is illegal with error type = "Unknown RRID" (0x06).
 
 NOTE: Whether an RRID is legal is implementation-dependent, even though it < `HWCFG1.rrid_num`.
 
@@ -150,7 +152,7 @@ To grant an AMO transaction permission, both read access permission and write ac
 
 [NOTE]
 ====
-Some AMO implementations of I/O agents are using a non-atomic read-modify-write sequence which could contain a read access transaction and a write access transaction, not single AMO transaction. Therefore, IOPMP possibly captures error type = "illegal read access" (0x01) when read permission for the read-modify-write sequence from the I/O agents is not granted.
+Some AMO implementations of I/O agents are using a non-atomic read-modify-write sequence which could contain a read access transaction and a write access transaction, not a single AMO transaction. Therefore, IOPMP possibly captures error type = "illegal read access" (0x01) when read permission for the read-modify-write sequence from the I/O agents is not granted.
 ====
 
 [#IOPMP_BLOCK_DIAGRAM]
@@ -177,7 +179,11 @@ The error capture record maintains the specifics of the first illegal access det
 * no interrupt regarding the access is triggered, and
 * no bus error is returned.
 
-An error capture only occurs when there is no pending error, that is, `ERR_INFO.v` = ‘0’. If a pending error exists (`v` = ‘1’), the record will not be updated, even if a new illegal access is detected. In other words, `v`  indicates whether the content of the capture record is valid and should be intentionally cleared in order to capture subsequent illegal accesses. One can write 1 to the bit to clear it. The error capture record is optional. If it is not implemented, `HWCFG0.no_err_rec` should be wired to one. One can implement the error capture record, but doesn't implement the error entry index record (`ERR_REQID.eid`). In this case, `eid` should be wired to 0xffff.
+An error capture only occurs when there is no pending error, that is, `ERR_INFO.v` = ‘0’. If a pending error exists (`v` = ‘1’), the record will not be updated, even if a new illegal access is detected. In other words, `v`  indicates whether the content of the capture record is valid and should be intentionally cleared in order to capture subsequent illegal accesses. Software can write 1 to the bit to clear it.
+The error capture record is optional.
+If it is not implemented, `HWCFG0.no_err_rec` should be wired to one.
+It is possible to implement the error capture record without the error entry index record (`ERR_REQID.eid`).
+In this case, `eid` should be wired to 0xffff.
 
 The following table is a summary of error types:
 
