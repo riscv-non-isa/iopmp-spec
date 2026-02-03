@@ -12,7 +12,7 @@ The address is MSI address and is specified by `ERR_MSIADDR` and `ERR_MSIADDRH` 
 The bit `ERR_CFG.msi_sel` indicates whether the IOPMP triggers interrupt by MSI or wired interrupt. IOPMP triggers MSI when `ERR_CFG.msi_sel` = 1 and triggers wired interrupt when `ERR_CFG.msi_sel` = 0. 
 `ERR_CFG.msi_sel` can be programmable or hardwired.
 
-`ERR_INFO.msi_werr` indicates whether a write access to trigger an IOPMP-originated MSI has failed. It is asserted when the write access to trigger an IOPMP-originated MSI has failed. When it's not available, it should be zero. Writing 1 to `ERR_INFO.msi_werr` clears the bit.
+`ERR_INFO.msi_werr` indicates whether a write access to trigger an IOPMP-originated MSI has failed. It is asserted when the write access to trigger an IOPMP-originated MSI has failed. When it's not available, it must be zero. Writing 1 to `ERR_INFO.msi_werr` clears the bit.
 
 [cols="<2,<1,<1,<1,<6"]
 |===
@@ -42,7 +42,7 @@ h|Field                           |Bits   |R/W    |Default    |Description
 5+h|0x0064
 h|Field                           |Bits   |R/W    |Default    |Description
 |{set:cellbgcolor:#FFFFFF}
-`msi_werr`                        |3:3    |RW1C   |0          |It's asserted when the write access to trigger an IOPMP originated MSI has failed. When it's not available, it should be ZERO. +
+`msi_werr`                        |3:3    |RW1C   |0          |It's asserted when the write access to trigger an IOPMP originated MSI has failed. When it's not available, it must be ZERO. +
 Write 1 clears the bit. Write 0 causes no effect on the bit.
 |===
 

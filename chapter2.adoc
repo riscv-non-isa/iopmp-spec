@@ -111,10 +111,10 @@ In the MDCFG Table, every memory domain _m_ has a register, `MDCFG(_m_)`. Field 
 
 Programmers should maintain proper settings in the MDCFG Table when `HWCFG0.enable` is set, where `MDCFG(_m_ + 1).t` should be greater than or equal to `MDCFG(_m_).t` for any legal MD m. Otherwise, the MDCFG table has an improper setting, that is, there exist two legal MDs _m_ and _k_, `MDCFG(_k_).t` > `MDCFG(_m_).t` for _k_ < _m_. In this case, the specification denotes the MD _m_ as having an improper setting.
 
-When the MDCFG Table has an improper setting, the resulting association of IOPMP entries to MDs is implementation-dependent, but the following conditions should be held:
+When the MDCFG Table has an improper setting, the resulting association of IOPMP entries to MDs is implementation-dependent, but the following conditions must be held:
 
 * an entry must belong to at most one memory domain; and
-* the index of an entry in a lower-indexed memory domain should be lower than that in a higher-indexed memory domain.
+* the index of an entry in a lower-indexed memory domain must be lower than that in a higher-indexed memory domain.
 
 [NOTE]
 ====
@@ -181,9 +181,9 @@ The error capture record maintains the specifics of the first illegal access det
 
 An error capture only occurs when there is no pending error, that is, `ERR_INFO.v` = ‘0’. If a pending error exists (`v` = ‘1’), the record will not be updated, even if a new illegal access is detected. In other words, `v`  indicates whether the content of the capture record is valid and should be intentionally cleared in order to capture subsequent illegal accesses. Software can write 1 to the bit to clear it.
 The error capture record is optional.
-If it is not implemented, `HWCFG0.no_err_rec` should be wired to one.
+If it is not implemented, `HWCFG0.no_err_rec` must be wired to one.
 It is possible to implement the error capture record without the error entry index record (`ERR_REQID.eid`).
-In this case, `eid` should be wired to 0xffff.
+In this case, `eid` must be wired to 0xffff.
 
 The following table is a summary of error types:
 
