@@ -16,14 +16,6 @@ In this policy, a transaction may traverse more than one IOPMP. An IOPMP at the 
 
 This new RRID effectively represents that the transaction has been checked by its originating subsystem. Subsequent, outer-level IOPMPs can then manage permissions from a higher, more abstract "subsystem perspective" instead of needing to manage rules for every individual requester within that subsystem. This approach hides internal subsystem details, which is good for protecting intellectual property, and makes the overall system design more abstract, reusable, and modular.
 
-To support this "IOPMP gateway" functionality, `HWCFG3.rrid_transl_en` should be set to 1, and `HWCFG3.rrid_transl` is used to store the RRID to be tagged. `HWCFG3.rrid_transl_prog` indicates whether `HWCFG3.rrid_transl` is programmable or not. To lock `HWCFG3.rrid_transl`, write 1 to `HWCFG3.rrid_transl_prog`, which clears `HWCFG3.rrid_transl_prog` and is sticky to 0.
-
-[cols="<2,<1,<1,<1,<6"]
-|===
-5+h|HWCFG3{set:cellbgcolor:#D3D3D3}
-5+h|0x0014
-h|Field |Bits |R/W |Default |Description
-|{set:cellbgcolor:#FFFFFF} `rrid_transl_en` |14:14 |R |IMP |Indicate if tagging a new RRID on the requester port is supported.
-|`rrid_transl_prog` |15:15 |W1CS |IMP |A write-1-clear bit that is sticky to 0. Indicates if the `rrid_transl` field is programmable. Supported only for `rrid_transl_en`=1, otherwise, wired to 0.
-|`rrid_transl` |31:16 |WARL |IMP |The RRID tagged to outgoing transactions. Supported only for `rrid_transl_en`=1. It is writable only when `rrid_transl_prog`=1.
-|===
+To support this "IOPMP gateway" functionality, an implementation can have field `rrid_transl_en`, `rrid_transl`, and `rrid_transl_prog` in register `HWCFG3` (<<#REG_EXT_HWCFG3,Hardware Configuration 3>>).
+`HWCFG3.rrid_transl_en` should be set to 1, and `HWCFG3.rrid_transl` is used to store the RRID to be tagged. `HWCFG3.rrid_transl_prog` indicates whether `HWCFG3.rrid_transl` is programmable or not.
+To lock `HWCFG3.rrid_transl`, write 1 to `HWCFG3.rrid_transl_prog`, which clears `HWCFG3.rrid_transl_prog` and is sticky to 0.
