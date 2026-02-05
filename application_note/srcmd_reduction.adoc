@@ -5,9 +5,9 @@ The IOPMP specification provides SRCMD Table reduction strategies to minimize ha
 
 ==== Source-Enforcement
 
-Systems with requestors that already implement firewall mechanisms, such as RISC-V harts with Physical Memory Protection (PMP), can optimize IOPMP implementation by applying rule checking selectively. This approach, known as source-enforcement (IOPMP-SE), enables significant area savings and design simplification when protection is needed only for a subset of requestors.
+Systems with requesters that already implement firewall mechanisms, such as RISC-V harts with Physical Memory Protection (PMP), can optimize IOPMP implementation by applying rule checking selectively. This approach, known as source-enforcement (IOPMP-SE), enables significant area savings and design simplification when protection is needed only for a subset of requesters.
 
-Source-enforcement is particularly beneficial in heterogeneous systems where some requestors possess their own protection mechanisms while others, such as DMA engines or specialized accelerators, require external protection. By configuring the IOPMP to enforce rules only for unprotected requestors, implementations can achieve substantial hardware resource reduction without compromising system security.
+Source-enforcement is particularly beneficial in heterogeneous systems where some requesters possess their own protection mechanisms while others, such as DMA engines or specialized accelerators, require external protection. By configuring the IOPMP to enforce rules only for unprotected requesters, implementations can achieve substantial hardware resource reduction without compromising system security.
 
 [#IOPMP_SE_Example]
 .Example implementation of source-enforcement where RISC-V harts use PMP while heterogeneous cores and DMA rely on IOPMP-SE.
@@ -20,7 +20,7 @@ endif::[]
 
 ==== SRCMD Table in the Exclusive Format
 
-Exclusive Format implements a direct mapping where RRID _i_ associates exclusively with memory domain _i_. This one-to-one mapping eliminates the need for SRCMD Table lookups, providing benefits in area efficiency, access latency reduction, and implementation complexity. The format supports scenarios with a single requestor or multiple requestors requiring identical access permissions.
+Exclusive Format implements a direct mapping where RRID _i_ associates exclusively with memory domain _i_. This one-to-one mapping eliminates the need for SRCMD Table lookups, providing benefits in area efficiency, access latency reduction, and implementation complexity. The format supports scenarios with a single requester or multiple requesters requiring identical access permissions.
 
 Exclusive Format is particularly effective for embedded systems and resource-constrained environments where minimizing hardware overhead is critical. The format supports up to 63 RRIDs and eliminates the physical SRCMD Table implementation entirely. However, designers should note that shared memory regions require duplicated entry settings in this format, which may impact configuration flexibility in systems with extensive resource sharing requirements.
 
@@ -31,7 +31,7 @@ The SRCMD Table format is discovered through the `HWCFG3.srcmd_fmt` field.
 ==== SRCMD Table in the MD-indexed Format
 This section introduces the MD-indexed Format (Format 2) for the SRCMD Table. This format is provided as an alternative implementation, driven by a key strategic goal: to lower the barrier for migrating existing, non-RISC-V systems to the RISC-V ecosystem.
 
-The primary objective of non-ISA specifications like IOPMP is to accelerate the broad adoption of RISC-V CPUs. However, the baseline RRID-indexed programming model (Format 0), while powerful, may present a significant software migration obstacle for platforms with established, legacy programming models. Some existing systems architect their access control from the perspective of the resource (the memory regions) rather than the requestor (the RRID).
+The primary objective of non-ISA specifications like IOPMP is to accelerate the broad adoption of RISC-V CPUs. However, the baseline RRID-indexed programming model (Format 0), while powerful, may present a significant software migration obstacle for platforms with established, legacy programming models. Some existing systems architect their access control from the perspective of the resource (the memory regions) rather than the requester (the RRID).
 
 The MD-indexed format directly supports this familiar, resource-centric paradigm. By providing a physical SRCMD Table indexed by the Memory Domain (MD) instead of the RRID, it allows existing security software and established programming models to be ported with minimal modification.
 

@@ -1,7 +1,7 @@
 [#SPS_EXT]
 === Secondary Permission Setting (SPS)
 
-This extension provides a mechanism to reduce the consumption of IOPMP entries in systems where multiple requestors (RRIDs) require different access permissions to the same shared memory regions.
+This extension provides a mechanism to reduce the consumption of IOPMP entries in systems where multiple requesters (RRIDs) require different access permissions to the same shared memory regions.
 
 Motivation: In the baseline specification, if RRID 'A' requires Read-Write (RW) access to a region and RRID 'B' requires Read-Only (RO) access to the exact same address range, two separate IOPMP entries must be configured (typically in two different Memory Domains). This consumes valuable Entry Array resources simply to define duplicate address ranges with different permissions.
 
@@ -10,8 +10,8 @@ The SPS extension addresses this by adding a second layer of permission checking
 The field `HWCFG2.sps_en`=1 indicates that the extension is implemented.
 
 When the SPS extension is implemented, each SRCMD Table entry additionally defines permission registers: `SRCMD_R(_s_)`, `SRCMD_W(_s_)`, and `SRCMD_X(_s_)`, as well as `SRCMD_RH(_s_)`, `SRCMD_WH(_s_)`, and `SRCMD_XH(_s_)` if applicable.
-Register `SRCMD_R(_s_)`, `SRCMD_W(_s_)`, and `SRCMD_X(_s_)` each has a single field, `SRCMD_R(_s_).md`, `SRCMD_W(_s_).md`, and `SRCMD_X(_s_).md`, respectively representing the read, write, and instruction fetch permissions of memory domain 0 to 30 for requestor _s_.
-Register `SRCMD_RH(_s_)`, `SRCMD_WH(_s_)`, `SRCMD_XH(_s_)` each has a single field, `SRCMD_RH(_s_).mdh`, `SRCMD_WH(_s_).mdh`, and `SRCMD_XH(_s_).mdh`, respectively representing the read, write, and instruction fetch permissions of memory domain 31 to 62 for requestor _s_.
+Register `SRCMD_R(_s_)`, `SRCMD_W(_s_)`, and `SRCMD_X(_s_)` each has a single field, `SRCMD_R(_s_).md`, `SRCMD_W(_s_).md`, and `SRCMD_X(_s_).md`, respectively representing the read, write, and instruction fetch permissions of memory domain 0 to 30 for requester _s_.
+Register `SRCMD_RH(_s_)`, `SRCMD_WH(_s_)`, `SRCMD_XH(_s_)` each has a single field, `SRCMD_RH(_s_).mdh`, `SRCMD_WH(_s_).mdh`, and `SRCMD_XH(_s_).mdh`, respectively representing the read, write, and instruction fetch permissions of memory domain 31 to 62 for requester _s_.
 Register `SRCMD_RH(_s_)`, `SRCMD_WH(_s_)`, and `SRCMD_XH(_s_)` are implemented if `HWCFG0.md_num` > 31.
 
 .An example block diagram of an IOPMP with the SPS extension. It illustrates the checking flow of an IOPMP with the SPS extension. The IOPMP first looks up the SRCMD Table according to the RRID carried by the incoming transaction to retrieve associated MD indexes and the corresponding permissions related to these MDs. By the MD indexes, the IOPMP looks up the MDCFG Table to get the belonging entry indexes. The final step checks the access right according to the above entry indexes and corresponding permissions.
