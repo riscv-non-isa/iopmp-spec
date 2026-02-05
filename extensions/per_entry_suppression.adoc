@@ -12,7 +12,7 @@ The per-entry suppression extension addresses this problem. It allows software t
 The per-entry suppression extension only extends the error reactions, which are triggered when an entry is matched but does not grant transaction permission to operate.
 
 ==== Interrupt Suppression
-`HWCFG2.peis` indicates whether the IOPMP supports per-entry interrupt suppression. If `HWCFG2.peis` is 1, every entry _i_ has three interrupt suppression bits, `sire`, `siwe`, `sixe`, in register `ENTRY_CFG(_i_)`.
+The bit `peis` in register `HWCFG2` (<<#REG_EXT_HWCFG2,Hardware Configuration 2>>) indicates whether the IOPMP supports per-entry interrupt suppression. If `HWCFG2.peis` is 1, every entry _i_ has three interrupt suppression bits, `sire`, `siwe`, `sixe`, in register `ENTRY_CFG(_i_)` (<<#REG_EXT_ENTRY_CFG,Entry _i_ Configuration with All Extensions>>).
 The bits suppress interrupt triggering due to illegal read access, illegal writes access/AMO and illegal instruction fetch respectively.
 
 When an illegal transaction occurs with error type "illegal read access" (0x01), "illegal write access/AMO" (0x02), or "illegal instruction fetch" (0x03), an interrupt is triggered if the global interrupt is enabled (`ERR_CFG.ie`) and not suppressed by `sire`, `siwe`, or `sixe`. Considering Entry _i_ matches an illegal transaction, the condition for the interrupt for each type of illegal access can be described as follows: 
@@ -27,7 +27,7 @@ When an illegal transaction occurs with error type "illegal read access" (0x01),
 Where `!` represents logical NOT, and `&&` represents logical AND.
 
 ==== Bus Error Suppression
-`HWCFG2.pees` indicates whether the IOPMP supports per-entry bus error suppression. If `HWCFG2.pees` is 1, every entry _i_ has three interrupt suppression bits, `sere`, `sewe`, `sexe`, in register `ENTRY_CFG(_i_)`.
+The bit `pees` in register `HWCFG2` (<<#REG_EXT_HWCFG2,Hardware Configuration 2>>) indicates whether the IOPMP supports per-entry bus error suppression. If `HWCFG2.pees` is 1, every entry _i_ has three interrupt suppression bits, `sere`, `sewe`, `sexe`, in register `ENTRY_CFG(_i_)` (<<#REG_EXT_ENTRY_CFG,Entry _i_ Configuration with All Extensions>>).
 The bits suppress bus error due to illegal read access, illegal writes access/AMO and illegal instruction fetch respectively.
 
 When an illegal transaction occurs with error type "illegal read access" (0x01), "illegal write access/AMO" (0x02), or "illegal instruction fetch" (0x03), an IOPMP responds bus error if the bus error is not suppressed by `ERR_CFG.rs` and corresponding per-entry suppression bit. `rs` globally suppresses returning a bus error on illegal access. When global suppression is disabled, individual per-entry suppression is possible using `sere`, `sewe`, and `sexe` in `ENTRY_CFG(_i_)` for illegal read access, illegal write access/AMO, and illegal instruction fetch, respectively. Considering Entry _i_ matches an illegal transaction, the condition for a bus error response for each access type can be described as follows:
@@ -63,39 +63,3 @@ The condition of per-entry bus error response suppression is:
 `!ERR_CFG.rs && ( !ENTRY_CFG(_i_~0~).sexe || !ENTRY_CFG(_i_~1~).sexe || ... || !ENTRY_CFG(_i~N~_).sexe )`
 
 Where `!` represents logical NOT, `||` represents logical OR, and `&&` represents logical AND.
-
-==== Register(s) and Field(s)
-
-[cols="<2,<1,<1,<1,<6"]
-|===
-5+h|HWCFG2{set:cellbgcolor:#D3D3D3}
-5+h|0x0008
-h|Field                         |Bits   |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}
-`peis`                          |27:27  |R      |IMP        |Indicate if the IOPMP implements interrupt suppression per entry, including fields `sire` and `siwe` in `ENTRY_CFG(_i_)`, _i_ = 0...`HWCFG1.entry_num`-1.
-|`pees`                         |28:28  |R      |IMP        |Indicate if the IOPMP implements the error suppression per entry, including fields `sere` and `sewe` in `ENTRY_CFG(_i_)`, _i_ = 0...`HWCFG1.entry_num`-1.
-|===
-
-[cols="<2,<1,<1,<1,<6"]
-|===
-5+h|{set:cellbgcolor:#D3D3D3} ENTRY_CFG(_i_), _i_ = 0...`HWCFG1.entry_num`-1
-5+h|ENTRYOFFSET + 0x8 + (_i_) × 16
-h|Field                         |Bits       |R/W       |Default    |Description
-|{set:cellbgcolor:#FFFFFF}
-`sire`                          |5:5        |WARL      |IMP        |Suppress interrupt for an illegal read access caught by the entry.
-|`siwe`                         |6:6        |WARL      |IMP        |Suppress interrupt for an illegal write access/AMO caught by the entry.
-|`sixe`                         |7:7        |WARL      |IMP        |Suppress interrupt on an illegal instruction fetch caught by the entry.
-|`sere`                         |8:8        |WARL      |IMP       a|Suppress the (bus) error on an illegal read access caught by the entry:
-
-* 0x0: respond an error if `ERR_CFG.rs` is 0x0. 
-* 0x1: do not respond an error. User to define the behavior, e.g., respond a success with an implementation-dependent value to the requester.
-
-|`sewe`                         |9:9        |WARL      |IMP       a|Suppress the (bus) error on an illegal write access/AMO caught by the entry:
-
-* 0x0: respond an error if `ERR_CFG.rs` is 0x0. 
-* 0x1: do not respond an error. User to define the behavior, e.g., respond a success if response is needed
-|`sexe`                         |10:10      |WARL      |IMP       a|Suppress the (bus) error on an illegal instruction fetch caught by the entry:
-
-* 0x0: respond an error if `ERR_CFG.rs` is 0x0.
-* 0x1: do not respond an error. User to define the behavior, e.g., respond a success with an implementation-dependent value to the requester.
-|===

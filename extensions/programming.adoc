@@ -42,7 +42,7 @@ For Step 1, it's possible to postpone all transactions until all updates are fin
 
 In Step 2, the decision of whether a transaction should be stalled cannot reference the current settings because these settings are under updating. Therefore, the only reliable information for this decision is the RRID carried by the transaction. To simplify the following descriptions, we use _rrid_stall_ to represent an abstract bit array, where _rrid_stall_[_s_] = 1 indicates that transactions with RRID _s_ must be stalled. The IOPMP stalls a transaction based on its corresponding _rrid_stall_. Please note that it may not be an actual bit array in practice just for easier expression and is not directly accessible by software.
 
-Register `MDSTALL` and `MDSTALLH` control _rrid_stall_. `MDSTALL.md` and `MDSTALLH.mdh` are used to select MDs. Denote _stall_by_md_ to represent the concatenation of `MDSTALL.mdh` and `MDSTALL.md`. That is, _stall_by_md_[30:0] is `MDSTALL.md[30:0]`, and _stall_by_md_[62:31] is `MDSTALLH.mdh[31:0]` if any. An MD _m_ is selected when _stall_by_md_[_m_] = 1. `MDSTALL.exempt` controls the polarity of the selection. An IOPMP updates _rrid_stall_ only when `MDSTALL.exempt` is written. When `MDSTALL.exempt` is written to 0, _rrid_stall_[_s_] is set if RRID _s_ is associated with a selected MD _m_ (_stall_by_md_[_m_] = 1). The SRCMD Table defines the association of RRID _s_ and MD _m_. Conversely, when `MDSTALL.exempt` is written to 1, _rrid_stall_[_s_] must be set if RRID _s_ is not associated with any selected MD. This relation can be formulated as follows:
+Register `MDSTALL` and `MDSTALLH` (<<#REG_EXT_MDSTALL,MD-Based Stall Control>>) control _rrid_stall_. `MDSTALL.md` and `MDSTALLH.mdh` are used to select MDs. Denote _stall_by_md_ to represent the concatenation of `MDSTALL.mdh` and `MDSTALL.md`. That is, _stall_by_md_[30:0] is `MDSTALL.md[30:0]`, and _stall_by_md_[62:31] is `MDSTALLH.mdh[31:0]` if any. An MD _m_ is selected when _stall_by_md_[_m_] = 1. `MDSTALL.exempt` controls the polarity of the selection. An IOPMP updates _rrid_stall_ only when `MDSTALL.exempt` is written. When `MDSTALL.exempt` is written to 0, _rrid_stall_[_s_] is set if RRID _s_ is associated with a selected MD _m_ (_stall_by_md_[_m_] = 1). The SRCMD Table defines the association of RRID _s_ and MD _m_. Conversely, when `MDSTALL.exempt` is written to 1, _rrid_stall_[_s_] must be set if RRID _s_ is not associated with any selected MD. This relation can be formulated as follows:
 
 [.text-center]
 `_rrid_stall_[_s_] <= MDSTALL.exempt ^ ( Reduction_OR (SRCMD(_s_).md & _stall_by_md_));`
@@ -63,7 +63,7 @@ NOTE: Although _rrid_stall_ is derived from the SRCMD Table, it should be update
 NOTE: When writing `MDSTALL`, the specification only defines the transactions with RRID=_s_ must be stalled for all _rrid_stall_[_s_] = 1. It doesn't request the rest of the transactions to stall or not. It only asks that all transactions be resumed when writing `MDSTALL` with a zero.
 
 ==== Cherry Pick
-Writing `RRIDSCP` register is an optional substep after writing `MDSTALL` within Step 1 of <<#PROGRAMMING_STEPS, Programming Steps>>. Software can select or deselect the transactions with specific RRIDs to stall if the previous writing `MDSTALL`/`MDSTALLH` doesn't stall all the desired transactions. Software can write the register zero or multiple times in the substep.
+Writing `RRIDSCP` register (<<#REG_EXT_RRIDSCP,RRID Cherry Pick Stall Control>>) is an optional substep after writing `MDSTALL` within Step 1 of <<#PROGRAMMING_STEPS, Programming Steps>>. Software can select or deselect the transactions with specific RRIDs to stall if the previous writing `MDSTALL`/`MDSTALLH` doesn't stall all the desired transactions. Software can write the register zero or multiple times in the substep.
 
 [NOTE]
 ====
@@ -75,7 +75,7 @@ The `RRIDSCP` register comprises two fields: a 2-bit `RRIDSCP.op` and a field fo
 
 [#FAULTING_STALLED_TRANSACTIONS]
 ==== Faulting stalled transactions
-Faulting stalled transactions can be allowed. To allow faulting over stalling when an IOPMP cannot accommodate more stalled transactions, such as when the receiver port lacks a buffer for transaction storage, set `ERR_CFG.stall_violation_en` to 1 before Step 1 of <<#PROGRAMMING_STEPS, Programming Steps>>. If any transaction is faulted due to the stalled transactions, the error information shall be logged in `ERR_INFO`, where `ERR_INFO.etype` = 0x07 (error due to stalled transactions). The procedure for faulting checking transactions is identical to Steps 1-3 of <<#PROGRAMMING_STEPS, Programming Steps>>, except that, besides stalling and delaying the transactions, transactions can be faulted and cannot be resumed if the IOPMP can't handle more stalled transactions.
+Faulting stalled transactions can be allowed. To allow faulting over stalling when an IOPMP cannot accommodate more stalled transactions, such as when the receiver port lacks a buffer for transaction storage, set bit `stall_violation_en` in register `ERR_CFG` (<<#REG_EXT_ERR_CFG,Error Configuration with All Extensions>>) to 1 before Step 1 of <<#PROGRAMMING_STEPS, Programming Steps>>. If any transaction is faulted due to the stalled transactions, the error information shall be logged in `ERR_INFO` (<<#REG_EXT_ERR_INFO,Error Information with All Extensions>>), where `ERR_INFO.etype` = 0x07 (error due to stalled transactions). The procedure for faulting checking transactions is identical to Steps 1-3 of <<#PROGRAMMING_STEPS, Programming Steps>>, except that, besides stalling and delaying the transactions, transactions can be faulted and cannot be resumed if the IOPMP can't handle more stalled transactions.
 
 [NOTE]
 ====
@@ -130,94 +130,3 @@ If `RRIDSCP` is not implemented, it always returns zero. Software can test if it
 It is unnecessary to allow every implemented RRID to be selectable by `RRIDSCP.rrid`. If an unimplemented or unselectable RRID is written into `RRIDSCP.rrid`, it returns `RRIDSCP.stat` = 3.
 
 `ERR_CFG.stall_violation_en` is a WARL field so it can be programmable or fixed.
-
-==== Register(s) and Field(s)
-
-[cols="<2,<1,<1,<1,<6"]
-|===
-5+h|HWCFG2{set:cellbgcolor:#D3D3D3}
-5+h|0x0008
-h|Field                         |Bits   |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}
-`stall_en`                      |30:30  |R      |IMP        |Indicate if the IOPMP implements stall-related features, which are `MDSTALL`, `MDSTALLH`, `RRIDSCP`, and `ERR_CFG.stall_violation_en`.
-|===
-
-`MDSTALL(H)` and `RRIDSCP` registers are all optional and used to support atomicity issue while programming the IOPMP, as the IOPMP rule may not be updated in a single transaction.
-
-[cols="<2,<1,<1,<1,<6"]
-|===
-5+h|MDSTALL{set:cellbgcolor:#D3D3D3}
-5+h|0x0030
-h|Field                         |Bits   |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}
-`exempt`                        |0:0    |W      |N/A       a| 
-Stall transactions from selected RRIDs:
-
-* 0: the RRIDs are associated with a selected MD
-* 1: the RRIDs are not associated with any selected MD
-
-Please refer <<#STALL_TRANSACTIONS, Stall transactions>> for detailed operations
-|`is_busy`                      |0:0    |R      |0         a|Indicates the status of previous writing `MDSTALL` and `RRIDSCP`:
-
-* 0: the write has taken effect or no previous write
-* 1: the write has not taken effect
-|`md`                           |31:1   |WARL   |0          |Writing `md[__m__]`=1 selects MD _m_; reading `md[__m__]` = 1 means MD __m__ selected.
-|===
-
-[cols="<2,<1,<1,<1,<6"]
-|===
-5+h|MDSTALLH{set:cellbgcolor:#D3D3D3}
-5+h|0x0034
-h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}
-`mdh`                           |31:0       |WARL   |0          |Writing `mdh[__m__]`=1 selects MD (__m__+31); reading `mdh[__m__]` = 1 means MD (__m__+31) selected.
-|===
-
-[cols="<2,<1,<1,<1,<6"]
-|===
-5+h|RRIDSCP{set:cellbgcolor:#D3D3D3}
-5+h|0x0038
-h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}
-`rrid`                          |15:0       |WARL   |DC         |RRID to select.
-|`rsv`                          |29:16      |ZERO   |0          |Must be zero on write, reserved for future.
-|`op`                           |31:30      |W      |N/A       a| 
-* 0: query
-* 1: stall transactions associated with selected RRID
-* 2: don't stall transactions associated with selected RRID
-* 3: reserved
-|`stat`                         |31:30      |R      |0         a|
-* 0: `RRIDSCP` is not implemented
-* 1: transactions associated with selected RRID are stalled
-* 2: transactions associated with selected RRID are not stalled
-* 3: unimplemented or unselectable RRID
-|===
-
-[cols="<2,<1,<1,<1,<6"]
-|===
-5+h|ERR_CFG{set:cellbgcolor:#D3D3D3}
-5+h|0x0060
-h|Field                           |Bits   |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}
- `stall_violation_en`             |4:4    |WARL   |IMP        |Indicates whether the IOPMP faults stalled transactions. When the bit is set, the IOPMP faults the transactions if the corresponding RRID is not exempt from stall.
-|===
-
-[cols="<2,<1,<1,<1,<6"]
-|===
-5+h|{set:cellbgcolor:#D3D3D3} ERR_INFO
-5+h|0x0064
-h|Field                         |Bits       |R/W    |Default    |Description
-|{set:cellbgcolor:#FFFFFF}
-`etype`                         |7:4        |R      |0         a|Indicated the type of violation:
-
-- 0x00 = no error
-- 0x01 = illegal read access
-- 0x02 = illegal write access/AMO
-- 0x03 = illegal instruction fetch
-- 0x04 = partial hit on a priority rule
-- 0x05 = not hit any rule
-- 0x06 = unknown RRID
-- 0x07 = error due to a stalled transaction. It should not happen when `ERR_CFG.stall_violation_en` is 0.
-- 0x08 ~ 0x0D = N/A, reserved for future
-- 0x0E ~ 0x0F = user-defined error
-|===
