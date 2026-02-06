@@ -26,3 +26,62 @@ This section summarizes the additional registers and fields required when implem
 
 :xrefstyle: {xrefstyle_bak}
 :xrefstyle_bak!:
+
+[#REG_EXT_HWCFG3]
+==== Hardware Configuration 3 (`HWCFG3`)
+[cols="<2,<1,<1,<1,<6",options="header"]
+|===
+|Field             |Bits  |R/W   |Default   |Description
+|`mdcfg_fmt`       |1:0   |R     |IMP      a|Indicate the MDCFG format:
+
+* 0x0: Format 0. MDCFG Table is implemented.
+* 0x1: Format 1. No MDCFG Table. `HWCFG3.md_entry_num` is fixed.
+* 0x2: Format 2. No MDCFG Table. `HWCFG3.md_entry_num` is programmable.
+* 0x3: reserved.
+
+|`srcmd_fmt`        |3:2   |R     |IMP      a|Indicate the SRCMD Table format:
+
+* 0x0: Format 0 (baseline). `SRCMD_EN(_s_)` and `SRCMD_ENH(_s_)` are available.
+* 0x1: Exclusive Format. No SRCMD Table. RRID _i_ associates exclusively with memory domain _i_, _i_ = 0 ... `HWCFG0.md_num`-1.
+* 0x2: MD-indexed Format. `SRCMD_PERM(_m_)` and `SRCMD_PERMH(_m_)` are available.
+* 0x3: reserved.
+
+|`md_entry_num`     |10:4  |WARL |IMP       a|When `HWCFG3.mdcfg_fmt` = 
+
+* 0x0: must be zero
+* 0x1 or 0x2: `md_entry_num` indicates each memory domain has exactly (`md_entry_num` + 1) entries
+
+`md_entry_num` is locked if `HWCFG0.enable` is 1.
+
+|`xinr`             |11:11 |R    |IMP       a|Indicates whether the IOPMP treats the instruction fetch accesses as data read accesses.
+All fields related to instruction fetch can be fixed to 0, or unavailable.
+
+|`no_x`             |12:12 |R    |IMP        |When `no_x`=1, the IOPMP denies all instruction fetch transactions; otherwise, it depends on the `x`-bit in `ENTRY_CFG(_i_)`.
+
+|`no_w`             |13:13 |R    |IMP        |Indicate if the IOPMP always denies write accesses as if no rule matched.
+|`rrid_transl_en`   |14:14 |R    |IMP        |Indicate if tagging a new RRID on the requester port is supported.
+|`rrid_transl_prog` |15:15 |W1CS |IMP        |A write-1-clear bit that is sticky to 0. Indicates if the `rrid_transl` field is programmable. Supported only for `rrid_transl_en`=1, otherwise, wired to 0.
+|`rrid_transl`      |31:16 |WARL |IMP        |The RRID tagged to outgoing transactions. Supported only for `rrid_transl_en`=1. It is writable only when `rrid_transl_prog`=1.
+
+|===
+
+[#REG_EXT_SRCMD_PERM]
+==== MD _m_ RRID Permission (`SRCMD_PERM(_m_)` and `SRCMD_PERMH(_m_)`)
+
+`SRCMD_PERM(_m_)` is read and write permissions of RRID 0 ~ 15 for MD _m_.
+
+[cols="<2,<1,<1,<1,<6",options="header"]
+|===
+|Field  |Bits |R/W  |Default |Description
+|`perm` |31:0 |WARL |DC      |Holds two bits per RRID that give the RRID's read and write permissions for memory domain _m_. Bit 2*_s_ holds the read permission for RRID _s_, and bit 2*_s_+1 holds the write permission for RRID _s_, where _s_≤15.
+The instruction fetch permission is considered the same as the read permission.
+|===
+
+`SRCMD_PERMH(_m_)` is read and write permissions of RRID 16 ~ 31 for MD _m_.
+
+[cols="<2,<1,<1,<1,<6",options="header"]
+|===
+|Field   |Bits |R/W  |Default |Description
+|`permh` |31:0 |WARL |DC      |Holds two bits per RRID that give the RRID's read and write permissions for memory domain _m_. Bit 2*(_s_-16) holds the read permission for RRID _s_, and bit 2*(_s_-16)+1 holds the write permission for RRID _s_, where _s_≥16. The register is implemented when `HWCFG1.rrid_num` > 16.
+The instruction fetch permission is considered the same as the read permission.
+|===

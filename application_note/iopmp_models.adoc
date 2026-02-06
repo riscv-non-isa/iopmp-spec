@@ -53,7 +53,7 @@ The Dynamic-k Model provides runtime-programmable entry allocation similar to th
 
 *Configuration*: *srcmd_fmt*=1, *mdcfg_fmt*=0
 
-The Isolation Model implements direct RRID-to-MD mapping where RRID _i_ exclusively associates with memory domain _i_. This provides strong isolation between requestors while maintaining flexible entry allocation through the full MDCFG Table. The model eliminates SRCMD Table hardware entirely, achieving significant area savings.
+The Isolation Model implements direct RRID-to-MD mapping where RRID _i_ exclusively associates with memory domain _i_. This provides strong isolation between requesters while maintaining flexible entry allocation through the full MDCFG Table. The model eliminates SRCMD Table hardware entirely, achieving significant area savings.
 
 *Characteristics*:
 
@@ -61,7 +61,7 @@ The Isolation Model implements direct RRID-to-MD mapping where RRID _i_ exclusiv
 * No physical SRCMD Table implementation
 * Full MDCFG Table with flexible entry allocation
 * Supports up to 63 RRIDs
-* Strong requestor isolation
+* Strong requester isolation
 * SPS extension not supported
 
 *Use cases*: Embedded systems with isolated functional units, systems prioritizing strong isolation over shared resources, source-enforcement scenarios.
@@ -83,7 +83,7 @@ The Compact-k Model maximizes area efficiency by combining both SRCMD and MDCFG 
 * Direct calculation: entry index = RRID × _k_ + offset
 * SPS extension not supported
 
-*Use cases*: Resource-constrained embedded systems, cost-sensitive applications, simple protection scenarios with isolated requestors and uniform memory regions.
+*Use cases*: Resource-constrained embedded systems, cost-sensitive applications, simple protection scenarios with isolated requesters and uniform memory regions.
 
 .Block diagram of the Compact-4 model implementation, combining SRCMD Format 1 and MDCFG Format 1 for maximum area efficiency.
 ifdef::backend-pdf[]

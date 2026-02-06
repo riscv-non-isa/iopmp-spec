@@ -2,15 +2,7 @@
 
 The `no_x` bit enables global instruction fetch protection, which is particularly useful for protecting data-only memory regions such as peripherals which don't have any instruction of processors. This feature simplifies implementations by reducing the need for programming individual permission bits and minimizing the overhead of per-entry rule lookups.
 
-The global instruction fetch behavior is controlled by `no_x` bit in the `HWCFG3` register:
+The global instruction fetch behavior is controlled by `no_x` bit in the `HWCFG3` register (<<#REG_EXT_HWCFG3,Hardware Configuration 3>>):
 
 * `no_x = 0`: The IOPMP performs instruction fetch permission checking based on entry-level rules
 * `no_x = 1`: The IOPMP denies all instruction fetch transactions and reports them with error type "not hit any rule" (0x05)
-
-[cols="<2,<1,<1,<1,<6"]
-|===
-5+h|HWCFG3{set:cellbgcolor:#D3D3D3}
-5+h|0x0014
-h|Field |Bits |R/W |Default |Description
-|{set:cellbgcolor:#FFFFFF} `no_x` |12:12 |R |IMP |When `no_x`=1, the IOPMP denies all instruction fetch transactions; otherwise, it depends on the `x`-bit in `ENTRY_CFG(_i_)`.
-|===
