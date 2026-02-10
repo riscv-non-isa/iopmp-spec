@@ -44,7 +44,6 @@ int main(void)
     cfg.prio_entry = 16;
     cfg.prio_ent_prog = false;
     cfg.non_prio_en = true;
-    cfg.chk_x = true;
     cfg.peis = true;
     cfg.pees = true;
     cfg.sps_en= true;
@@ -53,6 +52,7 @@ int main(void)
     cfg.mdcfg_fmt = 0;
     cfg.srcmd_fmt = 0;
     cfg.md_entry_num = 0;
+    cfg.xinr = false;
     cfg.no_x = false;
     cfg.no_w = false;
     cfg.rrid_transl_en = true;
@@ -186,11 +186,6 @@ int main(void)
     } else {
         FAIL_IF(ret != IOPMP_ERR_NOT_SUPPORTED);
     }
-    END_TEST();
-
-    START_TEST("Check IOPMP implements the check of instruction fetch or not");
-    val_bool = iopmp_get_support_chk_x(&iopmp);
-    FAIL_IF(val_bool != hwcfg2.chk_x);
     END_TEST();
 
     START_TEST("Check IOPMP always fails on an instruction fetch or not");

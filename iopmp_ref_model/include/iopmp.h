@@ -87,7 +87,6 @@ typedef struct iopmp_cfg_t {
     uint16_t prio_entry;                // The supported number of priority entries in the IOPMP
     bool prio_ent_prog;                 // HWCFG2.prio_entry is programmable
     bool non_prio_en;                   // IOPMP supports non-priority entries
-    bool chk_x;                         // IOPMP implements the check of an instruction fetch
     bool peis;                          // IOPMP implements interrupt suppression per entry
     bool pees;                          // IOPMP implements the error suppression per entry
     bool sps_en;                        // IOPMP supports secondary permission settings
@@ -96,6 +95,7 @@ typedef struct iopmp_cfg_t {
     uint8_t mdcfg_fmt;                  // MDCFG Table format
     uint8_t srcmd_fmt;                  // SRCMD Table format
     uint8_t md_entry_num;               // For MDCFG format 1 and 2. Each memory domain has exactly (md_entry_num + 1) entries
+    bool xinr;                          // IOPMP treats the instruction fetch accesses as data read accesses
     bool no_x;                          // IOPMP denies all instruction fetch transactions
     bool no_w;                          // IOPMP denies all write accesses transactions
     bool rrid_transl_en;                // IOPMP supports tag a new RRID on the initiator port

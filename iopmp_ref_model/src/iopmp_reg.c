@@ -82,8 +82,8 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     // ERR_REQID depends on error capture feature
     if (cfg->imp_err_reqid_eid && cfg->no_err_rec)
         return -1;
-    // The no_x feature depends on chk_x feature
-    if (cfg->no_x && !cfg->chk_x)
+    // The no_x feature depends on xinr feature not implemented
+    if (cfg->no_x && cfg->xinr)
         return -1;
     // When MDCFG table format is 0, the md_entry_num must be zero
     if ((cfg->mdcfg_fmt == 0) && (cfg->md_entry_num != 0))
@@ -134,7 +134,6 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
         iopmp->reg_file.hwcfg2.prio_ent_prog    = cfg->prio_ent_prog;
     }
     iopmp->reg_file.hwcfg2.non_prio_en      = cfg->non_prio_en;
-    iopmp->reg_file.hwcfg2.chk_x            = cfg->chk_x;
     iopmp->reg_file.hwcfg2.peis             = cfg->peis;
     iopmp->reg_file.hwcfg2.pees             = cfg->pees;
     iopmp->reg_file.hwcfg2.sps_en           = cfg->sps_en;
@@ -146,6 +145,7 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     if (cfg->mdcfg_fmt == 1 || cfg->mdcfg_fmt == 2) {
         iopmp->reg_file.hwcfg3.md_entry_num     = cfg->md_entry_num;
     }
+    iopmp->reg_file.hwcfg3.xinr             = cfg->xinr;
     iopmp->reg_file.hwcfg3.no_x             = cfg->no_x;
     iopmp->reg_file.hwcfg3.no_w             = cfg->no_w;
     iopmp->reg_file.hwcfg3.rrid_transl_en   = cfg->rrid_transl_en;

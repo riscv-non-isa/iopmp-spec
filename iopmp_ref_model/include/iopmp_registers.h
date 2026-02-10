@@ -136,8 +136,7 @@ typedef union {
                                             // is programmable. Reset to 1 if the implementation supports programmable
                                             // prio_entry, otherwise, wired to 0.
         uint32_t non_prio_en   : 1;         // Indicates whether the IOPMP supports non-priority entries.
-        uint32_t rsv           : 8;         // Must be zero on write, reserved for future.
-        uint32_t chk_x         : 1;         // Indicate if the IOPMP implements the check of an instruction fetch.
+        uint32_t rsv           : 9;         // Must be zero on write, reserved for future.
         uint32_t peis          : 1;         // Indicate if the IOPMP implements interrupt suppression per entry,
                                             // including fields sire and siwe in ENTRY_CFG(i), i = 0…HWCFG1.entry_num-1.
         uint32_t pees          : 1;         // Indicate if the IOPMP implements the error suppression per entry,
@@ -168,14 +167,17 @@ typedef union {
                                             //  -> 0x2: Format 2. MD-indexed Format. SRCMD_PERM(m) and SRCMD_PERMH(m)
                                             //     are available.
                                             //  -> 0x3: reserved.
-        uint32_t md_entry_num     : 8;      // When HWCFG3.mdcfg_fmt =
+        uint32_t md_entry_num     : 7;      // When HWCFG3.mdcfg_fmt =
                                             //  -> 0x0: must be zero
                                             //  -> 0x1 or 0x2: md_entry_num indicates each memory domain has exactly
                                             //    (md_entry_num + 1) entries
                                             // md_entry_num is locked if HWCFG0.enable is 1.
-        uint32_t no_x             : 1;      // For HWCFG2.chk_x=1, when no_x=1, the IOPMP denies all instruction fetch
+        uint32_t xinr             : 1;      // Indicates whether the IOPMP treats the instruction fetch accesses as data
+                                            // read accesses. All fields related to instruction fetch can be fixed to 0,
+                                            // or unavailable.
+        uint32_t no_x             : 1;      // For HWCFG2.xinr=0, when no_x=1, the IOPMP denies all instruction fetch
                                             // transactions; otherwise, it depends on the x-bit in ENTRY_CFG(i). For
-                                            // chk_x=0, no_x has no effect.
+                                            // xinr=1, no_x has no effect.
         uint32_t no_w             : 1;      // Indicate if the IOPMP always denies write accesses as if no rule matched.
         uint32_t rrid_transl_en   : 1;      // Indicate the if tagging a new RRID on the initiator port is supported
         uint32_t rrid_transl_prog : 1;      // A write-1-clear bit that is sticky to 0. Indicates if the rrid_transl
