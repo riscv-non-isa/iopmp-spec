@@ -105,7 +105,8 @@ typedef union {
                                             // If it is not implemented, it should be wired to 1.
         uint32_t HWCFG2_en          : 1;    // Indicate if HWCFG2 is implemented.
         uint32_t HWCFG3_en          : 1;    // Indicate if HWCFG3 is implemented.
-        uint32_t rsv                : 21;   // Must be zero on write, reserved for future.
+        uint32_t rsv                : 20;   // Must be zero on write, reserved for future.
+        uint32_t no_err_rec         : 1;    // Indicate if error record is not implemented.
         uint32_t md_num             : 6;    // Indicate the supported number of MD in the instance
         uint32_t addrh_en           : 1;    // Indicate if ENTRY_ADDRH(i) and ERR_REQADDRH are available.
         uint32_t tor_en             : 1;    // Indicate if TOR is supported
