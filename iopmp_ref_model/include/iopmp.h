@@ -66,7 +66,6 @@ typedef struct iopmp_dev_t {
     int stall_cntr;                     // Counts stalled transactions
     uint64_t granularity;               // The granularity (bytes) of protected regions by entry
     bool imp_mdlck;                     // IOPMP implements the Memory Domain Lock (MDLCK) feature
-    bool imp_error_capture;             // IOPMP implements the error capture record
     bool imp_err_reqid_eid;             // IOPMP implements ERR_REQID.eid
     bool imp_rridscp;                   // IOPMP implements RRIDSCP-related features
     bool imp_msi;                       // IOPMP implements message-signaled interrupts (MSI)
@@ -79,6 +78,7 @@ typedef struct iopmp_cfg_t {
     uint8_t specver;                    // The specification version
     uint32_t impid;                     // The user-defined implementation ID
     bool enable;                        // IOPMP checks transactions by default
+    bool no_err_rec;                    // IOPMP does not implement the error capture record
     uint8_t md_num;                     // The supported number of MD in the IOPMP
     bool addrh_en;                      // IOPMP has ENTRY_ADDRH(i) and ERR_REQADDRH
     bool tor_en;                        // IOPMP supports TOR
@@ -104,7 +104,6 @@ typedef struct iopmp_cfg_t {
     uint64_t entryoffset;               // The offset address of the IOPMP array from the base of an IOPMP instance
     uint64_t granularity;               // The granularity (bytes) of protected regions by entry
     bool imp_mdlck;                     // IOPMP implements the Memory Domain Lock (MDLCK) feature
-    bool imp_error_capture;             // IOPMP implements the error capture record
     bool imp_err_reqid_eid;             // IOPMP implements ERR_REQID.eid
     bool imp_rridscp;                   // IOPMP implements RRIDSCP-related features
     bool imp_msi;                       // IOPMP implements message-signaled interrupts (MSI)

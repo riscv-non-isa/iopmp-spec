@@ -77,10 +77,10 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     if (cfg->sps_en && (cfg->srcmd_fmt != 0))
         return -1;
     // Multi-Faults Record (MFR) extension depends on error capture feature
-    if (cfg->mfr_en && !cfg->imp_error_capture)
+    if (cfg->mfr_en && cfg->no_err_rec)
         return -1;
     // ERR_REQID depends on error capture feature
-    if (cfg->imp_err_reqid_eid && !cfg->imp_error_capture)
+    if (cfg->imp_err_reqid_eid && cfg->no_err_rec)
         return -1;
     // The no_x feature depends on chk_x feature
     if (cfg->no_x && !cfg->chk_x)
@@ -123,6 +123,7 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     iopmp->reg_file.hwcfg0.enable           = cfg->enable;
     iopmp->reg_file.hwcfg0.HWCFG2_en        = 1;    // HWCFG2 is always implemented by reference model
     iopmp->reg_file.hwcfg0.HWCFG3_en        = 1;    // HWCFG3 is always implemented by reference model
+    iopmp->reg_file.hwcfg0.no_err_rec       = cfg->no_err_rec;
     iopmp->reg_file.hwcfg0.md_num           = cfg->md_num;
     iopmp->reg_file.hwcfg0.addrh_en         = cfg->addrh_en;
     iopmp->reg_file.hwcfg0.tor_en           = cfg->tor_en;
@@ -168,7 +169,6 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
 
     iopmp->granularity                      = cfg->granularity;
     iopmp->imp_mdlck                        = cfg->imp_mdlck;
-    iopmp->imp_error_capture                = cfg->imp_error_capture;
     iopmp->imp_err_reqid_eid                = cfg->imp_err_reqid_eid;
     iopmp->imp_rridscp                      = cfg->imp_rridscp;
     iopmp->imp_msi                          = cfg->imp_msi;
@@ -666,7 +666,7 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
         break;
 
     case ERR_INFO_OFFSET:
-        if (iopmp->imp_error_capture) {
+        if (!iopmp->reg_file.hwcfg0.no_err_rec) {
             iopmp->reg_file.err_info.v        &= ~err_info_temp.v;
             iopmp->reg_file.err_info.msi_werr &= ~err_info_temp.msi_werr;
             iopmp->reg_file.err_info.rsv       = 0;

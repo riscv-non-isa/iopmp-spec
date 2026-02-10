@@ -333,7 +333,7 @@ pass_checks:
 stop_and_report_fault:
     // If IOPMP implements error capture feature, IOPMP triggers error capture
     // to log the error information into the registers.
-    if (iopmp->imp_error_capture) {
+    if (!iopmp->reg_file.hwcfg0.no_err_rec) {
         errorCapture(iopmp, trans_perm, error_type, rrid, error_eid, trans_req->addr, gen_intrpt, gen_buserr, intrpt);
     }
     // Return response with default status if no match/error occurs

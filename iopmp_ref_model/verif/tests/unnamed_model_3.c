@@ -37,6 +37,7 @@ int main()
     cfg.vendor = 1;
     cfg.specver = 1;
     cfg.impid = 0;
+    cfg.no_err_rec = false;
     cfg.md_num = 63;
     cfg.addrh_en = true;
     cfg.tor_en = true;
@@ -62,7 +63,6 @@ int main()
     cfg.entryoffset = 0x2000;
     cfg.granularity = MIN_GRANULARITY;
     cfg.imp_mdlck = true;
-    cfg.imp_error_capture = true;
     cfg.imp_err_reqid_eid = true;
     cfg.imp_rridscp = true;
     cfg.imp_msi = true;
