@@ -1,6 +1,6 @@
 # IOPMP Reference Model Documentation
 
-The **Input/Output Physical Memory Protection (IOPMP)** is a hardware component designed to control and validate accesses issued from bus initiators. It checks the validity of these accesses in real-time. The **IOPMP Reference Model** is developed in compliance with the **RISC-V IOPMP Specification Version 0.8.1, 2025**. This model will be updated with future specification revisions.
+The **Input/Output Physical Memory Protection (IOPMP)** is a hardware component designed to control and validate accesses issued from bus initiators. It checks the validity of these accesses in real-time. The **IOPMP Reference Model** is developed in compliance with the **RISC-V IOPMP Specification Version 0.8.2, 2026**. This model will be updated with future specification revisions.
 
 ## IOPMP Model Overview
 
