@@ -177,7 +177,7 @@ static bool iopmpCheckPerms(iopmp_dev_t *iopmp, uint16_t rrid, perm_type_e req_p
         return write_allowed;
 
     case INSTR_FETCH:
-        if (iopmp->reg_file.hwcfg2.chk_x) {
+        if (!iopmp->reg_file.hwcfg3.xinr) {
             if (!execute_allowed) {
                 *sie = iopmp->reg_file.hwcfg2.peis ? iopmpcfg.sixe : false;
                 *see = iopmp->reg_file.hwcfg2.pees ? iopmpcfg.sexe : false;

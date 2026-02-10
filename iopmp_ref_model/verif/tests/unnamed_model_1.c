@@ -46,7 +46,6 @@ int main()
     cfg.prio_entry = 16;
     cfg.prio_ent_prog = false;
     cfg.non_prio_en = true;
-    cfg.chk_x = true;
     cfg.peis = true;
     cfg.pees = true;
     cfg.sps_en = false;
@@ -55,6 +54,7 @@ int main()
     cfg.mdcfg_fmt = 2;
     cfg.srcmd_fmt = 1;
     cfg.md_entry_num = 3;
+    cfg.xinr = false;
     cfg.no_x = false;
     cfg.no_w = false;
     cfg.rrid_transl_en = true;

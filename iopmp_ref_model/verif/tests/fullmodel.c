@@ -42,7 +42,6 @@ int main()
     cfg.prio_entry = 16;
     cfg.prio_ent_prog = false;
     cfg.non_prio_en = true;
-    cfg.chk_x = true;
     cfg.peis = true;
     cfg.pees = true;
     cfg.sps_en = true;
@@ -51,6 +50,7 @@ int main()
     cfg.mdcfg_fmt = 0;
     cfg.srcmd_fmt = 0;
     cfg.md_entry_num = 0;
+    cfg.xinr = false;
     cfg.no_x = false;
     cfg.no_w = false;
     cfg.rrid_transl_en = true;
@@ -597,8 +597,8 @@ int main()
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
     END_TEST();)
 
-    START_TEST("Test NAPOT - 8 Byte Instruction access when chk_x=0");
-    cfg.chk_x = false;
+    START_TEST("Test NAPOT - 8 Byte Instruction access when xinr=1");
+    cfg.xinr = true;
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_EN, 32, 0x10, 4);
     configure_srcmd_n(&iopmp, SRCMD_R, 32, 0x10, 4);
@@ -609,10 +609,10 @@ int main()
     receiver_port(32, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
     // requestor Port Signals
     iopmp_validate_access(&iopmp, &iopmp_trans_req, &iopmp_trans_rsp, &intrpt);
-    iopmp_trans_req.perm = READ_ACCESS; // Since chk_x=0, we expect ttype="Read access" in CHECK_IOPMP_TRANS()
+    iopmp_trans_req.perm = READ_ACCESS; // Since xinr=1, we expect ttype="Read access" in CHECK_IOPMP_TRANS()
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_ERROR, ILLEGAL_READ_ACCESS);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
-    cfg.chk_x = true;
+    cfg.xinr = false;
     END_TEST();
 
     START_TEST_IF(iopmp.imp_mdlck, "Test MDLCK, updating locked srcmd_en field",

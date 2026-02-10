@@ -139,17 +139,17 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
     }
 
     if (trans_perm == INSTR_FETCH) {
-        // When chk_x and no_x are set to 1, the IOPMP denies all instruction
+        // When xinr = 0 and no_x is set to 1, the IOPMP denies all instruction
         // fetch transactions regardless of entry rule configurations, reporting
         // them with error type "not hit any rule" (0x05).
-        if (iopmp->reg_file.hwcfg2.chk_x && iopmp->reg_file.hwcfg3.no_x) {
+        if (!iopmp->reg_file.hwcfg3.xinr && iopmp->reg_file.hwcfg3.no_x) {
             error_type = NOT_HIT_ANY_RULE;
             goto stop_and_report_fault;
         }
-        // When chk_x = 0, The IOPMP doesn't perform instruction fetch
+        // When xinr = 1, The IOPMP doesn't perform instruction fetch
         // permission checking. Instead, the IOPMP treats instruction fetch as
         // read access.
-        if (!iopmp->reg_file.hwcfg2.chk_x) {
+        if (iopmp->reg_file.hwcfg3.xinr) {
             trans_perm = READ_ACCESS;
         }
     }
