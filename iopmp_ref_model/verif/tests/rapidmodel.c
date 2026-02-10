@@ -107,7 +107,7 @@ int main()
     START_TEST("Test OFF - Instruction Fetch permissions");
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_EN, 2, 0x10, 4);
-    configure_srcmd_n(&iopmp, SRCMD_R, 2, 0x10, 4);
+    configure_srcmd_n(&iopmp, SRCMD_X, 2, 0x10, 4);
     // Entry Table CFG
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), (364 >> 2), 4);
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 0x01, 4);
@@ -340,7 +340,7 @@ int main()
     START_TEST("Test NA4 - 4Byte Execute Access");
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_EN, 32, 0x10, 4);
-    configure_srcmd_n(&iopmp, SRCMD_R, 32, 0x10, 4);
+    configure_srcmd_n(&iopmp, SRCMD_X, 32, 0x10, 4);
     // Entry Table CFG
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), (364 >> 2), 4);
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 0x17, 4);
@@ -355,7 +355,7 @@ int main()
     START_TEST("Test NA4 - 4Byte No Execute Access");
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_EN, 32, 0x10, 4);
-    configure_srcmd_n(&iopmp, SRCMD_R, 32, 0x10, 4);
+    configure_srcmd_n(&iopmp, SRCMD_X, 32, 0x10, 4);
     // Entry Table CFG
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), (364 >> 2), 4);
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 0x13, 4);
@@ -368,10 +368,10 @@ int main()
     END_TEST();
 
     START_TEST_IF(iopmp.reg_file.hwcfg2.sps_en,
-                  "Test NA4 - 4Byte No SPS.R, Execute Access",
+                  "Test NA4 - 4Byte No SPS.X, Execute Access",
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_EN, 32, 0x10, 4);
-    configure_srcmd_n(&iopmp, SRCMD_R, 32, 0x00, 4);
+    configure_srcmd_n(&iopmp, SRCMD_X, 32, 0x00, 4);
     // Entry Table CFG
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), (364 >> 2), 4);
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 0x17, 4);
@@ -477,7 +477,7 @@ int main()
     START_TEST("Test NAPOT - 8 Byte Instruction access error");
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_EN, 32, 0x10, 4);
-    configure_srcmd_n(&iopmp, SRCMD_R, 32, 0x10, 4);
+    configure_srcmd_n(&iopmp, SRCMD_X, 32, 0x10, 4);
     // Entry Table CFG
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 90, 4); // (364 >> 2) and keeping lsb 0
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 0x18, 4);
@@ -492,7 +492,7 @@ int main()
     START_TEST("Test NAPOT - 8 Byte Instruction access");
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_EN, 32, 0x10, 4);
-    configure_srcmd_n(&iopmp, SRCMD_R, 32, 0x10, 4);
+    configure_srcmd_n(&iopmp, SRCMD_X, 32, 0x10, 4);
     // Entry Table CFG
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 90, 4); // (364 >> 2) and keeping lsb 0
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 0x1C, 4);
@@ -509,12 +509,12 @@ int main()
     // Receiver Port Signals
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_EN, 31, 0x10, 4);
-    configure_srcmd_n(&iopmp, SRCMD_R, 31, 0x10, 4);
+    configure_srcmd_n(&iopmp, SRCMD_X, 31, 0x10, 4);
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 74, 4); // (300 >> 2) and keeping lsb 0
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 0x1C, 4);
     set_hwcfg0_enable(&iopmp);
     configure_srcmd_n(&iopmp, SRCMD_EN, 32, 0x20, 4);
-    configure_srcmd_n(&iopmp, SRCMD_R, 32, 0x20, 4);
+    configure_srcmd_n(&iopmp, SRCMD_X, 32, 0x20, 4);
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 4), 90, 4); // (364 >> 2) and keeping lsb 0
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 4), 0x18, 4);
     set_hwcfg0_enable(&iopmp);
@@ -536,7 +536,7 @@ int main()
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, MDLCK_OFFSET, 0x10, 4);
     configure_srcmd_n(&iopmp, SRCMD_EN, 2, 0x10, 4);
-    configure_srcmd_n(&iopmp, SRCMD_R, 2, 0x10, 4);
+    configure_srcmd_n(&iopmp, SRCMD_X, 2, 0x10, 4);
     // Entry Table CFG
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 90, 4); // (364 >> 2) and keeping lsb 0
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 0x1C, 4);
@@ -552,7 +552,7 @@ int main()
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, MDLCK_OFFSET, 0x8, 4);
     configure_srcmd_n(&iopmp, SRCMD_EN, 2, 0x10, 4);
-    configure_srcmd_n(&iopmp, SRCMD_R, 2, 0x10, 4);
+    configure_srcmd_n(&iopmp, SRCMD_X, 2, 0x10, 4);
     // Entry Table CFG
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 90, 4); // (364 >> 2) and keeping lsb 0
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 0x1C, 4);
@@ -568,7 +568,7 @@ int main()
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, ENTRYLCK_OFFSET, 0x1000, 4); // ENTRY[0]-ENTRY[15] are locked
     configure_srcmd_n(&iopmp, SRCMD_EN, 2, 0x10, 4);
-    configure_srcmd_n(&iopmp, SRCMD_R, 2, 0x10, 4);
+    configure_srcmd_n(&iopmp, SRCMD_X, 2, 0x10, 4);
     // Entry Table CFG
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 90, 4); // (364 >> 2) and keeping lsb 0
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 0x1C, 4);
@@ -584,7 +584,7 @@ int main()
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, ENTRYLCK_OFFSET, 0x8, 4); // ENTRY[0]-ENTRY[3] are locked
     configure_srcmd_n(&iopmp, SRCMD_EN, 2, 0x10, 4);
-    configure_srcmd_n(&iopmp, SRCMD_R, 2, 0x10, 4);
+    configure_srcmd_n(&iopmp, SRCMD_X, 2, 0x10, 4);
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 90, 4); // (364 >> 2) and keeping lsb 0
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 0x1C, 4);
     set_hwcfg0_enable(&iopmp);
@@ -599,7 +599,7 @@ int main()
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_EN, 2, 0x1, 4); // SRCMD_EN[2] lock bit is set
     configure_srcmd_n(&iopmp, SRCMD_EN, 2, 0x10, 4);
-    configure_srcmd_n(&iopmp, SRCMD_R, 2, 0x10, 4);
+    configure_srcmd_n(&iopmp, SRCMD_X, 2, 0x10, 4);
     // Entry Table CFG
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 90, 4); // (364 >> 2) and keeping lsb 0
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 0x1C, 4);
@@ -615,7 +615,7 @@ int main()
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_EN, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 0x1, 4); // SRCMD_EN[1] lock bit is set
     configure_srcmd_n(&iopmp, SRCMD_EN, 2, 0x10, 4);
-    configure_srcmd_n(&iopmp, SRCMD_R, 2, 0x10, 4);
+    configure_srcmd_n(&iopmp, SRCMD_X, 2, 0x10, 4);
     write_register(&iopmp, MDCFG_TABLE_BASE_OFFSET + (3 * 4), 5, 4);
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 90, 4); // (364 >> 2) and keeping lsb 0
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 0x1C, 4);
@@ -633,7 +633,7 @@ int main()
     write_register(&iopmp, MDLCK_OFFSET, 0x1, 4);  // Locking MDLCK register
     write_register(&iopmp, MDLCK_OFFSET, 0x10, 4); // Trying to lock MD[3] but it shouldn't be locked
     configure_srcmd_n(&iopmp, SRCMD_EN, 2, 0x10, 4);
-    configure_srcmd_n(&iopmp, SRCMD_R, 2, 0x10, 4);
+    configure_srcmd_n(&iopmp, SRCMD_X, 2, 0x10, 4);
     // Entry Table CFG
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 90, 4); // (364 >> 2) and keeping lsb 0
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 0x1C, 4);
@@ -651,7 +651,7 @@ int main()
     write_register(&iopmp, ENTRYLCK_OFFSET, 0x1, 4);    // ENTRYLCK is locked
     write_register(&iopmp, ENTRYLCK_OFFSET, 0x2, 4);    // ENTRY[0] is locked
     configure_srcmd_n(&iopmp, SRCMD_EN, 2, 0x10, 4);
-    configure_srcmd_n(&iopmp, SRCMD_R, 2, 0x10, 4);
+    configure_srcmd_n(&iopmp, SRCMD_X, 2, 0x10, 4);
     // Entry Table CFG
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 90, 4); // (364 >> 2) and keeping lsb 0
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 0x1C, 4);
@@ -667,7 +667,7 @@ int main()
     write_register(&iopmp, ENTRYLCK_OFFSET, 0x1, 4); // ENTRYLCK is locked
     write_register(&iopmp, ENTRYLCK_OFFSET, 0x2, 4); // ENTRY[0] is locked
     configure_srcmd_n(&iopmp, SRCMD_EN, 2, 0x10, 4);
-    configure_srcmd_n(&iopmp, SRCMD_R, 2, 0x10, 4);
+    configure_srcmd_n(&iopmp, SRCMD_X, 2, 0x10, 4);
     // Entry Table CFG
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 90, 4); // (364 >> 2) and keeping lsb 0
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 0x1C, 4);
@@ -691,7 +691,7 @@ int main()
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, MDLCKH_OFFSET, 0x1, 4);
     configure_srcmd_n(&iopmp, SRCMD_ENH, 2, 0x1, 4);
-    configure_srcmd_n(&iopmp, SRCMD_RH, 2, 0x1, 4);
+    configure_srcmd_n(&iopmp, SRCMD_XH, 2, 0x1, 4);
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 31), 90, 4); // (364 >> 2) and keeping lsb 0
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 31), 0x1C, 4);
     set_hwcfg0_enable(&iopmp);
@@ -706,7 +706,7 @@ int main()
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, MDLCKH_OFFSET, 0x2, 4);
     configure_srcmd_n(&iopmp, SRCMD_ENH, 2, 0x1, 4);
-    configure_srcmd_n(&iopmp, SRCMD_RH, 2, 0x1, 4);
+    configure_srcmd_n(&iopmp, SRCMD_XH, 2, 0x1, 4);
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 31), 90, 4); // (364 >> 2) and keeping lsb 0
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 31), 0x1C, 4);
     set_hwcfg0_enable(&iopmp);
@@ -721,7 +721,7 @@ int main()
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, ERR_CFG_OFFSET, 0x2, 4);
     configure_srcmd_n(&iopmp, SRCMD_ENH, 2, 0x1, 4);
-    configure_srcmd_n(&iopmp, SRCMD_RH, 2, 0x1, 4);
+    configure_srcmd_n(&iopmp, SRCMD_XH, 2, 0x1, 4);
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 31), 90, 4);  // (364 >> 2) and keeping lsb 0
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 31), 0x99, 4); // Address Mode is NAPOT, with read permission and exe suppression
     set_hwcfg0_enable(&iopmp);
@@ -737,7 +737,7 @@ int main()
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, ERR_CFG_OFFSET, 0x2, 4);
     configure_srcmd_n(&iopmp, SRCMD_ENH, 2, 0x1, 4);
-    configure_srcmd_n(&iopmp, SRCMD_RH, 2, 0x1, 4);
+    configure_srcmd_n(&iopmp, SRCMD_XH, 2, 0x1, 4);
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 31), 90, 4);
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 31), (NAPOT | R), 4);
     set_hwcfg0_enable(&iopmp);
@@ -754,7 +754,7 @@ int main()
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, ERR_CFG_OFFSET, 0x4, 4);
     configure_srcmd_n(&iopmp, SRCMD_ENH, 2, 0x1, 4);
-    configure_srcmd_n(&iopmp, SRCMD_RH, 2, 0x1, 4);
+    configure_srcmd_n(&iopmp, SRCMD_XH, 2, 0x1, 4);
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 31), 90, 4);                // (364 >> 2) and keeping lsb 0
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 31), (SEXE | NAPOT | R), 4); // Address Mode is NAPOT, with read permission and exe suppression
     set_hwcfg0_enable(&iopmp);
@@ -773,7 +773,7 @@ int main()
     // Receiver Port Signals
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_ENH, 2, 0x1, 4);
-    configure_srcmd_n(&iopmp, SRCMD_RH, 2, 0x1, 4);
+    configure_srcmd_n(&iopmp, SRCMD_XH, 2, 0x1, 4);
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 31), 90, 4);                // (364 >> 2) and keeping lsb 0
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 31), (SEXE | NAPOT | R), 4); // Address Mode is NAPOT, with read permission and exe suppression
     set_hwcfg0_enable(&iopmp);
@@ -791,7 +791,7 @@ int main()
     // Receiver Port Signals
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_ENH, 2, 0x1, 4);
-    configure_srcmd_n(&iopmp, SRCMD_RH, 2, 0x1, 4);
+    configure_srcmd_n(&iopmp, SRCMD_XH, 2, 0x1, 4);
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 31), 90, 4);         // (364 >> 2) and keeping lsb 0
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 31), (NAPOT | R), 4); // Address Mode is NAPOT, with read permission and exe suppression
     set_hwcfg0_enable(&iopmp);
@@ -811,7 +811,7 @@ int main()
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, ERR_CFG_OFFSET, 0x6, 4);
     configure_srcmd_n(&iopmp, SRCMD_ENH, 2, 0x1, 4);
-    configure_srcmd_n(&iopmp, SRCMD_RH, 2, 0x1, 4);
+    configure_srcmd_n(&iopmp, SRCMD_XH, 2, 0x1, 4);
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 31), 90, 4);                       // (364 >> 2) and keeping lsb 0
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 31), (SEXE | SIXE | NAPOT | R), 4); // Address Mode is NAPOT, with read permission and exe suppression
     set_hwcfg0_enable(&iopmp);
@@ -831,7 +831,7 @@ int main()
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, ERR_CFG_OFFSET, 0x2, 4);
     configure_srcmd_n(&iopmp, SRCMD_ENH, 2, 0x1, 4);
-    configure_srcmd_n(&iopmp, SRCMD_RH, 2, 0x1, 4);
+    configure_srcmd_n(&iopmp, SRCMD_XH, 2, 0x1, 4);
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 31), 90, 4);         // (364 >> 2) and keeping lsb 0
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 31), (NAPOT | R), 4); // Address Mode is NAPOT, with read permission and exe suppression
     set_hwcfg0_enable(&iopmp);
@@ -849,7 +849,7 @@ int main()
     START_TEST_IF(iopmp.reg_file.hwcfg2.stall_en && iopmp.imp_rridscp, "Stall MD Feature",
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_EN, 5, 0x10, 4);
-    configure_srcmd_n(&iopmp, SRCMD_R, 5, 0x10, 4);
+    configure_srcmd_n(&iopmp, SRCMD_X, 5, 0x10, 4);
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 90, 4); // (364 >> 2) and keeping lsb 0
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 0x1C, 4);
     set_hwcfg0_enable(&iopmp);
@@ -872,7 +872,7 @@ int main()
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, ERR_CFG_OFFSET, 0x10, 4);
     configure_srcmd_n(&iopmp, SRCMD_EN, 5, 0x10, 4);
-    configure_srcmd_n(&iopmp, SRCMD_R, 5, 0x10, 4);
+    configure_srcmd_n(&iopmp, SRCMD_X, 5, 0x10, 4);
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 90, 4); // (364 >> 2) and keeping lsb 0
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 3), 0x1C, 4);
     set_hwcfg0_enable(&iopmp);
@@ -919,7 +919,7 @@ int main()
         write_register(&iopmp, ERR_MSIADDR_OFFSET, (0x8000 >> 2), 4);
     }
     configure_srcmd_n(&iopmp, SRCMD_ENH, 2, 0x1, 4);
-    configure_srcmd_n(&iopmp, SRCMD_RH, 2, 0x1, 4);
+    configure_srcmd_n(&iopmp, SRCMD_XH, 2, 0x1, 4);
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 31), 90, 4);
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 31), (NAPOT | R), 4);
     set_hwcfg0_enable(&iopmp);
@@ -944,7 +944,7 @@ int main()
         write_register(&iopmp, ERR_MSIADDR_OFFSET, (0x8000 >> 2), 4);
     }
     configure_srcmd_n(&iopmp, SRCMD_ENH, 2, 0x1, 4);
-    configure_srcmd_n(&iopmp, SRCMD_RH, 2, 0x1, 4);
+    configure_srcmd_n(&iopmp, SRCMD_XH, 2, 0x1, 4);
     configure_entry_n(&iopmp, ENTRY_ADDR, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 31), 90, 4);
     configure_entry_n(&iopmp, ENTRY_CFG, ((iopmp.reg_file.hwcfg3.md_entry_num + 1) * 31), (NAPOT | R), 4);
     set_hwcfg0_enable(&iopmp);

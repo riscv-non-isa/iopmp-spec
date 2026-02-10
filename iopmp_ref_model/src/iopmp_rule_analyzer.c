@@ -126,17 +126,19 @@ static bool iopmpCheckPerms(iopmp_dev_t *iopmp, uint16_t rrid, perm_type_e req_p
 
     switch (iopmp->reg_file.hwcfg3.srcmd_fmt) {
     case 0: {
-        uint64_t srcmd_r, srcmd_w;
-        uint8_t  srcmd_r_bit, srcmd_w_bit;
+        uint64_t srcmd_r, srcmd_w, srcmd_x;
+        uint8_t  srcmd_r_bit, srcmd_w_bit, srcmd_x_bit;
         bool sps_en = iopmp->reg_file.hwcfg2.sps_en; // Software privilege separation enable
         srcmd_r     = CONCAT32(iopmp->reg_file.srcmd_table[rrid].srcmd_rh.raw, iopmp->reg_file.srcmd_table[rrid].srcmd_r.raw);
         srcmd_w     = CONCAT32(iopmp->reg_file.srcmd_table[rrid].srcmd_wh.raw, iopmp->reg_file.srcmd_table[rrid].srcmd_w.raw);
+        srcmd_x     = CONCAT32(iopmp->reg_file.srcmd_table[rrid].srcmd_xh.raw, iopmp->reg_file.srcmd_table[rrid].srcmd_x.raw);
         srcmd_r_bit = GET_BIT(srcmd_r, (md + 1));
         srcmd_w_bit = GET_BIT(srcmd_w, (md + 1));
+        srcmd_x_bit = GET_BIT(srcmd_x, (md + 1));
 
         read_allowed    = sps_en ? (iopmpcfg.r & srcmd_r_bit) : iopmpcfg.r;
         write_allowed   = sps_en ? (iopmpcfg.w & srcmd_w_bit & ((iopmpcfg.r & srcmd_r_bit) | !is_amo)) : (iopmpcfg.w & (iopmpcfg.r | !is_amo));
-        execute_allowed = sps_en ? (iopmpcfg.x & srcmd_r_bit) : iopmpcfg.x;
+        execute_allowed = sps_en ? (iopmpcfg.x & srcmd_x_bit) : iopmpcfg.x;
         break;
     }
     case 1:

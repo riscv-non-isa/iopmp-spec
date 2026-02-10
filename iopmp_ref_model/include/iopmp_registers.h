@@ -443,7 +443,7 @@ typedef union {
         uint32_t l  : 1;                    // A sticky lock bit. When set, locks SRCMD_EN(s), SRCMD_ENH(s),
                                             // SRCMD_R(s), SRCMD_RH(s), SRCMD_W(s),
 
-        uint32_t md : 31;                   // md[j] = 1 indicates MD j is associated with RRID s.
+        uint32_t md : 31;                   // md[m] = 1 indicates MD m is associated with RRID s.
     };
     uint32_t raw;
 } srcmd_en_t;
@@ -452,56 +452,79 @@ typedef union {
 // for each source (RRID) and indicates which MDs this source maps to
 typedef union {
     struct {
-        uint32_t mdh : 32;                  // mdh[i]=1 indicates MD i+31 is associated with RRID;
+        uint32_t mdh : 32;                  // mdh[m]=1 indicates MD m+31 is associated with RRID;
     };
     uint32_t raw;
 } srcmd_enh_t;
 
-// SRCMD_R register (0, .... , HWCFG1.rrid_num-1) is a optional
+// SRCMD_R register (0, .... , HWCFG1.rrid_num-1) is an optional
 // specific register for each source (RRID) and indicates which MDs
 // has read permissions.
 typedef union {
     struct {
         uint32_t rsv : 1;                   // Reserved for future use
-        uint32_t md  : 31;                  // md[j] = 1 indicates RRID s has read permission to
-                                            // the corresponding MD
+        uint32_t md  : 31;                  // md[m] = 1 indicates RRID s has read permission to
+                                            // the corresponding MD m
     };
     uint32_t raw;
 } srcmd_r_t;
 
-// SRCMD_RH register (0, .... , HWCFG1.rrid_num-1) is a optional
+// SRCMD_RH register (0, .... , HWCFG1.rrid_num-1) is an optional
 // specific register for each source (RRID) and indicates which MDs
 // has read permissions.
 typedef union {
     struct {
-        uint32_t mdh : 32;                  // md[j] = 1 indicates RRID s has read permission to
-                                            // the corresponding MD j+31
+        uint32_t mdh : 32;                  // md[m] = 1 indicates RRID s has read permission to
+                                            // the corresponding MD m+31
     };
     uint32_t raw;
 } srcmd_rh_t;
 
-// SRCMD_W register (0, .... , HWCFG1.rrid_num-1) is a optional
+// SRCMD_W register (0, .... , HWCFG1.rrid_num-1) is an optional
 // specific register for each source (RRID) and indicates which MDs
 // has write permissions.
 typedef union {
     struct {
         uint32_t rsv : 1;                   // Reserved for future use
-        uint32_t md  : 31;                  // md[j] = 1 indicates RRID s has write permission to
-                                            // the corresponding MD
+        uint32_t md  : 31;                  // md[m] = 1 indicates RRID s has write permission to
+                                            // the corresponding MD m
     };
     uint32_t raw;
 } srcmd_w_t;
 
-// SRCMD_WH register (0, .... , HWCFG1.rrid_num-1) is a optional
+// SRCMD_WH register (0, .... , HWCFG1.rrid_num-1) is an optional
 // specific register for each source (RRID) and indicates which MDs
 // has write permissions.
 typedef union {
     struct {
-        uint32_t mdh : 32;                  // md[j] = 1 indicates RRID s has write permission to
-                                            // the corresponding MD j+31
+        uint32_t mdh : 32;                  // md[m] = 1 indicates RRID s has write permission to
+                                            // the corresponding MD m+31
     };
     uint32_t raw;
 } srcmd_wh_t;
+
+// SRCMD_X register (0, .... , HWCFG1.rrid_num-1) is an optional
+// specific register for each source (RRID) and indicates which MDs
+// has instruction fetch permissions.
+typedef union {
+    struct {
+        uint32_t rsv : 1;                   // Reserved for future use
+        uint32_t md  : 31;                  // md[m] = 1 indicates RRID s has instruction fetch permission to
+                                            // the corresponding MD m
+    };
+    uint32_t raw;
+} srcmd_x_t;
+
+// SRCMD_XH register (0, .... , HWCFG1.rrid_num-1) is an optional
+// specific register for each source (RRID) and indicates which MDs
+// has instruction fetch permissions.
+typedef union {
+    struct {
+        uint32_t mdh : 32;                  // md[m] = 1 indicates RRID s has instruction fetch permission to
+                                            // the corresponding MD m+31
+    };
+    uint32_t raw;
+} srcmd_xh_t;
 
 typedef union {
     struct {
@@ -526,7 +549,8 @@ typedef union {
         srcmd_rh_t  srcmd_rh;
         srcmd_w_t   srcmd_w;
         srcmd_wh_t  srcmd_wh;
-        uint32_t    rsvd0[2];
+        srcmd_x_t   srcmd_x;
+        srcmd_xh_t  srcmd_xh;
     };
     struct {
         srcmd_perm_t  srcmd_perm;

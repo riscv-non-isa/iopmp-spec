@@ -505,6 +505,8 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
     srcmd_rh_t  srcmd_rh_temp  = { .raw = (md_num < 32) ? 0 : upr_data4 & GENMASK_32(md_num - 32, 0) };
     srcmd_w_t   srcmd_w_temp   = { .raw = lwr_data4 & ((md_num >= 31) ? UINT32_MAX : GENMASK_32(md_num, 0)) };
     srcmd_wh_t  srcmd_wh_temp  = { .raw = (md_num < 32) ? 0 : upr_data4 & GENMASK_32(md_num - 32, 0) };
+    srcmd_x_t   srcmd_x_temp   = { .raw = lwr_data4 & ((md_num >= 31) ? UINT32_MAX : GENMASK_32(md_num, 0)) };
+    srcmd_xh_t  srcmd_xh_temp  = { .raw = (md_num < 32) ? 0 : upr_data4 & GENMASK_32(md_num - 32, 0) };
     srcmd_perm_t  srcmd_perm_temp  = { .raw = lwr_data4 };
     srcmd_permh_t srcmd_permh_temp = { .raw = upr_data4 };
 
@@ -810,6 +812,21 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
                 iopmp->reg_file.srcmd_table[srcmd_idx].srcmd_wh.mdh =
                     ((srcmd_wh_temp.mdh & ~iopmp->reg_file.mdlckh.mdh) |
                      (iopmp->reg_file.srcmd_table[srcmd_idx].srcmd_wh.mdh & iopmp->reg_file.mdlckh.mdh));
+                break;
+
+            // SRCMD_X Register
+            case 6:
+                iopmp->reg_file.srcmd_table[srcmd_idx].srcmd_x.rsv = 0;
+                iopmp->reg_file.srcmd_table[srcmd_idx].srcmd_x.md =
+                    (srcmd_x_temp.md & ~iopmp->reg_file.mdlck.md) |
+                    (iopmp->reg_file.srcmd_table[srcmd_idx].srcmd_x.md & iopmp->reg_file.mdlck.md);
+                if (num_bytes == 4) break;
+
+            // SRCMD_XH Register
+            case 7:
+                iopmp->reg_file.srcmd_table[srcmd_idx].srcmd_xh.mdh =
+                    ((srcmd_xh_temp.mdh & ~iopmp->reg_file.mdlckh.mdh) |
+                     (iopmp->reg_file.srcmd_table[srcmd_idx].srcmd_xh.mdh & iopmp->reg_file.mdlckh.mdh));
                 break;
 
             default:
