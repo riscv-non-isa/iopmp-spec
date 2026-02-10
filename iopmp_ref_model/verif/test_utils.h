@@ -21,6 +21,8 @@
 #define SRCMD_RH     0x0C
 #define SRCMD_W      0x10
 #define SRCMD_WH     0x14
+#define SRCMD_X      0x18
+#define SRCMD_XH     0x1C
 #define SRCMD_PERM   0x00
 #define SRCMD_PERMH  0x04
 
