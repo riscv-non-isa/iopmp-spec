@@ -68,7 +68,6 @@ typedef struct iopmp_dev_t {
     bool imp_mdlck;                     // IOPMP implements the Memory Domain Lock (MDLCK) feature
     bool imp_err_reqid_eid;             // IOPMP implements ERR_REQID.eid
     bool imp_rridscp;                   // IOPMP implements RRIDSCP-related features
-    bool imp_msi;                       // IOPMP implements message-signaled interrupts (MSI)
     bool imp_stall_buffer;              // IOPMP implements buffer to record and store stalled transactions
 } iopmp_dev_t;
 
@@ -87,6 +86,7 @@ typedef struct iopmp_cfg_t {
     uint16_t prio_entry;                // The supported number of priority entries in the IOPMP
     bool prio_ent_prog;                 // HWCFG2.prio_entry is programmable
     bool non_prio_en;                   // IOPMP supports non-priority entries
+    bool msi_en;                        // IOPMP implements message-signaled interrupts (MSI)
     bool peis;                          // IOPMP implements interrupt suppression per entry
     bool pees;                          // IOPMP implements the error suppression per entry
     bool sps_en;                        // IOPMP supports secondary permission settings
@@ -106,7 +106,6 @@ typedef struct iopmp_cfg_t {
     bool imp_mdlck;                     // IOPMP implements the Memory Domain Lock (MDLCK) feature
     bool imp_err_reqid_eid;             // IOPMP implements ERR_REQID.eid
     bool imp_rridscp;                   // IOPMP implements RRIDSCP-related features
-    bool imp_msi;                       // IOPMP implements message-signaled interrupts (MSI)
     bool imp_stall_buffer;              // IOPMP implements buffer to record and store stalled transactions
 } iopmp_cfg_t;
 

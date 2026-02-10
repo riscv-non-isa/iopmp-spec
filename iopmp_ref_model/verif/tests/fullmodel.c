@@ -42,6 +42,7 @@ int main()
     cfg.prio_entry = 16;
     cfg.prio_ent_prog = false;
     cfg.non_prio_en = true;
+    cfg.msi_en = true;
     cfg.peis = true;
     cfg.pees = true;
     cfg.sps_en = true;
@@ -61,7 +62,6 @@ int main()
     cfg.imp_mdlck = true;
     cfg.imp_err_reqid_eid = true;
     cfg.imp_rridscp = true;
-    cfg.imp_msi = true;
     cfg.imp_stall_buffer = true;
 
     START_TEST("Test entry granularity and encoding of ENTRY_ADDR(H)");
@@ -1053,7 +1053,7 @@ int main()
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
     END_TEST();)
 
-    START_TEST_IF(iopmp.imp_msi, "Test MSI Write error",
+    START_TEST_IF(iopmp.reg_file.hwcfg2.msi_en, "Test MSI Write error",
     uint64_t read_data;
     reset_iopmp(&iopmp, &cfg);
     bus_error = 0x8000;
@@ -1080,7 +1080,7 @@ int main()
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
     END_TEST();)
 
-    START_TEST_IF(iopmp.imp_msi, "Test MSI",
+    START_TEST_IF(iopmp.reg_file.hwcfg2.msi_en, "Test MSI",
     uint64_t read_data;
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, ERR_CFG_OFFSET, 0x8F0A, 4);

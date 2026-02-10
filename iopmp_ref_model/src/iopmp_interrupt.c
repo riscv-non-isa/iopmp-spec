@@ -34,7 +34,7 @@
  */
 void generate_interrupt(iopmp_dev_t *iopmp, bool gen_intrpt, uint8_t *intrpt) {
 
-    if (!iopmp->imp_msi) {
+    if (!iopmp->reg_file.hwcfg2.msi_en) {
         // If IOPMP doesn't implement Message-Signaled Interrupts (MSI)
         // extension, IOPMP only triggers wired interrupts.
         // IOPMP triggers wired interrupt if the following conditions are true:
@@ -49,7 +49,7 @@ void generate_interrupt(iopmp_dev_t *iopmp, bool gen_intrpt, uint8_t *intrpt) {
     //   - IOPMP interrupts are enabled
     //   - The interrupts are not suppressed
     //   - IOPMP doesn't enable MSI
-    *intrpt = gen_intrpt && !iopmp->reg_file.err_cfg.msi_en;
+    *intrpt = gen_intrpt && !iopmp->reg_file.err_cfg.msi_sel;
 
     // IOPMP implements Message-Signaled Interrupts (MSI) extension.
     // IOPMP triggers MSI if the following conditions are true:
@@ -57,7 +57,7 @@ void generate_interrupt(iopmp_dev_t *iopmp, bool gen_intrpt, uint8_t *intrpt) {
     //   - The interrupts are not suppressed
     //   - MSI is enabled
     //   - (implementation-specific) There are no pending MSI write error
-    bool msi = gen_intrpt && iopmp->reg_file.err_cfg.msi_en &&
+    bool msi = gen_intrpt && iopmp->reg_file.err_cfg.msi_sel &&
                !iopmp->reg_file.err_info.msi_werr;
     if (msi) {
         // Construct MSI address and data for enabled MSI.

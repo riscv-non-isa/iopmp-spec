@@ -44,6 +44,7 @@ int main(void)
     cfg.prio_entry = 16;
     cfg.prio_ent_prog = false;
     cfg.non_prio_en = true;
+    cfg.msi_en = true;
     cfg.peis = true;
     cfg.pees = true;
     cfg.sps_en= true;
@@ -63,7 +64,6 @@ int main(void)
     cfg.imp_mdlck = true;
     cfg.imp_err_reqid_eid = true;
     cfg.imp_rridscp = true;
-    cfg.imp_msi = true;
     cfg.imp_stall_buffer = true;
 
     reset_iopmp(&iopmp_dev, &cfg);
