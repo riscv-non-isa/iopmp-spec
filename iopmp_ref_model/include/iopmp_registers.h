@@ -136,7 +136,8 @@ typedef union {
                                             // is programmable. Reset to 1 if the implementation supports programmable
                                             // prio_entry, otherwise, wired to 0.
         uint32_t non_prio_en   : 1;         // Indicates whether the IOPMP supports non-priority entries.
-        uint32_t rsv           : 9;         // Must be zero on write, reserved for future.
+        uint32_t rsv           : 8;         // Must be zero on write, reserved for future.
+        uint32_t msi_en        : 1;         // Indicate if the IOPMP implements MSI extension.
         uint32_t peis          : 1;         // Indicate if the IOPMP implements interrupt suppression per entry,
                                             // including fields sire and siwe in ENTRY_CFG(i), i = 0…HWCFG1.entry_num-1.
         uint32_t pees          : 1;         // Indicate if the IOPMP implements the error suppression per entry,
@@ -304,7 +305,9 @@ typedef union {
         uint32_t rs      : 1;              // To suppress an error response on an IOPMP rule violation.
                                            // • 0x0: respond an implementation-dependent error, such as a bus error
                                            // • 0x1: respond a success with a pre-defined value to the requestor instead of an error
-        uint32_t msi_en  : 1;              // It indicates whether the IOPMP triggers MSI
+        uint32_t msi_sel : 1;              // It indicates whether the IOPMP triggers interrupt by MSI or wired interrupt
+                                           // • 0x0: the IOPMP triggers interrupt by wired interrupt
+                                           // • 0x1: the IOPMP triggers interrupt by MSI
         uint32_t stall_violation_en  : 1;  // It indicates whether the IOPMP faults stalled transactions
         uint32_t rsv1    : 3;              // reserved for future use
         uint32_t msidata : 11;             // The data to trigger MSI

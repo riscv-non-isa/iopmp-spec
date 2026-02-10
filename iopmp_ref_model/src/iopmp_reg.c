@@ -134,6 +134,7 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
         iopmp->reg_file.hwcfg2.prio_ent_prog    = cfg->prio_ent_prog;
     }
     iopmp->reg_file.hwcfg2.non_prio_en      = cfg->non_prio_en;
+    iopmp->reg_file.hwcfg2.msi_en           = cfg->msi_en;
     iopmp->reg_file.hwcfg2.peis             = cfg->peis;
     iopmp->reg_file.hwcfg2.pees             = cfg->pees;
     iopmp->reg_file.hwcfg2.sps_en           = cfg->sps_en;
@@ -171,7 +172,6 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     iopmp->imp_mdlck                        = cfg->imp_mdlck;
     iopmp->imp_err_reqid_eid                = cfg->imp_err_reqid_eid;
     iopmp->imp_rridscp                      = cfg->imp_rridscp;
-    iopmp->imp_msi                          = cfg->imp_msi;
     iopmp->imp_stall_buffer                 = cfg->imp_stall_buffer;
 
     return 0;
@@ -653,8 +653,8 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
             iopmp->reg_file.err_cfg.l                 |= err_cfg_temp.l;
             iopmp->reg_file.err_cfg.ie                 = err_cfg_temp.ie;
             iopmp->reg_file.err_cfg.rs                 = err_cfg_temp.rs;
-            if (iopmp->imp_msi) {
-                iopmp->reg_file.err_cfg.msi_en         = err_cfg_temp.msi_en;
+            if (iopmp->reg_file.hwcfg2.msi_en) {
+                iopmp->reg_file.err_cfg.msi_sel        = err_cfg_temp.msi_sel;
                 iopmp->reg_file.err_cfg.msidata        = err_cfg_temp.msidata;
             }
             if (iopmp->reg_file.hwcfg2.stall_en) {
@@ -692,7 +692,7 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
         break;
 
     case ERR_MSIADDR_OFFSET:
-        if (iopmp->imp_msi) {
+        if (iopmp->reg_file.hwcfg2.msi_en) {
             iopmp->reg_file.err_msiaddr.raw = (!iopmp->reg_file.err_cfg.l) ?
                                               err_msiaddr_temp.raw :
                                               iopmp->reg_file.err_msiaddr.raw;
@@ -700,7 +700,7 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
         break;
 
     case ERR_MSIADDRH_OFFSET:
-        if (iopmp->imp_msi && iopmp->reg_file.hwcfg0.addrh_en) {
+        if (iopmp->reg_file.hwcfg2.msi_en && iopmp->reg_file.hwcfg0.addrh_en) {
             iopmp->reg_file.err_msiaddrh.raw = (!iopmp->reg_file.err_cfg.l) ?
                                                err_msiaddrh_temp.raw :
                                                iopmp->reg_file.err_msiaddrh.raw;
