@@ -112,12 +112,12 @@ struct iopmp_instance {
         /** Flag to indicate if the field HWCFG3.rrid_transl is programmable */
         unsigned int rrid_transl_prog : 1;
         /**
-         * Flag to indicate if the IOPMP implements the check of an instruction
-         * fetch
+         * Flag to indicate if the IOPMP treats the instruction fetch accesses
+         * as data read accesses
          */
-        unsigned int chk_x : 1;
+        unsigned int xinr : 1;
         /**
-         * Flag to indicate for chk_x=1, the IOPMP with no_x=1 always fails on
+         * Flag to indicate for xinr=0, the IOPMP with no_x=1 always fails on
          * an instruction fetch
          */
         unsigned int no_x : 1;
@@ -764,12 +764,12 @@ static inline bool iopmp_get_support_rrid_transl(IOPMP_t *iopmp)
  *
  * \param[in] iopmp             The IOPMP instance to be checked
  *
- * \retval 1 if HWCFG3.rrid_transl_prog = 1
- * \retval 0 if HWCFG3.rrid_transl_prog = 0
+ * \retval 1 if HWCFG3.xinr = 0
+ * \retval 0 if HWCFG3.xinr = 1
  */
 static inline bool iopmp_get_support_chk_x(IOPMP_t *iopmp)
 {
-    return iopmp->chk_x;
+    return !iopmp->xinr;
 }
 
 /**
