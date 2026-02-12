@@ -242,6 +242,14 @@
     #define IOPMP_SRCMD_WH_MDH_SHIFT                0
     #define IOPMP_SRCMD_WH_MDH_MASK                 GENMASK_32(31, 0)
 
+#define IOPMP_SRCMD_X_BASE                          0x1018
+    #define IOPMP_SRCMD_X_MD_SHIFT                  1
+    #define IOPMP_SRCMD_X_MD_MASK                   GENMASK_32(31, 1)
+
+#define IOPMP_SRCMD_XH_BASE                         0x101C
+    #define IOPMP_SRCMD_XH_MDH_SHIFT                0
+    #define IOPMP_SRCMD_XH_MDH_MASK                 GENMASK_32(31, 0)
+
 #define IOPMP_SRCMD_STRIDE                          0x0020
 
 /* Entry Array Registers */
@@ -276,6 +284,8 @@ DECLARE_FUNC_GET_ADDR_OF_SRCMD(srcmd_r,     IOPMP_SRCMD_R_BASE);
 DECLARE_FUNC_GET_ADDR_OF_SRCMD(srcmd_rh,    IOPMP_SRCMD_RH_BASE);
 DECLARE_FUNC_GET_ADDR_OF_SRCMD(srcmd_w,     IOPMP_SRCMD_W_BASE);
 DECLARE_FUNC_GET_ADDR_OF_SRCMD(srcmd_wh,    IOPMP_SRCMD_WH_BASE);
+DECLARE_FUNC_GET_ADDR_OF_SRCMD(srcmd_x,     IOPMP_SRCMD_X_BASE);
+DECLARE_FUNC_GET_ADDR_OF_SRCMD(srcmd_xh,    IOPMP_SRCMD_XH_BASE);
 #endif
 
 /* Helper functions to read low 32-bit value from SRCMD registers */
@@ -289,6 +299,7 @@ DECLARE_FUNC_READ_SRCMD_L(srcmd_perm);
 #ifdef ENABLE_SPS
 DECLARE_FUNC_READ_SRCMD_L(srcmd_r);
 DECLARE_FUNC_READ_SRCMD_L(srcmd_w);
+DECLARE_FUNC_READ_SRCMD_L(srcmd_x);
 #endif
 
 /* Helper functions to read high 32-bit value from SRCMD registers */
@@ -304,6 +315,7 @@ DECLARE_FUNC_READ_SRCMD_H(srcmd_permh, (iopmp->rrid_num > 16));
 #ifdef ENABLE_SPS
 DECLARE_FUNC_READ_SRCMD_H(srcmd_rh,    (iopmp->md_num > 31));
 DECLARE_FUNC_READ_SRCMD_H(srcmd_wh,    (iopmp->md_num > 31));
+DECLARE_FUNC_READ_SRCMD_H(srcmd_xh,    (iopmp->md_num > 31));
 #endif
 
 /* Helper functions to read 64-bit value from SRCMD registers */
@@ -319,6 +331,7 @@ DECLARE_FUNC_READ_SRCMD_64(srcmd_perm);
 #ifdef ENABLE_SPS
 DECLARE_FUNC_READ_SRCMD_64(srcmd_r);
 DECLARE_FUNC_READ_SRCMD_64(srcmd_w);
+DECLARE_FUNC_READ_SRCMD_64(srcmd_x);
 #endif
 
 /* Helper functions to write low 32-bit value into SRCMD registers */
@@ -332,6 +345,7 @@ DECLARE_FUNC_WRITE_SRCMD_L(srcmd_perm);
 #ifdef ENABLE_SPS
 DECLARE_FUNC_WRITE_SRCMD_L(srcmd_r);
 DECLARE_FUNC_WRITE_SRCMD_L(srcmd_w);
+DECLARE_FUNC_WRITE_SRCMD_L(srcmd_x);
 #endif
 
 /* Helper functions to write high 32-bit value into SRCMD registers */
@@ -346,6 +360,7 @@ DECLARE_FUNC_WRITE_SRCMD_H(srcmd_permh, (iopmp->rrid_num > 16));
 #ifdef ENABLE_SPS
 DECLARE_FUNC_WRITE_SRCMD_H(srcmd_rh,    (iopmp->md_num > 31));
 DECLARE_FUNC_WRITE_SRCMD_H(srcmd_wh,    (iopmp->md_num > 31));
+DECLARE_FUNC_WRITE_SRCMD_H(srcmd_xh,    (iopmp->md_num > 31));
 #endif
 
 /* Helper functions to write 64-bit value into SRCMD registers */
@@ -361,6 +376,7 @@ DECLARE_FUNC_WRITE_SRCMD_64(srcmd_perm);
 #ifdef ENABLE_SPS
 DECLARE_FUNC_WRITE_SRCMD_64(srcmd_r);
 DECLARE_FUNC_WRITE_SRCMD_64(srcmd_w);
+DECLARE_FUNC_WRITE_SRCMD_64(srcmd_x);
 #endif
 
 /* Helper functions to get base address of ENTRY registers */
@@ -1458,6 +1474,49 @@ static enum iopmp_error sps_set_srcmd_w_64_md(IOPMP_t *iopmp, uint32_t rrid,
 
     return (*mds == __mds) ? IOPMP_OK : IOPMP_ERR_ILLEGAL_VALUE;
 }
+
+/**
+ * \brief Get RRID's instruction fetch permission to MD(0) ~ MD(62)
+ *
+ * \param[in] iopmp             The IOPMP instance
+ * \param[in] rrid              The RRID to be got
+ *
+ * \return SRCMD_XH(rrid).mdh | SRCMD_X(rrid).md
+ *
+ * \note This operation is only supported by IOPMP/SPS extension
+ */
+static uint64_t sps_get_srcmd_x_64_md(IOPMP_t *iopmp, uint32_t rrid)
+{
+    return read_srcmd_x_64(iopmp, rrid) >> IOPMP_SRCMD_X_MD_SHIFT;
+}
+
+/**
+ * \brief Set RRID's instruction fetch permission to MD(0) ~ MD(62)
+ *
+ * \param[in] iopmp             The IOPMP instance
+ * \param[in] rrid              The RRID to be set
+ * \param[in,out] mds           Input the instruction fetch permission bitmap
+ *                              associated with \p rrid. Output WARL value
+ *
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_ILLEGAL_VALUE if the written \p mds does not match the
+ *         actual values
+ *
+ * \note This operation is only supported by IOPMP/SPS extension
+ */
+static enum iopmp_error sps_set_srcmd_x_64_md(IOPMP_t *iopmp, uint32_t rrid,
+                                              uint64_t *mds)
+{
+    uint64_t srcmd_x_64;
+    uint64_t __mds = *mds;
+
+    srcmd_x_64 = __mds << IOPMP_SRCMD_X_MD_SHIFT;
+    write_srcmd_x_64(iopmp, rrid, srcmd_x_64);
+    /* SRCMD_X.md and SRCMD_XH.mdh are WARL. Read them back to check. */
+    *mds = sps_get_srcmd_x_64_md(iopmp, rrid);
+
+    return (*mds == __mds) ? IOPMP_OK : IOPMP_ERR_ILLEGAL_VALUE;
+}
 #endif
 
 /******************************************************************************/
@@ -1497,6 +1556,8 @@ static struct iopmp_operations_sps iopmp_ops_sps = {
     .sps_set_srcmd_r_64_md = sps_set_srcmd_r_64_md,
     .sps_get_srcmd_w_64_md = sps_get_srcmd_w_64_md,
     .sps_set_srcmd_w_64_md = sps_set_srcmd_w_64_md,
+    .sps_get_srcmd_x_64_md = sps_get_srcmd_x_64_md,
+    .sps_set_srcmd_x_64_md = sps_set_srcmd_x_64_md,
 };
 #endif
 

@@ -165,6 +165,11 @@ struct iopmp_operations_sps {
     /** Set 64-bit value of {SRCMD_WH(rrid), SRCMD_W(rrid)}.md */
     enum iopmp_error (*sps_set_srcmd_w_64_md)(IOPMP_t *iopmp, uint32_t rrid,
                                               uint64_t *mds);
+    /** Get 64-bit value of {SRCMD_XH(rrid), SRCMD_X(rrid)}.md */
+    uint64_t (*sps_get_srcmd_x_64_md)(IOPMP_t *iopmp, uint32_t rrid);
+    /** Set 64-bit value of {SRCMD_XH(rrid), SRCMD_X(rrid)}.md */
+    enum iopmp_error (*sps_set_srcmd_x_64_md)(IOPMP_t *iopmp, uint32_t rrid,
+                                              uint64_t *mds);
 };
 
 #endif  /* __LIBIOPMP_DEF_H__ */

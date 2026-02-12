@@ -1999,7 +1999,44 @@ enum iopmp_error iopmp_sps_get_rrid_md_write(IOPMP_t *iopmp, uint32_t rrid,
                                              uint64_t *mds);
 
 /**
- * \brief (SPS only) Set RRID's read and write permission to MDs
+ * \brief (SPS only) Set RRID's instruction fetch permission to MDs
+ *
+ * \param[in] iopmp             The IOPMP instance
+ * \param[in] rrid              The RRID to be set
+ * \param[in] mds_set           The desired MDs to set permission to \p rrid
+ * \param[in] mds_clr           The desired MDs to clear permission to \p rrid
+ * \param[out] mds              The pointer to an integer to store WARL value of
+ *                              SRCMD_X.md after setting
+ *
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not implement SPS extension
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid or \p mds is out of bounds
+ * \retval IOPMP_ERR_REG_IS_LOCKED if register has been locked by SRCMD_EN.l
+ * \retval IOPMP_ERR_ILLEGAL_VALUE if the written \p mds does not match the
+ *         actual values
+ */
+enum iopmp_error iopmp_sps_set_rrid_insn_fetch(IOPMP_t *iopmp, uint32_t rrid,
+                                               uint64_t mds_set,
+                                               uint64_t mds_clr,
+                                               uint64_t *mds);
+
+/**
+ * \brief (SPS only) Get RRID's instruction fetch permission to MDs
+ *
+ * \param[in] iopmp             The IOPMP instance
+ * \param[in] rrid              The RRID to be checked
+ * \param[out] mds              Pointer to variable to output permission
+ *
+ * \retval IOPMP_OK if successes
+ * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not implement SPS extension
+ * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid is out of bounds
+ * \retval IOPMP_ERR_INVALID_PARAMETER if given \p mds is NULL
+ */
+enum iopmp_error iopmp_sps_get_rrid_md_insn_fetch(IOPMP_t *iopmp, uint32_t rrid,
+                                                  uint64_t *mds);
+
+/**
+ * \brief (SPS only) Set RRID's read/write/instruction fetch permission to MDs
  *
  * \param[in] iopmp             The IOPMP instance
  * \param[in] rrid              The RRID to be set
@@ -2007,10 +2044,14 @@ enum iopmp_error iopmp_sps_get_rrid_md_write(IOPMP_t *iopmp, uint32_t rrid,
  * \param[in] mds_clr_r         The desired MDs to clear R permission to \p rrid
  * \param[in] mds_set_w         The desired MDs to set W permission to \p rrid
  * \param[in] mds_clr_w         The desired MDs to clear W permission to \p rrid
+ * \param[in] mds_set_x         The desired MDs to set X permission to \p rrid
+ * \param[in] mds_clr_x         The desired MDs to clear X permission to \p rrid
  * \param[out] mds_r            The pointer to an integer to store WARL value of
  *                              SRCMD_R.md after setting
  * \param[out] mds_w            The pointer to an integer to store WARL value of
  *                              SRCMD_W.md after setting
+ * \param[out] mds_x            The pointer to an integer to store WARL value of
+ *                              SRCMD_X.md after setting
  *
  * \retval IOPMP_OK if successes
  * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not implement SPS extension
@@ -2020,29 +2061,36 @@ enum iopmp_error iopmp_sps_get_rrid_md_write(IOPMP_t *iopmp, uint32_t rrid,
  * \retval IOPMP_ERR_ILLEGAL_VALUE if the written \p mds_r or \p mds_w does
  *         not match the actual values
  */
-enum iopmp_error iopmp_sps_set_rrid_md_rw(IOPMP_t *iopmp, uint32_t rrid,
-                                          uint64_t mds_set_r,
-                                          uint64_t mds_clr_r,
-                                          uint64_t mds_set_w,
-                                          uint64_t mds_clr_w,
-                                          uint64_t *mds_r,
-                                          uint64_t *mds_w);
+enum iopmp_error iopmp_sps_set_rrid_md_rwx(IOPMP_t *iopmp, uint32_t rrid,
+                                           uint64_t mds_set_r,
+                                           uint64_t mds_clr_r,
+                                           uint64_t mds_set_w,
+                                           uint64_t mds_clr_w,
+                                           uint64_t mds_set_x,
+                                           uint64_t mds_clr_x,
+                                           uint64_t *mds_r,
+                                           uint64_t *mds_w,
+                                           uint64_t *mds_x);
 
 /**
- * \brief (SPS only) Get RRID's read and write permission to multiple MDs
+ * \brief (SPS only) Get RRID's read/write/instruction fetch permission to
+ * multiple MDs
  *
  * \param[in] iopmp             The IOPMP instance
  * \param[in] rrid              The RRID to be set
  * \param[out] mds_r            Pointer to variable to output read permission
  * \param[out] mds_w            Pointer to variable to output write permission
+ * \param[out] mds_x            Pointer to variable to output instruction fetch
+ *                              permission
  *
  * \retval IOPMP_OK if successes
  * \retval IOPMP_ERR_NOT_SUPPORTED if \p iopmp does not implement SPS extension
  * \retval IOPMP_ERR_OUT_OF_BOUNDS if given \p rrid is out of bounds
  * \retval IOPMP_ERR_INVALID_PARAMETER if given \p mds_r or \p mds_w is NULL
  */
-enum iopmp_error iopmp_sps_get_rrid_md_rw(IOPMP_t *iopmp, uint32_t rrid,
-                                          uint64_t *mds_r, uint64_t *mds_w);
+enum iopmp_error iopmp_sps_get_rrid_md_rwx(IOPMP_t *iopmp, uint32_t rrid,
+                                           uint64_t *mds_r, uint64_t *mds_w,
+                                           uint64_t *mds_x);
 
 /**
  * \brief Get start index and number of the entries belong to MD[mdidx]
