@@ -776,9 +776,10 @@ enum iopmp_error iopmp_invalidate_error(IOPMP_t *iopmp)
      * The error capture record is optional.
      * If it is not implemented, ERR_INFO.v should be wired to zero.
      */
-    if (!iopmp->ops_generic->invalidate_error)
+    if (iopmp->no_err_rec)
         return IOPMP_ERR_NOT_SUPPORTED;
 
+    assert(iopmp->ops_generic->invalidate_error);
     iopmp->ops_generic->invalidate_error(iopmp);
 
     return IOPMP_OK;
@@ -790,13 +791,13 @@ enum iopmp_error iopmp_capture_error(IOPMP_t *iopmp,
 {
     assert(iopmp_is_initialized(iopmp));
 
+    if (iopmp->no_err_rec)
+        return IOPMP_ERR_NOT_SUPPORTED;
+
     if (!err_report)
         return IOPMP_ERR_INVALID_PARAMETER;
 
-    /* The error capture record is optional */
-    if (!iopmp->ops_generic->capture_error)
-        return IOPMP_ERR_NOT_SUPPORTED;
-
+    assert(iopmp->ops_generic->capture_error);
     return iopmp->ops_generic->capture_error(iopmp, err_report, invalidate);
 }
 
