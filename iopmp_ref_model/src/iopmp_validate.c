@@ -257,9 +257,18 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
                         gen_buserr_nonPrio = (gen_buserr_nonPrio || !rule_analyzer_o.see);
                     }
 
-                    if (firstIllegalAccess) {
-                        nonPrioRuleStatus = perm_to_etype(trans_perm);
-                        nonPrioRuleNum    = cur_entry;
+                    nonPrioRuleStatus = perm_to_etype(trans_perm);
+                    // For an illegal transaction matching multiple non-priority
+                    // entries, if the interrupt is triggered or the bus error
+                    // response is returned, ERR_REQID.eid stores the index of
+                    // any of them.
+                    // Here the models determines if this entry could be
+                    // candidate of ERR_REQID.eid field. The matched entry could
+                    // be candidate if it can generate error report.
+                    if (firstIllegalAccess &&
+                        ((iopmp->reg_file.err_cfg.ie && !rule_analyzer_o.sie) ||
+                         (!iopmp->reg_file.err_cfg.rs && !rule_analyzer_o.see))) {
+                        nonPrioRuleNum = cur_entry;
                         firstIllegalAccess = 0;
                     }
                     continue;
