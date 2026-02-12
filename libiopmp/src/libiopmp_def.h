@@ -67,8 +67,8 @@ struct iopmp_operations_generic {
     /** Suppress/express global error responses. */
     enum iopmp_error (*set_global_err_resp)(IOPMP_t *iopmp, bool *suppress);
 
-    /** Set MSI enable/disable. */
-    enum iopmp_error (*set_msi_en)(IOPMP_t *iopmp, bool *enable);
+    /** Select MSI or wired interrupt */
+    enum iopmp_error (*set_msi_sel)(IOPMP_t *iopmp, bool *enable);
 
     /** Set MSI address and data. */
     enum iopmp_error (*set_msi_info)(IOPMP_t *iopmp, uint64_t *msiaddr64,

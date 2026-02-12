@@ -62,6 +62,8 @@
     #define IOPMP_HWCFG2_PRIO_ENT_PROG_MASK     GENMASK_32(16, 16)
     #define IOPMP_HWCFG2_NON_PRIO_EN_SHIFT      17
     #define IOPMP_HWCFG2_NON_PRIO_EN_MASK       GENMASK_32(17, 17)
+    #define IOPMP_HWCFG2_MSI_EN_SHIFT           26
+    #define IOPMP_HWCFG2_MSI_EN_MASK            GENMASK_32(26, 26)
     #define IOPMP_HWCFG2_PEIS_SHIFT             27
     #define IOPMP_HWCFG2_PEIS_MASK              GENMASK_32(27, 27)
     #define IOPMP_HWCFG2_PEES_SHIFT             28
@@ -153,8 +155,8 @@
     #define IOPMP_ERR_CFG_IE_MASK               GENMASK_32(1, 1)
     #define IOPMP_ERR_CFG_RS_SHIFT              2
     #define IOPMP_ERR_CFG_RS_MASK               GENMASK_32(2, 2)
-    #define IOPMP_ERR_CFG_MSI_EN_SHIFT          3
-    #define IOPMP_ERR_CFG_MSI_EN_MASK           GENMASK_32(3, 3)
+    #define IOPMP_ERR_CFG_MSI_SEL_SHIFT         3
+    #define IOPMP_ERR_CFG_MSI_SEL_MASK          GENMASK_32(3, 3)
     #define IOPMP_ERR_CFG_STALL_VIO_EN_SHIFT    4
     #define IOPMP_ERR_CFG_STALL_VIO_EN_MASK     GENMASK_32(4, 4)
     #define IOPMP_ERR_CFG_MSIDATA_SHIFT         8
@@ -849,16 +851,16 @@ static enum iopmp_error generic_set_global_err_resp(IOPMP_t *iopmp,
  * \retval IOPMP_OK if successes
  * \retval IOPMP_ERR_ILLEGAL_VALUE if \p enable can not be written into \p iopmp
  */
-static enum iopmp_error generic_set_msi_en(IOPMP_t *iopmp, bool *enable)
+static enum iopmp_error generic_set_msi_sel(IOPMP_t *iopmp, bool *enable)
 {
     uint32_t err_cfg;
     bool __enable = *enable;
 
-    write_err_cfg(iopmp, IOPMP_ERR_CFG_MSI_EN_MASK,
-                  (__enable << IOPMP_ERR_CFG_MSI_EN_SHIFT));
-    /* ERR_CFG.msi_en is WARL. Read it back to check the value */
+    write_err_cfg(iopmp, IOPMP_ERR_CFG_MSI_SEL_MASK,
+                  (__enable << IOPMP_ERR_CFG_MSI_SEL_SHIFT));
+    /* ERR_CFG.msi_sel is WARL. Read it back to check the value */
     err_cfg = io_read32(iopmp->addr + IOPMP_ERR_CFG_BASE);
-    *enable = EXTRACT_FIELD(err_cfg, IOPMP_ERR_CFG_MSI_EN);
+    *enable = EXTRACT_FIELD(err_cfg, IOPMP_ERR_CFG_MSI_SEL);
 
     return __enable == *enable ? IOPMP_OK : IOPMP_ERR_ILLEGAL_VALUE;
 }
@@ -1476,7 +1478,7 @@ static struct iopmp_operations_generic iopmp_operations_generic = {
     .lock_err_cfg = generic_lock_err_cfg,
     .set_global_intr = generic_set_global_intr,
     .set_global_err_resp = generic_set_global_err_resp,
-    .set_msi_en = generic_set_msi_en,
+    .set_msi_sel = generic_set_msi_sel,
     .set_msi_info = generic_set_msi_info,
     .get_and_clear_msi_werr = generic_get_and_clear_msi_werr,
     .set_stall_violation_en = generic_set_stall_violation_en,
@@ -1563,6 +1565,7 @@ __init_common(IOPMP_t *iopmp, uintptr_t addr,
         iopmp->prio_entry_num = EXTRACT_FIELD(data, IOPMP_HWCFG2_PRIO_ENTRY);
         iopmp->prio_ent_prog = EXTRACT_FIELD(data, IOPMP_HWCFG2_PRIO_ENT_PROG);
         iopmp->non_prio_en = EXTRACT_FIELD(data, IOPMP_HWCFG2_NON_PRIO_EN);
+        iopmp->msi_en = EXTRACT_FIELD(data, IOPMP_HWCFG2_MSI_EN);
         iopmp->peis = EXTRACT_FIELD(data, IOPMP_HWCFG2_PEIS);
         iopmp->pees = EXTRACT_FIELD(data, IOPMP_HWCFG2_PEES);
         iopmp->sps_en = EXTRACT_FIELD(data, IOPMP_HWCFG2_SPS_EN);
@@ -1599,7 +1602,7 @@ __init_common(IOPMP_t *iopmp, uintptr_t addr,
     /* Record into local data structure */
     iopmp->err_cfg_lock = EXTRACT_FIELD(data, IOPMP_ERR_CFG_L);
     iopmp->intr_enable = EXTRACT_FIELD(data, IOPMP_ERR_CFG_IE);
-    iopmp->msi_en = EXTRACT_FIELD(data, IOPMP_ERR_CFG_MSI_EN);
+    iopmp->msi_sel = EXTRACT_FIELD(data, IOPMP_ERR_CFG_MSI_SEL);
     iopmp->stall_violation_en = EXTRACT_FIELD(data, IOPMP_ERR_CFG_STALL_VIO_EN);
     iopmp->msidata = EXTRACT_FIELD(data, IOPMP_ERR_CFG_MSIDATA);
 
