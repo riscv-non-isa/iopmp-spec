@@ -40,6 +40,8 @@
     #define IOPMP_HWCFG0_HWCFG2_EN_MASK         GENMASK_32(1, 1)
     #define IOPMP_HWCFG0_HWCFG3_EN_SHIFT        2
     #define IOPMP_HWCFG0_HWCFG3_EN_MASK         GENMASK_32(2, 2)
+    #define IOPMP_HWCFG0_NO_ERR_REC_SHIFT       23
+    #define IOPMP_HWCFG0_NO_ERR_REC_MASK        GENMASK_32(23, 23)
     #define IOPMP_HWCFG0_MD_NUM_SHIFT           24
     #define IOPMP_HWCFG0_MD_NUM_MASK            GENMASK_32(29, 24)
     #define IOPMP_HWCFG0_ADDRH_EN_SHIFT         30
@@ -1543,6 +1545,7 @@ __init_common(IOPMP_t *iopmp, uintptr_t addr,
 
     /* Record HWCFG0 into local data structure */
     iopmp->enable = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_ENABLE);
+    iopmp->no_err_rec = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_NO_ERR_REC);
     iopmp->md_num = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_MD_NUM);
     iopmp->addrh_en = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_ADDRH_EN);
     iopmp->tor_en = EXTRACT_FIELD(hwcfg0, IOPMP_HWCFG0_TOR_EN);

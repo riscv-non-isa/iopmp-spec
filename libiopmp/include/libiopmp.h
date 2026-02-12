@@ -94,6 +94,8 @@ struct iopmp_instance {
         unsigned int mdcfg_fmt : 2;
         /** Flag to indicate the SRCMD format */
         unsigned int srcmd_fmt : 2;
+        /** Flag to indicate if the Error Capture Record is not implemented */
+        unsigned int no_err_rec : 1;
         /** Flag to indicate if TOR is supported */
         unsigned int tor_en : 1;
         /** Flag to indicate SPS(secondary permission settings) is supported */
