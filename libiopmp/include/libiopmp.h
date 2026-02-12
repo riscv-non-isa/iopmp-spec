@@ -144,7 +144,7 @@ struct iopmp_instance {
         unsigned int mfr_en : 1;
         /**
          * Flag to indicate if registers ENTRY_ADDRH(i) and ERR_MSIADDRH (if
-         * ERR_CFG.msi_en = 1) are available
+         * HWCFG2.msi_en = 1) are available
          */
         unsigned int addrh_en : 1;
         /** Indicate if the IOPMP checks transactions */
@@ -155,8 +155,10 @@ struct iopmp_instance {
         unsigned int intr_enable : 1;
         /** Suppress the global error responses of the IOPMP */
         unsigned int err_resp_suppress : 1;
-        /** Flag to indicate whether the IOPMP triggers MSI */
+        /** Flag to indicate whether the IOPMP supports MSI extension */
         unsigned int msi_en : 1;
+        /** Flag to indicate whether the IOPMP triggers MSI or wired interrupt*/
+        unsigned int msi_sel : 1;
         /** Flag to indicate whether the IOPMP faults stalled transactions */
         unsigned int stall_violation_en : 1;
         /** Flag to indicate if stall by RRID is supported */
@@ -864,7 +866,7 @@ static inline uint32_t iopmp_get_md_num(IOPMP_t *iopmp)
 }
 
 /**
- * \brief Check if ENTRY_ADDRH(i) and ERR_MSIADDRH (if ERR_CFG.msi_en = 1) are
+ * \brief Check if ENTRY_ADDRH(i) and ERR_MSIADDRH (if HWCFG2.msi_en = 1) are
  * available
  *
  * \param[in] iopmp             The IOPMP instance to be checked
@@ -1009,12 +1011,12 @@ static inline bool iopmp_get_stall_violation_en(IOPMP_t *iopmp)
  *
  * \param[in] iopmp             The IOPMP instance to be checked
  *
- * \retval 1 if ERR_CFG.msi_en = 1
- * \retval 0 if ERR_CFG.msi_en = 0
+ * \retval 1 if ERR_CFG.msi_sel = 1
+ * \retval 0 if ERR_CFG.msi_sel = 0
  */
-static inline bool iopmp_get_msi_en(IOPMP_t *iopmp)
+static inline bool iopmp_get_msi_sel(IOPMP_t *iopmp)
 {
-    return iopmp->msi_en;
+    return iopmp->msi_sel;
 }
 
 /**
@@ -1616,7 +1618,7 @@ enum iopmp_error iopmp_set_global_err_resp(IOPMP_t *iopmp, bool *suppress);
  * \retval IOPMP_ERR_ILLEGAL_VALUE if the written value do not match the actual
  *         value
  */
-enum iopmp_error iopmp_set_msi_en(IOPMP_t *iopmp, bool *enable);
+enum iopmp_error iopmp_set_msi_sel(IOPMP_t *iopmp, bool *enable);
 
 /**
  * \brief Get the address to trigger message-signaled interrupts

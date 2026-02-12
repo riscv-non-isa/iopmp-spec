@@ -619,12 +619,15 @@ enum iopmp_error iopmp_set_global_err_resp(IOPMP_t *iopmp, bool *suppress)
     return ret;
 }
 
-enum iopmp_error iopmp_set_msi_en(IOPMP_t *iopmp, bool *enable)
+enum iopmp_error iopmp_set_msi_sel(IOPMP_t *iopmp, bool *enable)
 {
     enum iopmp_error ret;
     bool __enable;
 
     assert(iopmp_is_initialized(iopmp));
+
+    if (!iopmp->msi_en)
+        return IOPMP_ERR_NOT_SUPPORTED;
 
     if (!enable)
         return IOPMP_ERR_INVALID_PARAMETER;
@@ -632,19 +635,19 @@ enum iopmp_error iopmp_set_msi_en(IOPMP_t *iopmp, bool *enable)
     __enable = *enable;
 
     /* Already enabled or disabled? */
-    if (iopmp->msi_en == __enable)
+    if (iopmp->msi_sel == __enable)
         return IOPMP_OK;
 
     /* Already locked? */
     if (iopmp->err_cfg_lock)
         return IOPMP_ERR_REG_IS_LOCKED;
 
-    /* ERR_CFG.msi_en is optional */
-    if (!iopmp->ops_generic->set_msi_en)
+    /* ERR_CFG.msi_sel can be programmable or hardwired */
+    if (!iopmp->ops_generic->set_msi_sel)
         return IOPMP_ERR_NOT_SUPPORTED;
 
-    ret = iopmp->ops_generic->set_msi_en(iopmp, enable);
-    iopmp->msi_en = *enable;    /* update local cache */
+    ret = iopmp->ops_generic->set_msi_sel(iopmp, enable);
+    iopmp->msi_sel = *enable;   /* update local cache */
 
     return ret;
 }
@@ -738,7 +741,7 @@ enum iopmp_error iopmp_get_and_clear_msi_werr(IOPMP_t *iopmp, bool *msi_werr)
     if (!msi_werr)
         return IOPMP_ERR_INVALID_PARAMETER;
 
-    /* If ERR_CFG.msi_en=1, this operation is mandatory */
+    /* If HWCFG2.msi_en=1, this operation is mandatory */
     assert(iopmp->ops_generic->get_and_clear_msi_werr);
     iopmp->ops_generic->get_and_clear_msi_werr(iopmp, msi_werr);
 
