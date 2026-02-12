@@ -188,6 +188,11 @@ int main(void)
     }
     END_TEST();
 
+    START_TEST("Check IOPMP implements the check of instruction fetch or not");
+    val_bool = iopmp_get_support_chk_x(&iopmp);
+    FAIL_IF(val_bool != !hwcfg3.xinr);
+    END_TEST();
+
     START_TEST("Check IOPMP always fails on an instruction fetch or not");
     val_bool = iopmp_get_no_x(&iopmp);
     FAIL_IF(val_bool != hwcfg3.no_x);

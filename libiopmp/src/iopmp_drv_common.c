@@ -62,8 +62,6 @@
     #define IOPMP_HWCFG2_PRIO_ENT_PROG_MASK     GENMASK_32(16, 16)
     #define IOPMP_HWCFG2_NON_PRIO_EN_SHIFT      17
     #define IOPMP_HWCFG2_NON_PRIO_EN_MASK       GENMASK_32(17, 17)
-    #define IOPMP_HWCFG2_CHK_X_SHIFT            26
-    #define IOPMP_HWCFG2_CHK_X_MASK             GENMASK_32(26, 26)
     #define IOPMP_HWCFG2_PEIS_SHIFT             27
     #define IOPMP_HWCFG2_PEIS_MASK              GENMASK_32(27, 27)
     #define IOPMP_HWCFG2_PEES_SHIFT             28
@@ -81,7 +79,9 @@
     #define IOPMP_HWCFG3_SRCMD_FMT_SHIFT        2
     #define IOPMP_HWCFG3_SRCMD_FMT_MASK         GENMASK_32(3, 2)
     #define IOPMP_HWCFG3_MD_ENTRY_NUM_SHIFT     4
-    #define IOPMP_HWCFG3_MD_ENTRY_NUM_MASK      GENMASK_32(11, 4)
+    #define IOPMP_HWCFG3_MD_ENTRY_NUM_MASK      GENMASK_32(10, 4)
+    #define IOPMP_HWCFG3_XINR_SHIFT             11
+    #define IOPMP_HWCFG3_XINR_MASK              GENMASK_32(11, 11)
     #define IOPMP_HWCFG3_NO_X_SHIFT             12
     #define IOPMP_HWCFG3_NO_X_MASK              GENMASK_32(12, 12)
     #define IOPMP_HWCFG3_NO_W_SHIFT             13
@@ -1563,7 +1563,6 @@ __init_common(IOPMP_t *iopmp, uintptr_t addr,
         iopmp->prio_entry_num = EXTRACT_FIELD(data, IOPMP_HWCFG2_PRIO_ENTRY);
         iopmp->prio_ent_prog = EXTRACT_FIELD(data, IOPMP_HWCFG2_PRIO_ENT_PROG);
         iopmp->non_prio_en = EXTRACT_FIELD(data, IOPMP_HWCFG2_NON_PRIO_EN);
-        iopmp->chk_x = EXTRACT_FIELD(data, IOPMP_HWCFG2_CHK_X);
         iopmp->peis = EXTRACT_FIELD(data, IOPMP_HWCFG2_PEIS);
         iopmp->pees = EXTRACT_FIELD(data, IOPMP_HWCFG2_PEES);
         iopmp->sps_en = EXTRACT_FIELD(data, IOPMP_HWCFG2_SPS_EN);
@@ -1580,6 +1579,7 @@ __init_common(IOPMP_t *iopmp, uintptr_t addr,
         iopmp->mdcfg_fmt = hwcfg3_mdcfg_fmt;
         iopmp->srcmd_fmt = hwcfg3_srcmd_fmt;
         iopmp->md_entry_num = EXTRACT_FIELD(hwcfg3, IOPMP_HWCFG3_MD_ENTRY_NUM);
+        iopmp->xinr = EXTRACT_FIELD(hwcfg3, IOPMP_HWCFG3_XINR);
         iopmp->no_x = EXTRACT_FIELD(hwcfg3, IOPMP_HWCFG3_NO_X);
         iopmp->no_w = EXTRACT_FIELD(hwcfg3, IOPMP_HWCFG3_NO_W);
         iopmp->rrid_transl_en = EXTRACT_FIELD(hwcfg3,
