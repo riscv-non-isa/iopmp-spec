@@ -681,7 +681,7 @@ int main()
 
 #if (STALL_BUF_DEPTH != 0)
     START_TEST_IF(iopmp.reg_file.hwcfg2.stall_en && iopmp.imp_rridscp, "Stall MD Feature",
-    // reset_iopmp(&iopmp, &cfg);
+    reset_iopmp(&iopmp, &cfg);
     receiver_port(5, 360, 0, 3, INSTR_FETCH, 0, &iopmp_trans_req);
     configure_entry_n(&iopmp, ENTRY_ADDR, (iopmp_trans_req.rrid * (iopmp.reg_file.hwcfg3.md_entry_num + 1)), 90, 4); // (364 >> 2) and keeping lsb 0
     configure_entry_n(&iopmp, ENTRY_CFG, (iopmp_trans_req.rrid * (iopmp.reg_file.hwcfg3.md_entry_num + 1)), (NAPOT | X), 4);

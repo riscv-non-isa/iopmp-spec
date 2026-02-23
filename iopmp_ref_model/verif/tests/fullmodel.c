@@ -990,7 +990,7 @@ int main()
 
 #if (STALL_BUF_DEPTH != 0)
     START_TEST_IF(iopmp.reg_file.hwcfg2.stall_en && iopmp.imp_rridscp, "Stall MD Feature",
-    // reset_iopmp(&iopmp, &cfg);
+    reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_EN, 5, 0x10, 4);
     configure_srcmd_n(&iopmp, SRCMD_X, 5, 0x10, 4);
     configure_mdcfg_n(&iopmp, 3, 2, 4);
