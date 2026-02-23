@@ -623,20 +623,30 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
 
     case RRIDSCP_OFFSET:
         if (iopmp->imp_rridscp) {
-            iopmp->reg_file.rridscp.rsv  = 0;
-            iopmp->reg_file.rridscp.op   = rridscp_temp.op;
+            iopmp->reg_file.rridscp.rsv = 0;
+            iopmp->reg_file.rridscp.op  = rridscp_temp.op;
+
             if (rridscp_temp.rrid < iopmp->reg_file.hwcfg1.rrid_num) {
                 iopmp->reg_file.rridscp.rrid = rridscp_temp.rrid;
-            } else if (iopmp->reg_file.rridscp.op == 0) {
-                iopmp->reg_file.rridscp.stat = 3;
-                break;
+                switch (rridscp_temp.op) {
+                case 0: // Query
+                    // Query stalled state from rrid_stall
+                    iopmp->reg_file.rridscp.stat = 2 - iopmp->rrid_stall[rridscp_temp.rrid];
+                    break;
+                case 1: // Stall transactions associated with selected RRID
+                    iopmp->rrid_stall[rridscp_temp.rrid] = 1;
+                    iopmp->reg_file.rridscp.stat = 1;   // Set stat as stalled
+                    break;
+                case 2: // Don't stall transactions associated with selected RRID
+                    iopmp->rrid_stall[rridscp_temp.rrid] = 0;
+                    iopmp->reg_file.rridscp.stat = 2;   // Set stat as not stalled
+                    break;
+                default:// Write op=3
+                    break;
+                }
+            } else {
+                iopmp->reg_file.rridscp.stat = 3;   // Unimplemented or unselectable RRID
             }
-
-            if (iopmp->reg_file.rridscp.op == 0) {
-                iopmp->reg_file.rridscp.stat = 2 - iopmp->rrid_stall[iopmp->reg_file.rridscp.rrid];
-            }
-            else if (iopmp->reg_file.rridscp.op == 1) { iopmp->rrid_stall[rridscp_temp.rrid] = 1; }
-            else if (iopmp->reg_file.rridscp.op == 2) { iopmp->rrid_stall[rridscp_temp.rrid] = 0; }
         }
         break;
 
