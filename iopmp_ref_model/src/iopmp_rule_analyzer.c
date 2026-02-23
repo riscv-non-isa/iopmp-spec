@@ -47,15 +47,16 @@ static int iopmpAddrRange(iopmp_dev_t *iopmp, uint64_t *startAddr, uint64_t *end
     // Check if IOPMP entry is OFF
     if (iopmpcfg.a == IOPMP_OFF) { return 1; }
 
+    uint8_t G = get_granularity_G(iopmp);
+
     switch (iopmpcfg.a) {
         case IOPMP_NA4:  // Address range covers a single 4-byte address
             *startAddr = iopmpaddr;
             *endAddr   = iopmpaddr + 1;
             break;
 
-        case IOPMP_TOR: {// Address range specified by top-of-range mode
+        case IOPMP_TOR: // Address range specified by top-of-range mode
             /* Bits [G-1:0] do not affect the TOR address-matching logic */
-            uint8_t G = get_granularity_G(iopmp);
             if (G >= 1) {
                 uint64_t G_mask = gen_granularity_tor_mask(G);
                 prev_iopmpaddr &= ~G_mask;
@@ -64,8 +65,13 @@ static int iopmpAddrRange(iopmp_dev_t *iopmp, uint64_t *startAddr, uint64_t *end
             *startAddr = prev_iopmpaddr;
             *endAddr   = iopmpaddr;
             break;
-        }
+
         default:  // Assume NAPOT (Naturally Aligned Power-of-Two) mode
+            /* When G>=2 and the mode is NAPOT, bits [G-2:0] read as all ones */
+            if (G >= 2) {
+                uint64_t G_mask = gen_granularity_napot_mask(G);
+                iopmpaddr |= G_mask;
+            }
             napot_mask = iopmpaddr ^ (iopmpaddr + 1);
             *startAddr = iopmpaddr & ~napot_mask;
             *endAddr   = *startAddr + napot_mask + 1;
