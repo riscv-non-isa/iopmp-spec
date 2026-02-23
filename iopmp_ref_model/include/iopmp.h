@@ -64,6 +64,7 @@ typedef struct iopmp_dev_t {
     err_mfrs_t err_svs;                 // Error status vector
     int rrid_stall[IOPMP_MAX_RRID_NUM]; // Stall status array for requester IDs
     int stall_cntr;                     // Counts stalled transactions
+    bool rridscp_unselectable[IOPMP_MAX_RRID_NUM];  // Unselectable RRID in RRID Cherry Pick Stall Control feature
     uint64_t granularity;               // The granularity (bytes) of protected regions by entry
     bool imp_mdlck;                     // IOPMP implements the Memory Domain Lock (MDLCK) feature
     bool imp_err_reqid_eid;             // IOPMP implements ERR_REQID.eid
@@ -107,6 +108,7 @@ typedef struct iopmp_cfg_t {
     bool imp_err_reqid_eid;             // IOPMP implements ERR_REQID.eid
     bool imp_rridscp;                   // IOPMP implements RRIDSCP-related features
     bool imp_stall_buffer;              // IOPMP implements buffer to record and store stalled transactions
+    bool rridscp_unselectable[IOPMP_MAX_RRID_NUM];  // Unselectable RRID in RRID Cherry Pick Stall Control feature
 } iopmp_cfg_t;
 
 // Enumerates specific match statuses for transactions

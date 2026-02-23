@@ -172,6 +172,10 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     iopmp->imp_mdlck                        = cfg->imp_mdlck;
     iopmp->imp_err_reqid_eid                = cfg->imp_err_reqid_eid;
     iopmp->imp_rridscp                      = cfg->imp_rridscp;
+    if (cfg->imp_rridscp) {
+        memcpy(iopmp->rridscp_unselectable, cfg->rridscp_unselectable,
+               sizeof(cfg->rridscp_unselectable));
+    }
     iopmp->imp_stall_buffer                 = cfg->imp_stall_buffer;
 
     return 0;
@@ -628,6 +632,11 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
 
             if (rridscp_temp.rrid < iopmp->reg_file.hwcfg1.rrid_num) {
                 iopmp->reg_file.rridscp.rrid = rridscp_temp.rrid;
+                if (iopmp->rridscp_unselectable[rridscp_temp.rrid]) {
+                    iopmp->reg_file.rridscp.stat = 3;   // Unselectable RRID
+                    break;
+                }
+
                 switch (rridscp_temp.op) {
                 case 0: // Query
                     // Query stalled state from rrid_stall
@@ -645,7 +654,7 @@ void write_register(iopmp_dev_t *iopmp, uint64_t offset, reg_intf_dw data, uint8
                     break;
                 }
             } else {
-                iopmp->reg_file.rridscp.stat = 3;   // Unimplemented or unselectable RRID
+                iopmp->reg_file.rridscp.stat = 3;   // Unimplemented RRID
             }
         }
         break;
