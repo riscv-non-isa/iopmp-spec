@@ -65,6 +65,7 @@ int main(void)
     cfg.imp_err_reqid_eid = true;
     cfg.imp_rridscp = true;
     cfg.imp_stall_buffer = true;
+    cfg.stall_buffer_size = 32;
 
     reset_iopmp(&iopmp_dev, &cfg);
 

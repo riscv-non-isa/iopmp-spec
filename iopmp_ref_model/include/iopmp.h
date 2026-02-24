@@ -70,6 +70,7 @@ typedef struct iopmp_dev_t {
     bool imp_err_reqid_eid;             // IOPMP implements ERR_REQID.eid
     bool imp_rridscp;                   // IOPMP implements RRIDSCP-related features
     bool imp_stall_buffer;              // IOPMP implements buffer to record and store stalled transactions
+    uint32_t stall_buffer_size;         // Size of the buffer used to store stalled transactions
 } iopmp_dev_t;
 
 // Configurations of IOPMP when reset
@@ -109,6 +110,7 @@ typedef struct iopmp_cfg_t {
     bool imp_rridscp;                   // IOPMP implements RRIDSCP-related features
     bool imp_stall_buffer;              // IOPMP implements buffer to record and store stalled transactions
     bool rridscp_unselectable[IOPMP_MAX_RRID_NUM];  // Unselectable RRID in RRID Cherry Pick Stall Control feature
+    uint32_t stall_buffer_size;         // Size of the buffer used to store stalled transactions
 } iopmp_cfg_t;
 
 // Enumerates specific match statuses for transactions

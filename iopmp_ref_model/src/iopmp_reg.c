@@ -103,6 +103,9 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
     // Stall buffer is only needed when stall features are implemented
     if (cfg->imp_stall_buffer && !cfg->stall_en)
         return -1;
+    // If stall buffer is implemented, the size of the buffer must not be zero
+    if (cfg->imp_stall_buffer && cfg->stall_buffer_size == 0)
+        return -1;
     // The granularity must greater or equal to 4 bytes and must be power of 2
     if ((cfg->granularity < MIN_GRANULARITY) ||
         ((cfg->granularity & (cfg->granularity - 1)) != 0))
@@ -177,6 +180,7 @@ int reset_iopmp(iopmp_dev_t *iopmp, iopmp_cfg_t *cfg)
                sizeof(cfg->rridscp_unselectable));
     }
     iopmp->imp_stall_buffer                 = cfg->imp_stall_buffer;
+    iopmp->stall_buffer_size                = cfg->stall_buffer_size;
 
     return 0;
 }

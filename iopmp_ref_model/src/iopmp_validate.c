@@ -109,7 +109,7 @@ void iopmp_validate_access(iopmp_dev_t *iopmp, iopmp_trans_req_t *trans_req, iop
         // If there is any space in the buffer, IOPMP queues the transactions
         // until the buffer is full. The reference model just returns a flag to
         // indicate that the input transaction is stalled in this case.
-        if (iopmp->imp_stall_buffer && iopmp->stall_cntr != STALL_BUF_DEPTH) {
+        if (iopmp->imp_stall_buffer && iopmp->stall_cntr < iopmp->stall_buffer_size) {
             iopmp_trans_rsp->rrid_stalled = 1;
             iopmp->stall_cntr++;
             return;
