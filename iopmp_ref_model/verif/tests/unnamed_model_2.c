@@ -681,8 +681,9 @@ int main()
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
     END_TEST();
 
-#if (STALL_BUF_DEPTH != 0)
     START_TEST_IF(iopmp.reg_file.hwcfg2.stall_en && iopmp.imp_rridscp, "Stall MD Feature",
+    cfg.imp_stall_buffer = true;
+    cfg.stall_buffer_size = 32;
     reset_iopmp(&iopmp, &cfg);
     configure_srcmd_n(&iopmp, SRCMD_PERM, 3, 0x10, 4);
     configure_mdcfg_n(&iopmp, 3, 2, 4);
@@ -701,10 +702,10 @@ int main()
     FAIL_IF((iopmp_trans_rsp.rrid != 5));
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
     END_TEST();)
-#else
-    // Set STALL_BUF_DEPTH zero to test this feature
+
     START_TEST_IF(iopmp.reg_file.hwcfg2.stall_en && iopmp.imp_rridscp,
                   "Faulting Stalled Transactions Feature",
+    cfg.imp_stall_buffer = false;
     reset_iopmp(&iopmp, &cfg);
     write_register(&iopmp, ERR_CFG_OFFSET, 0x10, 4);
     configure_srcmd_n(&iopmp, SRCMD_PERM, 3, 0x10, 4);
@@ -724,8 +725,9 @@ int main()
     FAIL_IF((iopmp_trans_rsp.rrid != 5));
     CHECK_IOPMP_TRANS(&iopmp, IOPMP_ERROR, STALLED_TRANSACTION);
     write_register(&iopmp, ERR_INFO_OFFSET, 0, 4);
+    // Reset configuration
+    cfg.imp_stall_buffer = true;
     END_TEST();)
-#endif
 
     START_TEST_IF(iopmp.reg_file.hwcfg3.rrid_transl_en, "Test Cascading IOPMP Feature",
     reset_iopmp(&iopmp, &cfg);
